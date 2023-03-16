@@ -98,7 +98,7 @@ if __name__ == "__main__":
             p.runtime.sdcParallel = 1 if nT > 1 else None
 
             # Setup parallelization
-            p.setup_parallelization([pspace, ptime])
+            p.setup_parallelization([ptime, pspace])
 
             if verbose:
                 pspace.print()

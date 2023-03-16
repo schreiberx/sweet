@@ -57,6 +57,7 @@ def sym():
 
 
 tBase = data_plotting['Space Parallel']['y_values'][0]
+i = 0
 for group, data in data_plotting.items():
 
 	nProc = np.array(data['x_values'])
@@ -65,15 +66,16 @@ for group, data in data_plotting.items():
 
 	plt.figure('wallclock')
 	plt.loglog(nProc, tComp, s+'-', label=group)
-	if group == 'Space Parallel':
+	if i == 0:
 		plt.loglog(nProc, tBase/nProc, '--', c='gray')
 
 	plt.figure('speedup')
 	plt.plot(nProc, tBase/tComp, s+'-', label=group)
-	if group == 'Space Parallel':
+	if i == 0:
 		plt.plot(nProc, nProc, '--', c='gray')
 	plt.ylim(0, 10)
-	
+
+	i += 1
 
 for figName in ['wallclock', 'speedup']:
 	plt.figure(figName)
@@ -83,3 +85,26 @@ for figName in ['wallclock', 'speedup']:
 	plt.grid()
 	plt.tight_layout()
 	plt.savefig(f'output_{figName}.pdf')
+
+
+nProcSpace = np.array(data_plotting['Space Parallel']['x_values'])
+
+tSpaceOnly = np.array(data_plotting['Space Parallel']['y_values'])
+tSpaceTime = np.array(data_plotting['Space-Time Parallel']['y_values'])
+nPoints = tSpaceTime.size
+
+nProcSpace = nProcSpace[:nPoints]
+tSpaceOnly = tSpaceOnly[:nPoints]
+
+timeGain = tSpaceOnly/tSpaceTime
+
+plt.figure('Time Gain')
+plt.plot(nProcSpace, timeGain, 'o-', label='Parallel SDC')
+plt.plot(nProcSpace, 0*nProcSpace+4, '--', c='gray')
+plt.legend()
+plt.xlabel('nProc (Space only)')
+plt.ylabel('speedup')
+plt.ylim(0, 4.5)
+plt.grid()
+plt.tight_layout()
+plt.savefig(f'output_timeGain.pdf')

@@ -310,8 +310,8 @@ class JobParallelization(InfoError):
         if len(lThreads) == 1:
             self.num_threads_per_rank = lThreads[0]
         elif len(lThreads) == 2:
-            if lThreads[1] == 1:
-                self.num_threads_per_rank = lThreads[0]
+            if lThreads[0] == 1:
+                self.num_threads_per_rank = lThreads[1]
             else:
                 self.num_threads_per_rank = ','.join([str(n) for n in lThreads])
         else:
