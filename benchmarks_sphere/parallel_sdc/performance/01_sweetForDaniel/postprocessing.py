@@ -72,6 +72,7 @@ for group, data in data_plotting.items():
 	plt.plot(nProc, tBase/tComp, s+'-', label=group)
 	if group == 'Space Parallel':
 		plt.plot(nProc, nProc, '--', c='gray')
+	plt.ylim(0, 10)
 	
 
 for figName in ['wallclock', 'speedup']:
