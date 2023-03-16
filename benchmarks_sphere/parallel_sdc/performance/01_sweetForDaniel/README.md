@@ -11,6 +11,24 @@ _First strong scaling tests of Parallel SDC implementation_
 
 ## Running benchmark
 
+After activating `default_llvm` environment in sweet root :
+
 ```bash
-mule.benchmark.cleanup_job_dirs; ./create_jobs.py; ./compile_platform*.sh; mule.benchmark.jobs_run_directly
+$ source activate default_llvm
+```
+
+Benchmark steps by step :
+
+```bash
+$ ./step0_clean.sh      # clean slate
+$ ./step1_setup.py      # setup compilation and jobs
+$ ./step2_compile.sh    # compile associated sweet program
+$ ./step3_run.sh        # run all simulations
+$ ./step4_process.py    # post process, generate figures, etc ...
+```
+
+Full run :
+
+```bash
+$ for s in step*; do ./"$s"; done
 ```

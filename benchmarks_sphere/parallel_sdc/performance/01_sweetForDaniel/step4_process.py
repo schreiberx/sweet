@@ -55,12 +55,12 @@ def sym():
 	iSym[0] += 1
 	return s
 
+
+tBase = data_plotting['Space Parallel']['y_values'][0]
 for group, data in data_plotting.items():
 
 	nProc = np.array(data['x_values'])
 	tComp = np.array(data['y_values'])
-	if group == 'Space Parallel':
-		tBase = tComp[0]
 	s = sym()
 
 	plt.figure('wallclock')
