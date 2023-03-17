@@ -104,6 +104,7 @@ if [ "#$1" = "#unload" ]; then
 	unset MULE_ROOT
 	unset MULE_SOFTWARE_ROOT
 	unset MULE_COMPILE_NUM_JOB_LIMITATION
+	unset PROMPT_COMMAND
 
 	if [ "#$MULE_BACKUP_PATH" != "#" ]; then
 		export PATH="$MULE_BACKUP_PATH"
@@ -228,6 +229,7 @@ if [[ -z "$MULE_PLATFORM_DIR" ]]; then
 	unset MULE_SOFTWARE_ROOT
 	unset MULE_COMPILE_NUM_JOB_LIMITATION
 	unset SCRIPTDIR
+	unset PROMPT_COMMAND
 	return
 fi
 
