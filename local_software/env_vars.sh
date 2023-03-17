@@ -23,6 +23,8 @@ function activate_miniconda_environment()
 		return 0
 	fi
 	source "$MULE_SOFTWARE_ROOT/local_software/local/python_venv_miniconda/bin/activate" 2>/dev/null
+	# Ugly fix for miniconda installation ...
+	unset PROMPT_COMMAND
 	return 0
 }
 
