@@ -7,7 +7,7 @@ from mule.JobCompileOptions import *
 #
 # Setup parallel compilation
 #
-num_cpu = int(os.environ['MULE_COMPILE_NUM_JOB_LIMITATION'])
+num_cpu = int(os.environ.get('MULE_COMPILE_NUM_JOB_LIMITATION', -1))
 if num_cpu == -1:
     num_cpu = multiprocessing.cpu_count()
 SetOption('num_jobs', num_cpu)
