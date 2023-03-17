@@ -1,5 +1,5 @@
-
 module load Clang
+module load CMake
 
 export MULE_COMPILE_NUM_JOB_LIMITATION=20
 
