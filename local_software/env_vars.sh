@@ -103,6 +103,7 @@ if [ "#$1" = "#unload" ]; then
 	unset MULE_PLATFORM_ID
 	unset MULE_ROOT
 	unset MULE_SOFTWARE_ROOT
+	unset MULE_COMPILE_NUM_JOB_LIMITATION
 
 	if [ "#$MULE_BACKUP_PATH" != "#" ]; then
 		export PATH="$MULE_BACKUP_PATH"
@@ -207,6 +208,9 @@ export MULE_SOFTWARE_ROOT="$PWD"
 export MULE_ROOT="$MULE_SOFTWARE_ROOT/mule"
 export MULE_LOCAL_ROOT="$MULE_SOFTWARE_ROOT/mule_local"
 
+# Additional MULE specific environment variables
+# -- to limit the number of jobs with scons compilation (default=-1 => uses number provided by python multiprocessing.cpu_count())
+export MULE_COMPILE_NUM_JOB_LIMITATION=-1
 
 # Use SWEET python environment in case that the system-wide installed python is used
 # Ignore errors in case that this folder doesn't exist
@@ -222,6 +226,7 @@ if [[ -z "$MULE_PLATFORM_DIR" ]]; then
 	unset MULE_ROOT
 	unset MULE_LOCAL_ROOT
 	unset MULE_SOFTWARE_ROOT
+	unset MULE_COMPILE_NUM_JOB_LIMITATION
 	unset SCRIPTDIR
 	return
 fi
