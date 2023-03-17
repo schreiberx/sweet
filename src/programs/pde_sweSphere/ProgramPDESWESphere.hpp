@@ -563,10 +563,10 @@ public:
 				double error_div = diff_div.toPhys().physical_reduce_max_abs();
 
 				
-				std::ios init(NULL);
-				init.copyfmt(std::cout);
+				// std::ios init(NULL);
+				// init.copyfmt(std::cout);
 				std::cout << "[MULE] errors." << std::setw(8) << std::setfill('0') << shackTimestepControl->current_timestep_nr << ": ";
-				std::cout.copyfmt(init);
+				// std::cout.copyfmt(init);
 
 				std::cout << "simtime=" << shackTimestepControl->current_simulation_time;
 				std::cout << "\terror_linf_phi=" << error_phi;
