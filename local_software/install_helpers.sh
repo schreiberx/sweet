@@ -33,7 +33,12 @@ if [ "`uname`" == "Darwin" ]; then
 	MAKE_DEFAULT_OPTS="-j"
 
 else
-	NPROCS="$(nproc)"
+	if [ "$MULE_COMPILE_NUM_JOB_LIMITATION" = "-1" ]; then
+		NPROCS="$(nproc)"
+	else
+		NPROCS=$MULE_COMPILE_NUM_JOB_LIMITATION
+	fi
+
 	if false; then
 		if [ "$NPROCS" -gt "10" ]; then
 			# We limit the number of parallel build processes

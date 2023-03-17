@@ -103,6 +103,8 @@ if [ "#$1" = "#unload" ]; then
 	unset MULE_PLATFORM_ID
 	unset MULE_ROOT
 	unset MULE_SOFTWARE_ROOT
+	unset MULE_COMPILE_NUM_JOB_LIMITATION
+	unset PROMPT_COMMAND
 
 	if [ "#$MULE_BACKUP_PATH" != "#" ]; then
 		export PATH="$MULE_BACKUP_PATH"
@@ -207,6 +209,9 @@ export MULE_SOFTWARE_ROOT="$PWD"
 export MULE_ROOT="$MULE_SOFTWARE_ROOT/mule"
 export MULE_LOCAL_ROOT="$MULE_SOFTWARE_ROOT/mule_local"
 
+# Additional MULE specific environment variables
+# -- to limit the number of jobs with scons compilation (default=-1 => uses number provided by python multiprocessing.cpu_count())
+export MULE_COMPILE_NUM_JOB_LIMITATION=-1
 
 # Use SWEET python environment in case that the system-wide installed python is used
 # Ignore errors in case that this folder doesn't exist
@@ -222,7 +227,9 @@ if [[ -z "$MULE_PLATFORM_DIR" ]]; then
 	unset MULE_ROOT
 	unset MULE_LOCAL_ROOT
 	unset MULE_SOFTWARE_ROOT
+	unset MULE_COMPILE_NUM_JOB_LIMITATION
 	unset SCRIPTDIR
+	unset PROMPT_COMMAND
 	return
 fi
 
@@ -282,6 +289,8 @@ export DYLD_LIBRARY_PATH="$SCRIPTDIR/local/lib:$LD_LIBRARY_PATH"
 if [ -d "$SCRIPTDIR/local/lib64" ]; then
 	export DYLD_LIBRARY_PATH="$SCRIPTDIR/local/lib64:$LD_LIBRARY_PATH"
 fi
+
+export LDFLAGS="-L$SCRIPTDIR/local/lib64 -L$SCRIPTDIR/local/lib $LDFLAGS"
 
 echo_success_hline
 echo_success " Setting up Python paths"

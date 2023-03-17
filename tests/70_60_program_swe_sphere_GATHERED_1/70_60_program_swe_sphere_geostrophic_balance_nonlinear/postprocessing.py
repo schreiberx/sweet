@@ -46,6 +46,10 @@ for key, jobs_data in job_groups.items():
         last_error_line_key = error_line_keys[-1]
 
         if last_error_line_key != tag+"00000010":
+            print("Error")
+            print("Printing full job data")
+            print(job_data)
+
             ntag = tag+"00000010"
             print(f"Error with last key: '{last_error_line_key}' compared to value '{ntag}'")
 
