@@ -48,6 +48,24 @@ for key, jobs_data in job_groups.items():
         if last_error_line_key != tag+"00000010":
             ntag = tag+"00000010"
             print(f"Error with last key: '{last_error_line_key}' compared to value '{ntag}'")
+
+            try:
+                # opening and reading the file
+                print("")
+                print("output.out")
+                file_read = open(job_data["jobgeneration.job_dirpath"]+"/output.out", "r")
+                print(file_read.read())
+                print("")
+
+                print("")
+                print("output.err")
+                file_read = open(job_data["jobgeneration.job_dirpath"]+"/output.err", "r")
+                print(file_read.read())
+                print("")
+
+            except:
+                print("An exception occurred")
+
             assert last_error_line_key == tag+"00000010"
 
         error_split = job_data[last_error_line_key].split("\t")
