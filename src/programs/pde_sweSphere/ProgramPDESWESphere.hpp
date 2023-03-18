@@ -565,7 +565,8 @@ public:
 				
 				// std::ios init(NULL);
 				// init.copyfmt(std::cout);
-				std::cout << "[MULE] errors." << std::setw(8) << std::setfill('0') << shackTimestepControl->current_timestep_nr << ": ";
+				int nTimeSteps = shackTimestepControl->current_timestep_nr;
+				std::cout << "[MULE] errors." << std::setw(8) << std::setfill('0') << nTimeSteps << ": " << std::flush;
 				// std::cout.copyfmt(init);
 
 				std::cout << "simtime=" << shackTimestepControl->current_simulation_time;
