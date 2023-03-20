@@ -19,12 +19,25 @@
 #include "pde_sweSphere/ProgramPDESWESphere.hpp"
 
 
+#if SWEET_MPI
+int mpi_rank;
+#endif
+
+bool isMPIRoot()
+{
+#if SWEET_MPI
+	return mpi_rank == 0;
+#else
+	return true;
+#endif
+}
+
+
 int main_mpi(int i_argc, char *i_argv[])
 {
 #if SWEET_MPI
 	MPI_Init(&i_argc, &i_argv);
 
-	int mpi_rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 #endif
 
@@ -62,9 +75,7 @@ int main_mpi(int i_argc, char *i_argv[])
 
 				if (simulation.shackPDESWESphere->instability_checks)
 				{
-#if SWEET_MPI
-					if (mpi_rank == 0)
-#endif
+					if (isMPIRoot())
 					{
 						if (simulation.detect_instability())
 						{
@@ -75,21 +86,22 @@ int main_mpi(int i_argc, char *i_argv[])
 					}
 				}
 
-#if SWEET_MPI
-				if (mpi_rank == 0)
-#endif
-				{
+				if (isMPIRoot())
 					simulation.timestepHandleOutput();
-				}
 			}
 
-			std::cout << "TIMESTEPPING FINISHED" << std::endl;
+			if (isMPIRoot())
+				std::cout << "TIMESTEPPING FINISHED" << std::endl;
+
 			StopwatchBox::getInstance().main_timestepping.stop();
 		
 		}
 
-		if (simulation.fileOutput.output_reference_filenames.size() > 0)
-			std::cout << "[MULE] reference_filenames: " << simulation.fileOutput.output_reference_filenames << std::endl;
+		if (isMPIRoot())
+		{
+			if (simulation.fileOutput.output_reference_filenames.size() > 0)
+				std::cout << "[MULE] reference_filenames: " << simulation.fileOutput.output_reference_filenames << std::endl;
+		}
 	}
 
 	// End of run output results
@@ -97,7 +109,8 @@ int main_mpi(int i_argc, char *i_argv[])
 
 	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
 
-	std::cout << "FIN" << std::endl;
+	if (isMPIRoot())
+		std::cout << "FIN" << std::endl;
 
 #if SWEET_MPI
 	MPI_Finalize();
