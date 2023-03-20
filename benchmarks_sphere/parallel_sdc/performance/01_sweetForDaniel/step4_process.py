@@ -88,9 +88,9 @@ for group, data in data_plotting.items():
 		plt.loglog(nProc, tBase/nProc, '--', c='gray')
 
 	plt.figure('speedup')
-	plt.plot(nProc, tBase/tComp, s+'-', label=group)
+	plt.loglog(nProc, tBase/tComp, s+'-', label=group)
 	if i == 0:
-		plt.plot(nProc, nProc, '--', c='gray')
+		plt.loglog(nProc, nProc, '--', c='gray')
 	plt.ylim(0, 1.2*max(tBase/tComp))
 
 	i += 1
@@ -117,8 +117,8 @@ tSpaceOnly = tSpaceOnly[:nPoints]
 timeGain = tSpaceOnly/tSpaceTime
 
 plt.figure('Time Gain')
-plt.plot(nProcSpace, timeGain, 'o-', label='Parallel SDC')
-plt.plot(nProcSpace, 0*nProcSpace+4, '--', c='gray')
+plt.loglog(nProcSpace, timeGain, 'o-', label='Parallel SDC')
+plt.loglog(nProcSpace, 0*nProcSpace+4, '--', c='gray')
 plt.legend()
 plt.xlabel('nProc (Space only)')
 plt.ylabel('speedup')
