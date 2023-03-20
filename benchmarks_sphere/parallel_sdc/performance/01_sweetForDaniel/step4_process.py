@@ -117,8 +117,8 @@ tSpaceOnly = tSpaceOnly[:nPoints]
 timeGain = tSpaceOnly/tSpaceTime
 
 plt.figure('Time Gain')
-plt.loglog(nProcSpace, timeGain, 'o-', label='Parallel SDC')
-plt.loglog(nProcSpace, 0*nProcSpace+4, '--', c='gray')
+plt.semilogx(nProcSpace, timeGain, 'o-', label='Parallel SDC')
+plt.semilogx(nProcSpace, 0*nProcSpace+4, '--', c='gray')
 plt.legend()
 plt.xlabel('nProc (Space only)')
 plt.ylabel('speedup')
