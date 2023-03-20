@@ -4,10 +4,10 @@
 
 _First strong scaling tests of Parallel SDC implementation_
 
-- fixed time step, fixed space mesh resolution
+- fixed time step, fixed space mesh resolution ($1024 \times 1024$ grid)
 - measurements :
-    1. space parallelization only, increase number of OMP threads $[1,2,4,8,16,32]$
-    2. time-parallelization with 4 nodes, increase space OMP threads from 1 to 8.
+    1. space parallelization only, increase number of OMP threads $[1,2,4,8,16, ..., N_{max}]$ where $ N_{max}$ is the maximum number of CPU on the system, given by the python function `multiprocessing.cpu_count()`.
+    2. time-parallelization with 4 nodes, increase space OMP threads from 1 to $N_{max}/2$.
 
 ## Running benchmark
 

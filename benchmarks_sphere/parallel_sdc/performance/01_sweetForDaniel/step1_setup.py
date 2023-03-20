@@ -1,10 +1,7 @@
 #! /usr/bin/env python3
 """
-Some first string scaling tests for preliminary results
+Some first strong scaling tests for preliminary results
 """
-
-import sys
-from itertools import product
 import multiprocessing
 
 from mule.JobGeneration import JobGeneration
@@ -115,12 +112,3 @@ if __name__ == "__main__":
             p.gen_jobscript_directory()
 
     p.write_compilecommands()
-           
-
-            
-
-            
-
-            
-
-    
