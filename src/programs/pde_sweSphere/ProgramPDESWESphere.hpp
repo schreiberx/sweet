@@ -397,15 +397,14 @@ public:
 		if (!setup_3_dataAndOps(i_setup_spectral_transforms))
 			return false;
 
-		std::cout << "Printing shack information:" << std::endl;
-
-
 		if (isMPIRoot())
 		{
-			shackProgArgDict.printShackData();
-		}
+			std::cout << "Printing shack information:" << std::endl;
 
-		std::cout << "SETUP FINISHED" << std::endl;
+			shackProgArgDict.printShackData();
+
+			std::cout << "SETUP FINISHED" << std::endl;
+		}
 
 		StopwatchBox::getInstance().main_setup.stop();
 
@@ -445,9 +444,15 @@ public:
 	{
 		sweet::SphereData_Spectral diff = dataConfigOps.t0_prog_phi_pert-dataConfigOps.prog_phi_pert;
 
-		std::cout << "Error compared to initial condition" << std::endl;
-		std::cout << "Lmax error: " << diff.toPhys().physical_reduce_max_abs() << std::endl;
-		std::cout << "RMS error: " << diff.toPhys().physical_reduce_rms() << std::endl;
+		double lmax_error = diff.toPhys().physical_reduce_max_abs();
+		double rms_error = diff.toPhys().physical_reduce_rms();
+
+		if (isMPIRoot())
+		{
+			std::cout << "Error compared to initial condition" << std::endl;
+			std::cout << "Lmax error: " << lmax_error << std::endl;
+			std::cout << "RMS error: " << rms_error << std::endl;
+		}
 	}
 
 	~ProgramPDESWESphere()
@@ -470,7 +475,8 @@ public:
 		shackTimestepControl->timestepHelperEnd();
 
 		if (shackIOData->verbosity > 2)
-			std::cout << shackTimestepControl->current_timestep_nr << ": " << shackTimestepControl->current_simulation_time/(60*60*24.0) << std::endl;
+			if (isMPIRoot())
+				std::cout << shackTimestepControl->current_timestep_nr << ": " << shackTimestepControl->current_simulation_time/(60*60*24.0) << std::endl;
 
 		if (shackPDESWESphere->compute_diagnostics)
 			update_diagnostics();
@@ -545,7 +551,11 @@ public:
 				shackBenchmarks->benchmark_name != "geostrophic_balance_512"
 			)
 			{
-				std::cout << "Benchmark name: " << shackBenchmarks->benchmark_name << std::endl;
+
+				if (isMPIRoot())
+				{
+					std::cout << "Benchmark name: " << shackBenchmarks->benchmark_name << std::endl;
+				}
 				SWEETError("Analytical solution not available for this benchmark");
 			}
 
@@ -562,12 +572,12 @@ public:
 			sweet::SphereData_Spectral diff_vrt = dataConfigOps.prog_vrt - anal_solution_vrt;
 			sweet::SphereData_Spectral diff_div = dataConfigOps.prog_div - anal_solution_div;
 
+			double error_phi = diff_phi.toPhys().physical_reduce_max_abs();
+			double error_vrt = diff_vrt.toPhys().physical_reduce_max_abs();
+			double error_div = diff_div.toPhys().physical_reduce_max_abs();
+
 			if (isMPIRoot())
 			{
-				double error_phi = diff_phi.toPhys().physical_reduce_max_abs();
-				double error_vrt = diff_vrt.toPhys().physical_reduce_max_abs();
-				double error_div = diff_div.toPhys().physical_reduce_max_abs();
-
 				int nTimeSteps = shackTimestepControl->current_timestep_nr;
 				std::cout << "[MULE] errors." << std::setw(8) << std::setfill('0') << nTimeSteps << ": ";
 
@@ -579,21 +589,24 @@ public:
 			}
 		}
 
-		fileOutput.write_file_output(
-				dataConfigOps.ops,
-				dataConfigOps.prog_phi_pert,
-				dataConfigOps.prog_div,
-				dataConfigOps.prog_vrt
-		);
-
-		if (shackIOData->verbosity > 0)
+		if (isMPIRoot())
 		{
-			if (isMPIRoot())
+			fileOutput.write_file_output(
+					dataConfigOps.ops,
+					dataConfigOps.prog_phi_pert,
+					dataConfigOps.prog_div,
+					dataConfigOps.prog_vrt
+			);
+
+			if (shackIOData->verbosity > 0)
 			{
 				double progPhiMin = dataConfigOps.prog_phi_pert.toPhys().physical_reduce_min();
 				double progPhiMax = dataConfigOps.prog_phi_pert.toPhys().physical_reduce_max();
 
-				std::cout << "prog_phi min/max:\t" << progPhiMin << ", " << progPhiMax << std::endl;
+				if (isMPIRoot())
+				{
+					std::cout << "prog_phi min/max:\t" << progPhiMin << ", " << progPhiMax << std::endl;
+				}
 			}
 		}
 
@@ -607,9 +620,6 @@ public:
 public:
 	bool timestepHandleOutput()
 	{
-		if (!isMPIRoot())
-			return false;
-
 		if (shackIOData->output_each_sim_seconds < 0)
 			return false;
 
@@ -624,8 +634,9 @@ public:
 				return false;
 		}
 
-		if (shackIOData->verbosity > 0)
-			std::cout << std::endl;
+		if (isMPIRoot())
+			if (shackIOData->verbosity > 0)
+				std::cout << std::endl;
 
 		_timestepDoOutput();
 
@@ -638,8 +649,11 @@ public:
 	{
 		if (dataConfigOps.prog_phi_pert.spectral_is_first_nan_or_inf())
 		{
-			std::cout << "Infinity value detected" << std::endl;
-			std::cerr << "Infinity value detected" << std::endl;
+			if (isMPIRoot())
+			{
+				std::cout << "Infinity value detected" << std::endl;
+				std::cerr << "Infinity value detected" << std::endl;
+			}
 			return true;
 		}
 
