@@ -9,7 +9,7 @@
 #include <sweet/core/ProgramArguments.hpp>
 #include <sweet/core/shacks/ShackInterface.hpp>
 
-#ifdef SWEET_MPI
+#if SWEET_MPI
 #   include <mpi.h>
 #endif
 
