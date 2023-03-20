@@ -22,6 +22,7 @@
 #include <sweet/core/shacksShared/ShackSphereDataOps.hpp>
 #include <sweet/core/shacksShared/ShackIOData.hpp>
 #include <sweet/core/shacksShared/ShackTimestepControl.hpp>
+#include <sweet/core/shacksShared/ShackParallelization.hpp>
 #include "benchmarks/ShackPDESWESphereBenchmarks.hpp"
 #include "ShackPDESWESphere.hpp"
 
@@ -162,24 +163,11 @@ public:
 	sweet::ShackSphereDataOps *shackSphereDataOps;
 	sweet::ShackIOData *shackIOData;
 	sweet::ShackTimestepControl *shackTimestepControl;
+	sweet::ShackParallelization *shackParallelization;
 	ShackPDESWESphereTimeDiscretization *shackTimeDisc;
 	ShackPDESWESphereBenchmarks *shackBenchmarks;
 	ShackPDESWESphere *shackPDESWESphere;
-
-#if SWEET_MPI
-	int mpi_rank;
-#endif
-
-	bool isMPIRoot()
-	{
-	#if SWEET_MPI
-		return mpi_rank == 0;
-	#else
-		return true;
-	#endif
-	}
-
-
+	
 	int timestep_nr_last_output_simtime = -1;
 
 	PDESWESphere_Diagnostics diagnostics;
@@ -195,14 +183,11 @@ public:
 		shackSphereDataOps(nullptr),
 		shackIOData(nullptr),
 		shackTimestepControl(nullptr),
+		shackParallelization(nullptr),
 		shackTimeDisc(nullptr),
 		shackBenchmarks(nullptr),
 		shackPDESWESphere(nullptr)
 	{
-#if SWEET_MPI
-		MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
-#endif
-
 		ERROR_CHECK_COND_RETURN(shackProgArgDict);
 	}
 
@@ -217,6 +202,7 @@ public:
 		/*
 		 * SHACK: Register classes which we require
 		 */
+		shackParallelization = shackProgArgDict.getAutoRegistration<sweet::ShackParallelization>();
 		shackSphereDataOps = shackProgArgDict.getAutoRegistration<sweet::ShackSphereDataOps>();
 		shackTimestepControl = shackProgArgDict.getAutoRegistration<sweet::ShackTimestepControl>();
 		shackIOData = shackProgArgDict.getAutoRegistration<sweet::ShackIOData>();
@@ -267,6 +253,7 @@ public:
 	{
 		shackSphereDataOps = nullptr;
 		shackTimestepControl = nullptr;
+		shackParallelization = nullptr;
 		shackIOData = nullptr;
 		shackTimeDisc = nullptr;
 
@@ -397,7 +384,7 @@ public:
 		if (!setup_3_dataAndOps(i_setup_spectral_transforms))
 			return false;
 
-		if (isMPIRoot())
+		if (shackParallelization->isMPIRoot)
 		{
 			std::cout << "Printing shack information:" << std::endl;
 
@@ -447,7 +434,7 @@ public:
 		double lmax_error = diff.toPhys().physical_reduce_max_abs();
 		double rms_error = diff.toPhys().physical_reduce_rms();
 
-		if (isMPIRoot())
+		if (shackParallelization->isMPIRoot)
 		{
 			std::cout << "Error compared to initial condition" << std::endl;
 			std::cout << "Lmax error: " << lmax_error << std::endl;
@@ -475,7 +462,7 @@ public:
 		shackTimestepControl->timestepHelperEnd();
 
 		if (shackIOData->verbosity > 2)
-			if (isMPIRoot())
+			if (shackParallelization->isMPIRoot)
 				std::cout << shackTimestepControl->current_timestep_nr << ": " << shackTimestepControl->current_simulation_time/(60*60*24.0) << std::endl;
 
 		if (shackPDESWESphere->compute_diagnostics)
@@ -518,7 +505,7 @@ public:
 		{
 			update_diagnostics();
 
-			if (isMPIRoot())
+			if (shackParallelization->isMPIRoot)
 			{
 				// Print header
 				if (shackTimestepControl->current_timestep_nr == 0)
@@ -552,7 +539,7 @@ public:
 			)
 			{
 
-				if (isMPIRoot())
+				if (shackParallelization->isMPIRoot)
 				{
 					std::cout << "Benchmark name: " << shackBenchmarks->benchmark_name << std::endl;
 				}
@@ -576,7 +563,7 @@ public:
 			double error_vrt = diff_vrt.toPhys().physical_reduce_max_abs();
 			double error_div = diff_div.toPhys().physical_reduce_max_abs();
 
-			if (isMPIRoot())
+			if (shackParallelization->isMPIRoot)
 			{
 				int nTimeSteps = shackTimestepControl->current_timestep_nr;
 				std::cout << "[MULE] errors." << std::setw(8) << std::setfill('0') << nTimeSteps << ": ";
@@ -589,7 +576,7 @@ public:
 			}
 		}
 
-		if (isMPIRoot())
+		if (shackParallelization->isMPIRoot)
 		{
 			fileOutput.write_file_output(
 					dataConfigOps.ops,
@@ -603,7 +590,7 @@ public:
 				double progPhiMin = dataConfigOps.prog_phi_pert.toPhys().physical_reduce_min();
 				double progPhiMax = dataConfigOps.prog_phi_pert.toPhys().physical_reduce_max();
 
-				if (isMPIRoot())
+				if (shackParallelization->isMPIRoot)
 				{
 					std::cout << "prog_phi min/max:\t" << progPhiMin << ", " << progPhiMax << std::endl;
 				}
@@ -634,7 +621,7 @@ public:
 				return false;
 		}
 
-		if (isMPIRoot())
+		if (shackParallelization->isMPIRoot)
 			if (shackIOData->verbosity > 0)
 				std::cout << std::endl;
 
@@ -649,7 +636,7 @@ public:
 	{
 		if (dataConfigOps.prog_phi_pert.spectral_is_first_nan_or_inf())
 		{
-			if (isMPIRoot())
+			if (shackParallelization->isMPIRoot)
 			{
 				std::cout << "Infinity value detected" << std::endl;
 				std::cerr << "Infinity value detected" << std::endl;
@@ -679,7 +666,7 @@ public:
 
 	void output_timings()
 	{
-		if (isMPIRoot())
+		if (shackParallelization->isMPIRoot)
 		{
 			std::cout << std::endl;
 			StopwatchBox::getInstance().output();
@@ -832,10 +819,10 @@ public:
 
 		o_replace_commas_with_newline = true;
 
-#if SWEET_MPI
-		ss << "Rank=" << mpi_rank;
-		ss << ",";
-#endif
+		if (shackParallelization->useMPI) {
+			ss << "Rank=" << shackParallelization->mpiRank;
+			ss << ",";
+		}
 
 		const char *fields_array[] = {
 				"phi_pert",
