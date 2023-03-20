@@ -91,7 +91,7 @@ for group, data in data_plotting.items():
 	plt.loglog(nProc, tBase/tComp, s+'-', label=group)
 	if i == 0:
 		plt.loglog(nProc, nProc, '--', c='gray')
-	plt.ylim(0, 1.2*max(tBase/tComp))
+	# plt.ylim(0, 1.2*max(tBase/tComp))
 
 	i += 1
 
