@@ -31,13 +31,6 @@ public:
 			sweet::SphereOperators *io_ops
 		) override;
 
-	bool setup(
-			sweet::SphereOperators *io_ops,
-			int i_order,	///< order of RK time stepping method for linear parts
-			int i_order2,	///< order of RK time stepping method for non-linear parts
-			int i_version_id
-	);
-
 public:
 	bool implementsTimesteppingMethod(const std::string &i_timestepping_method) override;
 	std::string getIDString() override;

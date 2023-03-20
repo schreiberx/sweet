@@ -19,6 +19,11 @@ bool PDESWESphereTS_ln_imex_sdc::setup_auto(
 
 	dt = shackTimestepControl->current_timestep_size;
 
+	// Check if default configuration was used
+	if (shackSDC->fileName == "") {
+		std::cout << "[SDC] no parameter file given, using default configuration from ShackSDC" << std::endl;
+	}
+	
 	// SDC main parameters
 	nNodes = shackSDC->nodes.size();
 	std::cout << "[SDC] Setting up ln_imex_sdc with " << nNodes << " nodes" << std::endl;

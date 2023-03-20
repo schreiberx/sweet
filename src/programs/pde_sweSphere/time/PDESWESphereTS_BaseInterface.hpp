@@ -14,6 +14,7 @@
 #include <sweet/core/shacksShared/ShackTimestepControl.hpp>
 #include <sweet/core/shacksShared/ShackSphereDataOps.hpp>
 #include <sweet/core/shacksShared/ShackIOData.hpp>
+#include <sweet/core/shacksShared/ShackParallelization.hpp>
 #include <sweet/core/time/ShackTimesteppingSemiLagrangianSphereData.hpp>
 #include <sweet/expIntegration/ShackExpIntegration.hpp>
 #include "ShackPDESWESphereTimeDiscretization.hpp"
@@ -42,6 +43,7 @@ public:
 	sweet::ShackIOData *shackIOData;
 	sweet::ShackExpIntegration *shackExpIntegration;
 	sweet::ShackTimesteppingSemiLagrangianSphereData *shackTimesteppingSemiLagrangianSphereData;
+	sweet::ShackParallelization *shackParallelization;
 
 	ShackPDESWESphereTimeDiscretization *shackPDESWETimeDisc;
 	ShackPDESWESphereBenchmarks *shackPDESWEBenchmark;
@@ -61,6 +63,7 @@ public:
 		shackSphereDataOps(nullptr),
 		shackIOData(nullptr),
 		shackExpIntegration(nullptr),
+		shackParallelization(nullptr),
 		shackPDESWETimeDisc(nullptr),
 		shackPDESWEBenchmark(nullptr),
 		shackPDESWESphere(nullptr),
@@ -99,6 +102,7 @@ public:
 		shackIOData = io_shackDict->getAutoRegistration<sweet::ShackIOData>();
 		shackExpIntegration = io_shackDict->getAutoRegistration<sweet::ShackExpIntegration>();
 		shackTimesteppingSemiLagrangianSphereData = io_shackDict->getAutoRegistration<sweet::ShackTimesteppingSemiLagrangianSphereData>();
+		shackParallelization = io_shackDict->getAutoRegistration<sweet::ShackParallelization>();
 
 		shackPDESWETimeDisc = io_shackDict->getAutoRegistration<ShackPDESWESphereTimeDiscretization>();
 		shackPDESWEBenchmark = io_shackDict->getAutoRegistration<ShackPDESWESphereBenchmarks>();

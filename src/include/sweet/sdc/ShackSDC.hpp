@@ -59,7 +59,6 @@ public:
 	std::string idString;
 
 	
-
 	// Default parameters for SDC shack
 	ShackSDC(){
 		int nNodes = 3;
@@ -120,7 +119,6 @@ public:
 
 	}
 
-
 	void printProgramArguments(const std::string& i_prefix = "")
 	{
 		std::cout << std::endl;
@@ -148,9 +146,6 @@ public:
 			params.get("initialSweepType", initialSweepType);
 			params.get("useEndUpdate", useEndUpdate);
 			params.get("idString", idString);
-		
-		} else {
-			std::cout << "[SDC] no parameter file given, using default configuration" << std::endl;
 		}
 
 		return error.forwardWithPositiveReturn(i_pa.error);
