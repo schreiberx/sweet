@@ -170,6 +170,16 @@ public:
 	int mpi_rank;
 #endif
 
+	bool isMPIRoot()
+	{
+	#if SWEET_MPI
+		return mpi_rank == 0;
+	#else
+		return true;
+	#endif
+	}
+
+
 	int timestep_nr_last_output_simtime = -1;
 
 	PDESWESphere_Diagnostics diagnostics;
@@ -388,9 +398,9 @@ public:
 			return false;
 
 		std::cout << "Printing shack information:" << std::endl;
-#if SWEET_MPI
-		if (mpi_rank == 0)
-#endif
+
+
+		if (isMPIRoot())
 		{
 			shackProgArgDict.printShackData();
 		}
@@ -502,9 +512,7 @@ public:
 		{
 			update_diagnostics();
 
-#if SWEET_MPI
-			if (mpi_rank == 0)
-#endif
+			if (isMPIRoot())
 			{
 				// Print header
 				if (shackTimestepControl->current_timestep_nr == 0)
@@ -554,9 +562,7 @@ public:
 			sweet::SphereData_Spectral diff_vrt = dataConfigOps.prog_vrt - anal_solution_vrt;
 			sweet::SphereData_Spectral diff_div = dataConfigOps.prog_div - anal_solution_div;
 
-#if SWEET_MPI
-			if (mpi_rank == 0)
-#endif
+			if (isMPIRoot())
 			{
 				double error_phi = diff_phi.toPhys().physical_reduce_max_abs();
 				double error_vrt = diff_vrt.toPhys().physical_reduce_max_abs();
@@ -582,13 +588,13 @@ public:
 
 		if (shackIOData->verbosity > 0)
 		{
-#if SWEET_MPI
-			if (mpi_rank == 0)
-#endif
+			if (isMPIRoot())
+			{
 				double progPhiMin = dataConfigOps.prog_phi_pert.toPhys().physical_reduce_min();
 				double progPhiMax = dataConfigOps.prog_phi_pert.toPhys().physical_reduce_max();
 
 				std::cout << "prog_phi min/max:\t" << progPhiMin << ", " << progPhiMax << std::endl;
+			}
 		}
 
 		if (shackIOData->output_each_sim_seconds > 0)
@@ -601,10 +607,8 @@ public:
 public:
 	bool timestepHandleOutput()
 	{
-#if SWEET_MPI
-		if (mpi_rank > 0)
+		if (!isMPIRoot())
 			return false;
-#endif
 
 		if (shackIOData->output_each_sim_seconds < 0)
 			return false;
@@ -661,24 +665,22 @@ public:
 
 	void output_timings()
 	{
-		#if SWEET_MPI
-	if (mpi_rank == 0)
-#endif
-	{
-		std::cout << std::endl;
-		StopwatchBox::getInstance().output();
+		if (isMPIRoot())
+		{
+			std::cout << std::endl;
+			StopwatchBox::getInstance().output();
 
-		std::cout << "***************************************************" << std::endl;
-		std::cout << "* Other timing information (direct)" << std::endl;
-		std::cout << "***************************************************" << std::endl;
-		std::cout << "[MULE] shackTimestepControl->current_timestep_nr: " << shackTimestepControl->current_timestep_nr << std::endl;
-		std::cout << "[MULE] shackTimestepControl->current_timestep_size: " << shackTimestepControl->current_timestep_size << std::endl;
-		std::cout << std::endl;
-		std::cout << "***************************************************" << std::endl;
-		std::cout << "* Other timing information (derived)" << std::endl;
-		std::cout << "***************************************************" << std::endl;
-		std::cout << "[MULE] simulation_benchmark_timings.time_per_time_step (secs/ts): " << StopwatchBox::getInstance().main_timestepping()/(double)shackTimestepControl->current_timestep_nr << std::endl;
-	}
+			std::cout << "***************************************************" << std::endl;
+			std::cout << "* Other timing information (direct)" << std::endl;
+			std::cout << "***************************************************" << std::endl;
+			std::cout << "[MULE] shackTimestepControl->current_timestep_nr: " << shackTimestepControl->current_timestep_nr << std::endl;
+			std::cout << "[MULE] shackTimestepControl->current_timestep_size: " << shackTimestepControl->current_timestep_size << std::endl;
+			std::cout << std::endl;
+			std::cout << "***************************************************" << std::endl;
+			std::cout << "* Other timing information (derived)" << std::endl;
+			std::cout << "***************************************************" << std::endl;
+			std::cout << "[MULE] simulation_benchmark_timings.time_per_time_step (secs/ts): " << StopwatchBox::getInstance().main_timestepping()/(double)shackTimestepControl->current_timestep_nr << std::endl;
+		}
 	}
 
 
