@@ -53,7 +53,9 @@ public:
 
     virtual void printProgramArguments(const std::string &i_prefix = "") {}
 
-    virtual bool processProgramArguments(ProgramArguments &i_pa) {}
+    virtual bool processProgramArguments(ProgramArguments &i_pa) {
+        return true;
+    }
 
     virtual void printShack(
         const std::string& i_prefix = ""
