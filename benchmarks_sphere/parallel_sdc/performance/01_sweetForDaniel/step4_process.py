@@ -6,6 +6,8 @@ from mule.postprocessing.JobsData import *
 from mule.postprocessing.JobsDataConsolidate import *
 from mule.plotting.Plotting import *
 
+mule_plotting_usetex(False)
+
 plt.rc('font', size=12)
 plt.rcParams['lines.linewidth'] = 2
 plt.rcParams['axes.titlesize'] = 18
@@ -89,7 +91,7 @@ for group, data in data_plotting.items():
 	plt.plot(nProc, tBase/tComp, s+'-', label=group)
 	if i == 0:
 		plt.plot(nProc, nProc, '--', c='gray')
-	plt.ylim(0, 10)
+	plt.ylim(0, 1.2*max(tBase/tComp))
 
 	i += 1
 
