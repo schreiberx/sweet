@@ -71,7 +71,6 @@ public:
 
 		sweet::SphereData_Physical vrtg = i_vort.toPhys();
 
-		using namespace sweet;
 		sweet::SphereData_Physical tmpg1 = ug*(vrtg+fg);
 		sweet::SphereData_Physical tmpg2 = vg*(vrtg+fg);
 
