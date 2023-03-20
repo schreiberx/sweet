@@ -562,12 +562,8 @@ public:
 				double error_vrt = diff_vrt.toPhys().physical_reduce_max_abs();
 				double error_div = diff_div.toPhys().physical_reduce_max_abs();
 
-				
-				// std::ios init(NULL);
-				// init.copyfmt(std::cout);
 				int nTimeSteps = shackTimestepControl->current_timestep_nr;
-				std::cout << "[MULE] errors." << std::setw(8) << std::setfill('0') << nTimeSteps << ": " << std::flush;
-				// std::cout.copyfmt(init);
+				std::cout << "[MULE] errors." << std::setw(8) << std::setfill('0') << nTimeSteps << ": ";
 
 				std::cout << "simtime=" << shackTimestepControl->current_simulation_time;
 				std::cout << "\terror_linf_phi=" << error_phi;
@@ -589,7 +585,10 @@ public:
 #if SWEET_MPI
 			if (mpi_rank == 0)
 #endif
-				std::cout << "prog_phi min/max:\t" << dataConfigOps.prog_phi_pert.toPhys().physical_reduce_min() << ", " << dataConfigOps.prog_phi_pert.toPhys().physical_reduce_max() << std::endl;
+				double progPhiMin = dataConfigOps.prog_phi_pert.toPhys().physical_reduce_min();
+				double progPhiMax = dataConfigOps.prog_phi_pert.toPhys().physical_reduce_max();
+
+				std::cout << "prog_phi min/max:\t" << progPhiMin << ", " << progPhiMax << std::endl;
 		}
 
 		if (shackIOData->output_each_sim_seconds > 0)
