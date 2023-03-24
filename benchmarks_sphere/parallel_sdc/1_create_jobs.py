@@ -24,7 +24,6 @@ p.runtime.paramsSDC = getSDCSetup(
 
 p.compile.mode = 'release'
 p.compile.gui = 'enable'
-# p.runtime.gui = 1
 p.compile.mode = 'debug'
 
 #

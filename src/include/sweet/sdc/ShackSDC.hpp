@@ -49,17 +49,22 @@ public:
 	// Wether or not use the diagonal implementation
 	sweet::Dict::int64 diagonal;
 
+	// Wether or not activate time parallelization
+	int parallel;
+
 	// Wether or not use collocation update for end point
 	sweet::Dict::int64 useEndUpdate;
 
 	// Unique string ID
 	std::string idString;
 
+	
 	// Default parameters for SDC shack
 	ShackSDC(){
 		int nNodes = 3;
 		nIter = 3;
 		diagonal = false;
+		parallel = false;
 		initialSweepType = "COPY";
 		useEndUpdate = false;
 		idString = "M3_RADAU-RIGHT_K3_BE_FE_COPY";
@@ -114,17 +119,19 @@ public:
 
 	}
 
-
 	void printProgramArguments(const std::string& i_prefix = "")
 	{
 		std::cout << std::endl;
 		std::cout << "SDC option:" << std::endl;
-		std::cout << "	--sdc-file [path]   SDC parameters in Dict format" << std::endl;
+		std::cout << "	--sdc-file 	   [path]  SDC parameters in Dict format" << std::endl;
+		std::cout << "	--sdc-parallel [bool]  wether or not activate time parallelization" << std::endl;
 		std::cout << std::endl;
 	}
 
 	bool processProgramArguments(sweet::ProgramArguments &i_pa)
 	{
+		i_pa.getArgumentValueByKey("--sdc-parallel", parallel);
+
 		if (i_pa.getArgumentValueByKey("--sdc-file", fileName))
 		{
 			sweet::Dict params(fileName);
@@ -139,9 +146,6 @@ public:
 			params.get("initialSweepType", initialSweepType);
 			params.get("useEndUpdate", useEndUpdate);
 			params.get("idString", idString);
-		
-		} else {
-			std::cout << "[SDC] no parameter file given, using default configuration" << std::endl;
 		}
 
 		return error.forwardWithPositiveReturn(i_pa.error);
@@ -162,6 +166,7 @@ public:
 		std::cout << " + qDelta0: " << qDelta0 << std::endl;
 		std::cout << " + nIter: " << nIter << std::endl;
 		std::cout << " + diagonal: " << diagonal << std::endl;
+		std::cout << " + parallel: " << parallel << std::endl;
 		std::cout << " + initialSweepType: " << initialSweepType << std::endl;
 		std::cout << " + useEndUpdate: " << useEndUpdate << std::endl;
 		std::cout << std::endl;

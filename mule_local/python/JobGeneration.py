@@ -210,7 +210,7 @@ source ./local_software/env_vars.sh \""""+self.platforms.platform_id+"""\" || ex
         for i in override_list:
             if 'MULE_'+i in os.environ:
                 #print("INFO: Overriding environment variable "+i+"="+os.environ['MULE_'+i])
-                content += "export "+i+"="+os.environ['MULE_'+i]+"\n"
+                content += f"export {i}={os.environ['MULE_'+i]}\n"
 
         # Compile in main Job directory if requested
         c = self.platform_functions.jobscript_get_compile_command(self)

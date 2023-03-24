@@ -1,16 +1,15 @@
 import os
 import subprocess
-import re
-import sys
+import multiprocessing
 
-from mule import utils
 from mule.JobCompileOptions import *
 
 #
 # Setup parallel compilation
 #
-import multiprocessing
-num_cpu = multiprocessing.cpu_count()
+num_cpu = int(os.environ.get('MULE_COMPILE_NUM_JOB_LIMITATION', -1))
+if num_cpu == -1:
+    num_cpu = multiprocessing.cpu_count()
 SetOption('num_jobs', num_cpu)
 
 
@@ -535,6 +534,14 @@ if jg.rexi_thread_parallel_sum == 'enable':
     env.Append(CXXFLAGS=['-DSWEET_THREADING_TIME_REXI=1'])
 else:
     env.Append(CXXFLAGS=['-DSWEET_THREADING_TIME_REXI=0'])
+
+if jg.parallel_sdc_par_model == 'omp':
+    # Same for gcc/icpc
+    env.Append(LINKFLAGS=['-fopenmp'])
+    env.Append(CXXFLAGS=['-fopenmp'])
+
+    # Activate precompiler flag
+    env.Append(CXXFLAGS=['-DSWEET_PARALLEL_SDC_OMP_MODEL=1'])
 
 
 if jg.benchmark_timings == 'enable':

@@ -90,22 +90,22 @@ class JobParallelization(InfoError):
         self.num_cores_per_rank : int = None 
 
         # Number of threads per rank
-        self.num_threads_per_rank = None
+        self.num_threads_per_rank : int = None
 
         # Number of ranks per node
-        self.num_ranks_per_node = None
+        self.num_ranks_per_node : int = None
 
         # Number of cores per node
         self.num_cores_per_node : int = None 
 
         # Number of total ranks
-        self.num_ranks = None
+        self.num_ranks : int = None
 
         # Number of total nodes
-        self.num_nodes = None
+        self.num_nodes : int = None
 
         # Number of total cores
-        self.num_cores = None
+        self.num_cores : int = None
 
 
         # List with parallelization information in each dimension
@@ -304,7 +304,19 @@ class JobParallelization(InfoError):
         #
 
         # Number of total (e.g. OpenMP) threads per rank (There are no restrictions for logical threading)
-        self.num_threads_per_rank = _prod(i.num_threads_per_rank for i in self.pardims)
+        # self.num_threads_per_rank = _prod(i.num_threads_per_rank for i in self.pardims)
+        # -- change for nested OpenMP parallelism
+        lThreads = [i.num_threads_per_rank for i in self.pardims]
+        if len(lThreads) == 1:
+            self.num_threads_per_rank = lThreads[0]
+        elif len(lThreads) == 2:
+            if lThreads[0] == 1:
+                self.num_threads_per_rank = lThreads[1]
+            else:
+                self.num_threads_per_rank = ','.join([str(n) for n in lThreads])
+        else:
+            raise NotImplementedError('more than 2 level of openmp parallelism') 
+            
 
 
 

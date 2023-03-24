@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-import os, sys
+import os
 
 from mule.JobCompileOptions import *
 from mule.InfoError import *
@@ -28,6 +28,8 @@ class JobRuntimeOptions(InfoError):
 
         self.space_res_spectral = None
         self.space_res_physical = None
+        self.sh_setup_num_threads = None
+        self.sh_setup_verbosity = None
 
 
         self.verbosity = 0
@@ -68,7 +70,8 @@ class JobRuntimeOptions(InfoError):
 
 
         # SDC parameters
-        self.paramsSDC: SWEETFileDict = None 
+        self.paramsSDC: SWEETFileDict = None
+        self.sdcParallel: int = None
 
 
         self.gravitation= None
@@ -276,130 +279,99 @@ class JobRuntimeOptions(InfoError):
 
         self.cleanup_options()
 
-        if self.gui != None:
-            retRuntimeOptionsStr += ' -G '+str(self.gui)
+        def addOption(name, value, option):
 
-        if self.gravitation!= None:
-            retRuntimeOptionsStr += ' --pde-gravitation='+str(self.gravitation)
+            if isinstance(option, list):
+                # One attribute for multiple options
+                exec = ''
+                if hasattr(value, '__iter__'):
+                    # Multiple values for multiple options
+                    for opt, val in zip(option, value):
+                        exec += f' {opt}{val}'
+                else:
+                    # One same value for multiple options
+                    for opt in option:
+                        exec += f' {opt}{value}'
+                return exec
+
+            if isinstance(value, SWEETFileDict):
+                # Attribute is a SWEETFileDict
+                filePath = os.path.join(self.p_job_dirpath, f'{name}.sweet')
+                value.writeToFile(filePath)
+                exec = f' {option}{filePath}'
+                return exec
+
+            # Default case
+            if isinstance(value, (list, tuple)):
+                value = ",".join([str(x) for x in value])
+            exec = f' {option}{value}'
+
+            return exec        
+
+        optionList = {
+            # Program options
+            'verbosity': '-v ',
+            'gui': '-G ',
+            'floating_point_output_digits': '-d ',
+            'comma_separated_tags': '--comma-separated-tags=',
             
-        if self.h0 != None:
-            retRuntimeOptionsStr += ' --pde-h0='+str(self.h0)
+            # Space discretization
+            'space_res_spectral': '-M ',
+            'space_res_physical': '-N ',
+            'space_grid_use_c_staggering': '--space-grid-use-c-staggering=',
+            'space_use_spectral_basis_diffs': '-S ',
+            'plane_domain_size': ['-X ', '-Y '],
+            'sh_setup_num_threads': '--sh-setup-num-threads=',
+            'sh_setup_verbosity': '--sh-setup-verbosity=',
+
+            # Benchmark options
+            'benchmark_name': '--benchmark-name=',
+            'benchmark_normal_modes_case': '--benchmark-normal-modes-case=',
+            'benchmark_galewsky_geostropic_setup': '--benchmark-galewsky-geostropic-setup=',
+            'benchmark_advection_rotation_angle': '--benchmark-advection-rotation-angle=',
+            'benchmark_advection_velocity': '--benchmark-advection-velocity=',
             
-        if self.sphere_rotating_coriolis_omega != None:
-            retRuntimeOptionsStr += ' -f '+str(self.sphere_rotating_coriolis_omega)
+            # Time-stepping options
+            'timestep_size': '--dt=',
+            'max_timesteps_nr': '-T ',
+            'max_simulation_time': '-t ',
+            'max_wallclock_time': '--max-wallclock-time ',
+            'instability_checks': '--instability-checks=',
+
+            # PDE options
+            'viscosity': '--pde-viscosity=',
+            'viscosity_order': '--pde-viscosity-order=',
+            'use_nonlinear_only_visc': '--use-nonlinear-only-visc=',
+            'gravitation': '--pde-gravitation=',
+            'h0': '--pde-h0=',
+            'sphere_rotating_coriolis_omega': '-f ',
+            'sphere_radius': '-a ',
+            'f_sphere': '-F ',
+
+            # Time discretization
+            'timestepping_method': '--timestepping-method=',
+            'timestepping_order': '--timestepping-order=',
+            'timestepping_order2': '--timestepping-order2=',
+            'semi_lagrangian_max_iterations': '--semi-lagrangian-max-iterations=',
+            'semi_lagrangian_convergence_threshold': '--semi-lagrangian-convergence-threshold=',
+            'paramsSDC': '--sdc-file=',
+            'sdcParallel': '--sdc-parallel=',
             
-        if self.sphere_radius != None:
-            retRuntimeOptionsStr += ' -a '+str(self.sphere_radius)
-            
-        if self.f_sphere != None:
-            retRuntimeOptionsStr += ' -F '+str(self.f_sphere)
+            # Analysis
+            'normal_mode_analysis': '--normal-mode-analysis-generation=',
+            'compute_errors': '--compute-errors=',
+            'reuse_plans': '--reuse-plans=',
+        }
 
-        if self.space_res_spectral != None:
-            if isinstance(self.space_res_spectral, (list, tuple)):
-                retRuntimeOptionsStr += ' -M '+str(",".join([str(x) for x in self.space_res_spectral]))
-            else:
-                retRuntimeOptionsStr += ' -M '+str(self.space_res_spectral)
-
-        if self.space_res_physical != None:
-            if isinstance(self.space_res_physical, (list, tuple)):
-                retRuntimeOptionsStr += ' -N '+str(",".join([str(x) for x in self.space_res_physical]))
-            else:
-                retRuntimeOptionsStr += ' -N '+str(self.space_res_physical)
-
-        if self.space_grid_use_c_staggering != None:
-            retRuntimeOptionsStr += ' --space-grid-use-c-staggering='+str(self.space_grid_use_c_staggering)
-
-        if self.space_use_spectral_basis_diffs != None:
-            retRuntimeOptionsStr += ' -S '+str(self.space_use_spectral_basis_diffs)
-
-        if self.plane_domain_size != None:
-            if isinstance(self.plane_domain_size, (int, float)):
-                retRuntimeOptionsStr += ' -X '+str(self.plane_domain_size)
-                retRuntimeOptionsStr += ' -Y '+str(self.plane_domain_size)
-            else:
-                retRuntimeOptionsStr += ' -X '+str(self.plane_domain_size[0])
-                retRuntimeOptionsStr += ' -Y '+str(self.plane_domain_size[1])
-
-        if self.benchmark_name != None:
-            retRuntimeOptionsStr += ' --benchmark-name='+str(self.benchmark_name)
-
-        if self.benchmark_normal_modes_case != None:
-            retRuntimeOptionsStr += ' --benchmark-normal-modes-case='+str(self.benchmark_normal_modes_case)
-
-        retRuntimeOptionsStr += ' -v '+str(self.verbosity)
-
-        if self.timestep_size != None:
-            retRuntimeOptionsStr += ' --dt='+str(self.timestep_size)
-
-        if self.max_timesteps_nr != -1:
-            retRuntimeOptionsStr += ' -T '+str(self.max_timesteps_nr)
-
-        if self.viscosity != None:
-            retRuntimeOptionsStr += ' --pde-viscosity='+str(self.viscosity)
-
-        if self.viscosity_order != None:
-            retRuntimeOptionsStr += ' --pde-viscosity-order='+str(self.viscosity_order)
-
-        retRuntimeOptionsStr += ' -t '+str(self.max_simulation_time)
-
-        retRuntimeOptionsStr += ' --max-wallclock-time '+str(self.max_wallclock_time)
-
-        if self.instability_checks != None:
-            retRuntimeOptionsStr += ' --instability-checks='+str(self.instability_checks)
-
-        if self.floating_point_output_digits >= 0:
-            retRuntimeOptionsStr += ' -d '+str(self.floating_point_output_digits)
-
-        if self.benchmark_galewsky_geostropic_setup != None:
-            retRuntimeOptionsStr += ' --benchmark-galewsky-geostropic-setup='+str(self.benchmark_galewsky_geostropic_setup)
-
-        if self.use_nonlinear_only_visc != None:
-            retRuntimeOptionsStr += ' --use-nonlinear-only-visc='+str(self.use_nonlinear_only_visc)
-
-        if self.benchmark_advection_rotation_angle != None:
-            retRuntimeOptionsStr += ' --benchmark-advection-rotation-angle='+str(self.benchmark_advection_rotation_angle)
-
-        if self.benchmark_advection_velocity != None:
-            retRuntimeOptionsStr += ' --benchmark-advection-velocity='+str(self.benchmark_advection_velocity)
-
-        if self.timestepping_method != None:
-            retRuntimeOptionsStr += ' --timestepping-method='+self.timestepping_method
-            retRuntimeOptionsStr += ' --timestepping-order='+str(self.timestepping_order)
-            retRuntimeOptionsStr += ' --timestepping-order2='+str(self.timestepping_order2)
-
-
-        if self.semi_lagrangian_max_iterations != None:
-            retRuntimeOptionsStr += ' --semi-lagrangian-max-iterations='+str(self.semi_lagrangian_max_iterations)
-
-        if self.semi_lagrangian_convergence_threshold != None:
-            retRuntimeOptionsStr += ' --semi-lagrangian-convergence-threshold='+str(self.semi_lagrangian_convergence_threshold)
-
-        if self.normal_mode_analysis != None:
-            retRuntimeOptionsStr += ' --normal-mode-analysis-generation='+str(self.normal_mode_analysis)
-
-
+        for name, option in optionList.items():
+            value = self.__getattribute__(name)
+            if value is not None:
+                retRuntimeOptionsStr += addOption(name, value, option)
 
         for _ in self.shacksRuntime:
             retRuntimeOptionsStr += _.getRuntimeOptions(self)
 
-
-        # SDC parameters
-        if self.paramsSDC is not None:
-            # Write SWEETFileDict file in job folder
-            filePath = os.path.join(self.p_job_dirpath, 'params_SDC.sweet')
-            self.paramsSDC.writeToFile(filePath)
-            retRuntimeOptionsStr += f' --sdc-file={filePath}'
-
-        if self.compute_errors != None:
-            retRuntimeOptionsStr += ' --compute-errors='+str(self.compute_errors)
-
-        if self.reuse_plans != None:
-            retRuntimeOptionsStr += ' --reuse-plans='+str(self.reuse_plans)
-
-        if self.comma_separated_tags != None:
-            retRuntimeOptionsStr += ' --comma-separated-tags='+str(self.comma_separated_tags)
-
-        for key, param in self.user_defined_parameters.items():
+        for param in self.user_defined_parameters.values():
             retRuntimeOptionsStr += ' '+param['option']+str(param['value'])
 
         return retRuntimeOptionsStr

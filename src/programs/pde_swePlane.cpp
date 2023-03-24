@@ -13,6 +13,22 @@
 #include "pde_swePlane/ProgramPDESWEPlane.hpp"
 
 
+
+#if SWEET_MPI
+int mpi_rank;
+#endif
+
+bool isMPIRoot()
+{
+#if SWEET_MPI
+	return mpi_rank == 0;
+#else
+	return true;
+#endif
+}
+
+
+
 #if 0
 
 
@@ -85,12 +101,11 @@ int main(int i_argc, char *i_argv[])
 
 
 #if SWEET_MPI
-	int mpi_rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 
 	#if (SWEET_PARAREAL != 2) && (!SWEET_XBRAID)
 	// only start simulation and time stepping for first rank
-	if (mpi_rank == 0)
+	if (isMPIRoot())
 	#endif
 #endif
 	{
@@ -283,7 +298,6 @@ int main_mpi(int i_argc, char *i_argv[])
 	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
 
 #if SWEET_MPI
-	int mpi_rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 #endif
 
@@ -328,27 +342,22 @@ int main_mpi(int i_argc, char *i_argv[])
 		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
 	}
 
-	if (simulation.shackIOData->output_file_name.size() > 0)
-		std::cout << "[MULE] reference_filenames: " << simulation.output_filenames << std::endl;
-
-	// End of run output results
-	std::cout << "***************************************************" << std::endl;
-	std::cout << "Number of time steps: " << simulation.shackTimestepControl->current_timestep_nr << std::endl;
-	std::cout << "Time per time step: " << StopwatchBox::getInstance().main_timestepping()/(double)simulation.shackTimestepControl->current_timestep_nr << " sec/ts" << std::endl;
-	std::cout << "Last time step size: " << simulation.shackTimestepControl->current_timestep_size << std::endl;
-
-
-#if SWEET_MPI
-	if (mpi_rank == 0)
-#endif
+	if (isMPIRoot())
 	{
+		if (simulation.shackIOData->output_file_name.size() > 0)
+			std::cout << "[MULE] reference_filenames: " << simulation.output_filenames << std::endl;
+
+		// End of run output results
+		std::cout << "***************************************************" << std::endl;
+		std::cout << "Number of time steps: " << simulation.shackTimestepControl->current_timestep_nr << std::endl;
+		std::cout << "Time per time step: " << StopwatchBox::getInstance().main_timestepping()/(double)simulation.shackTimestepControl->current_timestep_nr << " sec/ts" << std::endl;
+		std::cout << "Last time step size: " << simulation.shackTimestepControl->current_timestep_size << std::endl;
 
 		simulation.computeErrors();
-
 		simulation.printErrors();
-	}
 
-	std::cout << "[MULE] simulation_successfully_finished: 1" << std::endl;
+		std::cout << "[MULE] simulation_successfully_finished: 1" << std::endl;
+	}
 
 	StopwatchBox::getInstance().main.stop();
 
@@ -360,7 +369,10 @@ int main_mpi(int i_argc, char *i_argv[])
 		StopwatchBox::getInstance().output();
 	}
 
-	std::cout << "FIN" << std::endl;
+	if (isMPIRoot())
+	{
+		std::cout << "FIN" << std::endl;
+	}
 	return 0;
 }
 

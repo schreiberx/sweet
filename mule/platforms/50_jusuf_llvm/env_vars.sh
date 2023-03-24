@@ -1,11 +1,13 @@
+module load Clang
+module load CMake
+
+export MULE_COMPILE_NUM_JOB_LIMITATION=20
 
 #
 # Automatically detect the most recent clang++ version
 #
 # Start at version 30 and search downwards
 #
-
-
 type "clang++" 2> /dev/null 1>&2
 if [[ "$?" == "0" ]]; then
 	CLANG_POSTFIX=""

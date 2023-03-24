@@ -31,13 +31,6 @@ public:
 			sweet::SphereOperators *io_ops
 		) override;
 
-	bool setup(
-			sweet::SphereOperators *io_ops,
-			int i_order,	///< order of RK time stepping method for linear parts
-			int i_order2,	///< order of RK time stepping method for non-linear parts
-			int i_version_id
-	);
-
 public:
 	bool implementsTimesteppingMethod(const std::string &i_timestepping_method) override;
 	std::string getIDString() override;
@@ -98,6 +91,9 @@ private:
 	Mat qMatDeltaI;
 	Mat qMatDeltaE;
 	Mat qMatDelta0;
+
+	// Wether or not activate parallel computation for diagonal sweeps
+	bool parallel=false;
 
 	/*
 	 * Variables used as temporary storage locations during the time step
