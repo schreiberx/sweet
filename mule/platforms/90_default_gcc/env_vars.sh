@@ -8,11 +8,11 @@
 #
 
 if [ "`uname`" == "Darwin" ]; then
-        # Setup environment for default compiler (installed via `brew install gcc@11`)
+        # Setup environment for default compiler (installed via `brew install gcc@12`)
         export PYTHON=python3
-        export CC=gcc-11
-        export CXX=g++-11
-        export F90=gfortran-11
+        export CC=gcc-12
+        export CXX=g++-12
+        export F90=gfortran-12
 else
 	test -z "$F90" && export F90=gfortran
 	test -z "$CC" && export CC=gcc

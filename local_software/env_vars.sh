@@ -19,7 +19,7 @@ MULE_BACKDIR="$PWD"
 function activate_miniconda_environment()
 {
 	if [[ ! -e "$MULE_SOFTWARE_ROOT/local_software/local/python_venv_miniconda/bin/activate" ]]; then
-		echo "Miniconda not found, skipping activation"
+		#echo "Miniconda not found, skipping activation"
 		return 0
 	fi
 	source "$MULE_SOFTWARE_ROOT/local_software/local/python_venv_miniconda/bin/activate" 2>/dev/null
@@ -332,7 +332,13 @@ cd "$SCRIPTDIR" || return 1
 # Test if 'realpath' exists
 type realpath >/dev/null 2>&1
 if [[ $? -eq 0 ]]; then
-	SWEET_SHELL_PATH='$(realpath  --relative-base=$MULE_SOFTWARE_ROOT ./)'
+
+	if [[ "$OSTYPE" == "darwin"* ]]; then
+		# --relative-base option doens't exist on MacOS
+		SWEET_SHELL_PATH='$(realpath ./)'
+	else
+		SWEET_SHELL_PATH='$(realpath  --relative-base=$MULE_SOFTWARE_ROOT ./)'
+	fi
 	#export PS1='\[\033[01;32m\][SWEET \u@$MULE_PLATFORM_ID]\[\033[00m\] $($PS_RELPATH)\$ '
 	export PS1="\[\033[01;32m\][SWEET @ $MULE_PLATFORM_ID]\[\033[00m\] $SWEET_SHELL_PATH\$ "
 else

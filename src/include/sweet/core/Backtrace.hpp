@@ -12,7 +12,9 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <sys/prctl.h>
+#ifndef __APPLE__
+	#include <sys/prctl.h>
+#endif
 #include <errno.h>	// for errno()
 #include <string.h>	// for strerror()
 
@@ -35,12 +37,13 @@ public:
 	static
 	std::string getGDBBacktrace()
 	{
+#ifndef __APPLE__
 		/*
 		 * Get PID of current process we want to debug
 		 */
-	    char pid_buf[30];
-	    int pid = getpid();
-	    sprintf(pid_buf, "%d", pid);
+		char pid_buf[30];
+		int pid = getpid();
+		sprintf(pid_buf, "%d", pid);
 
 		/*
 		 * Get path to program executable (which we want to debug)
@@ -51,32 +54,32 @@ public:
 			SWEETError("Failed to read link");
 		program_exec_buf[len] = '\0';
 
-	    /*
-	     * Create unidirectional pipeline
-	     * pipefd[0]: read
-	     * pipefd[1]: write
-	     */
-	    int pipefd_cout[2];
-	    int result_pipe_cout = pipe(pipefd_cout);
-	    if (result_pipe_cout == -1)
-	    	SWEETError("Failed to create cout pipe");
+		/*
+		 * Create unidirectional pipeline
+		 * pipefd[0]: read
+		 * pipefd[1]: write
+		 */
+		int pipefd_cout[2];
+		int result_pipe_cout = pipe(pipefd_cout);
+		if (result_pipe_cout == -1)
+			SWEETError("Failed to create cout pipe");
 
-	    int pipefd_cerr[2];
-	    int result_pipe_cerr = pipe(pipefd_cerr);
-	    if (result_pipe_cerr == -1)
-	    	SWEETError("Failed to create cerr pipe");
+		int pipefd_cerr[2];
+		int result_pipe_cerr = pipe(pipefd_cerr);
+		if (result_pipe_cerr == -1)
+			SWEETError("Failed to create cerr pipe");
 
-	    /*
-	     * Allow ptrace for forked processes
-	     */
+		/*
+		 * Allow ptrace for forked processes
+		 */
 		prctl(PR_SET_PTRACER, PR_SET_PTRACER_ANY, 0, 0, 0);
 
-	    /*
-	     * Create fork
-	     */
+		/*
+		 * Create fork
+		 */
 		int child_pid = fork();
 		if (child_pid == -1)
-	    	SWEETError("Failed to create fork");
+	    		SWEETError("Failed to create fork");
 
 		std::string pipe_buffer;
 		if (child_pid == 0)
@@ -84,14 +87,14 @@ public:
 			/*
 			 * Redirect stdout and stderr to pipeline
 			 */
-		    dup2(pipefd_cout[1], STDOUT_FILENO);
-		    dup2(pipefd_cerr[1], STDERR_FILENO);
+			dup2(pipefd_cout[1], STDOUT_FILENO);
+			dup2(pipefd_cerr[1], STDERR_FILENO);
 
-		    /*
-		     * Close reading ends of pipe
-		     */
-		    close(pipefd_cout[0]);
-		    close(pipefd_cerr[0]);
+			/*
+			 * Close reading ends of pipe
+			 */
+			close(pipefd_cout[0]);
+			close(pipefd_cerr[0]);
 
 			/*
 			 * Run GDB (and wipe out this current process)
@@ -174,6 +177,10 @@ public:
 
 		waitpid(child_pid, nullptr, 0);
 		return pipe_buffer;
+#else
+		return "Not supported on Apple systems!";
+#endif
+
 	}
 
 
