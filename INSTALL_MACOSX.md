@@ -9,24 +9,38 @@ Follow the instructions including how to add homebrew to your PATH.
 
 # Homebrew packages
 
+
+## Default packages
+
 Install some required packages:
 ```
 $ brew install wget
 $ brew install cmake
-$ brew install gcc@11
+```
+
+## GCC
+
+We also want to install a new gcc compiler:
+```
+$ brew install gcc@12
+```
+
+After this, the default compiler ```gcc``` will still point to the llvm compiler (not the GNU compiler!), but the gcc compiler is available as gcc-12.
+
+## Alternative to miniconda
+
+Next, we get a replacement for miniconda
+```
 $ brew install python@3.9
 ```
 
-Start new terminal to load python environment
+Start new terminal to load python environment and then install the following python packages:
+
 ```
-$ brew install numpy scipy
+$ pip3 install matplotlib numpy scipy
 ```
 
-Matplotlib is not yet supported with 'homebrew', but with pip3.
-```
-$ pip3 install matplotlib
-```
-
+Again, start a new shell just to make sure that things are working right.
 
 # Cloning SWEET
 ```
@@ -52,5 +66,7 @@ $ source ./activate.sh
 ```
 
 
-Follow standard INSTALL instructions
+## Follow standard INSTALL instructions
+
+E.g., install fftw, shtns, etc.
 

@@ -39,7 +39,10 @@
  * Support allocator with NUMA granularity
  */
 #ifndef MEMBLOCKALLOC_ENABLE_NUMA_ALLOC
-	#define MEMBLOCKALLOC_ENABLE_NUMA_ALLOC 1
+	// No support for NUMA on MacOS
+	#ifndef __APPLE__
+		#define MEMBLOCKALLOC_ENABLE_NUMA_ALLOC 1
+	#endif
 #endif
 
 #if MEMBLOCKALLOC_ENABLE_NUMA_ALLOC
@@ -839,6 +842,7 @@ public:
 					{
 						::free(b);
 					}
+#if MEMBLOCKALLOC_ENABLE_NUMA_ALLOC
 					else if (mem_block_allocation_mode == MEMBLOCKALLOC_MODE__PERTHREAD)
 					{
 						numa_free(b, g.block_size);
@@ -847,6 +851,7 @@ public:
 					{
 						numa_free(b, g.block_size);
 					}
+#endif
 					else
 					{
 						fatal_error("Internal error (_shutdown)");
