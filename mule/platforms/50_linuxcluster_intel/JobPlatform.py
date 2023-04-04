@@ -106,7 +106,7 @@ def jobscript_get_header(jg : JobGeneration):
 # the above is a good match for the
 # CooLMUC2 architecture.
 #SBATCH --mail-type=ALL 
-#SBATCH --mail-user=$MULE_USER_EMAIL
+#SBATCH --mail-user="""+mule_user_email+"""
 #SBATCH --export=NONE 
 #SBATCH --time="""+time_str+"""
 """
