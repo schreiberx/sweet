@@ -6,7 +6,7 @@
 
 # Load more recent compiler
 module unload gcc
-module load gcc/8.4.0
+module load gcc/8.5.0
 
 #
 # Don't touch intel stuff, otherwise the mpicxx is not available
