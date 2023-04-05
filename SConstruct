@@ -443,7 +443,7 @@ else:
     env.Append(CXXFLAGS=['-DSWEET_FORTRAN=0'])
 
 
-if exec_command('uname -s') == "Darwin":
+if exec_command("uname -s").replace("\n", "") == "Darwin":
     env.Append(CXXFLAGS=['-DMEMBLOCKALLOC_ENABLE_NUMA_ALLOC=0'])
 else:
     env.Append(LIBS=['numa'])
