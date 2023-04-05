@@ -11,7 +11,7 @@ def autodetect():
     	True if current platform matches, otherwise False
     """
 
-    if platform.node()[:8] == 'cm2login':
+    if platform.node()[:8] == 'cm2loginXXXXXX': # TODO: Make this Dahu specific
     	return True
 
     return False
