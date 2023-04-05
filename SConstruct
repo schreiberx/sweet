@@ -14,8 +14,7 @@ SetOption('num_jobs', num_cpu)
 
 
 def exec_command(command):
-    process = subprocess.Popen(command.split(
-        ' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.Popen(command.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = process.communicate()
     # combine stdout and stderr
     out = out+err
@@ -24,7 +23,9 @@ def exec_command(command):
     return out
 
 
-env = Environment(ENV=os.environ)
+
+
+env = Environment(ENV = os.environ)
 
 if 'MULE_SOFTWARE_ROOT' not in os.environ:
     print("*"*80)
@@ -44,6 +45,7 @@ env['MULE_SOFTWARE_ROOT'] = os.environ['MULE_SOFTWARE_ROOT']
 jg = JobCompileOptions()
 
 
+
 ###################################################################
 # Determine compiler to use
 ###################################################################
@@ -59,8 +61,7 @@ else:
     print("MULE_CXX_COMPILER env not found, trying to autodetect compiler")
 
     if jg.sweet_mpi == 'enable':
-        raise Exception(
-            "Please specify MULE_CXX_COMPILER with MPI to ensure no compile problems")
+        raise Exception("Please specify MULE_CXX_COMPILER with MPI to ensure no compile problems")
 
     if 'CXX' in os.environ:
         cxx = os.environ['CXX']
@@ -77,8 +78,7 @@ else:
     print("MULE_F90_COMPILER env not found, trying to autodetect compiler")
 
     if jg.sweet_mpi == 'enable':
-        raise Exception(
-            "Please specify MULE_F90_COMPILER with MPI to ensure no compile problems")
+        raise Exception("Please specify MULE_F90_COMPILER with MPI to ensure no compile problems")
 
     if 'F90' in os.environ:
         f90 = os.environ['F90']
@@ -94,11 +94,13 @@ print(f"Using CXX compiler '{compiler_type_cxx}'")
 print(f"Using F90 compiler '{compiler_type_f90}'")
 
 
+
 ###################################################################
 # fix LD LIB PATH
 ###################################################################
 if 'LD_LIBRARY_PATH' in os.environ:
     env.Append(LIBPATH=os.environ['LD_LIBRARY_PATH'].split(':'))
+
 
 
 ###########################################
@@ -112,14 +114,14 @@ jg.sconsProcessCommandlineOptions()
 jg.postprocessOptions()
 
 
+
 if jg.libxml == 'enable':
     env.ParseConfig("xml2-config --cflags --libs")
 
 
-env.Append(CXXFLAGS=['-DSWEET_SIMD_ENABLE=' +
-           ('1' if jg.simd == 'enable' else '0')])
-env.Append(CXXFLAGS=['-DCONFIG_ENABLE_LIBXML=' +
-           ('1' if jg.libxml == 'enable' else '0')])
+env.Append(CXXFLAGS=['-DSWEET_SIMD_ENABLE='+('1' if jg.simd=='enable' else '0')])
+env.Append(CXXFLAGS=['-DCONFIG_ENABLE_LIBXML='+('1' if jg.libxml=='enable' else '0')])
+
 
 
 if jg.plane_spectral_space == 'enable':
@@ -128,10 +130,12 @@ else:
     env.Append(CXXFLAGS=['-DSWEET_USE_PLANE_SPECTRAL_SPACE=0'])
 
 
+
 if jg.plane_spectral_dealiasing == 'enable':
     env.Append(CXXFLAGS=['-DSWEET_USE_PLANE_SPECTRAL_DEALIASING=1'])
 else:
     env.Append(CXXFLAGS=['-DSWEET_USE_PLANE_SPECTRAL_DEALIASING=0'])
+
 
 
 if jg.sphere_spectral_space == 'enable':
@@ -144,8 +148,7 @@ if jg.sphere_spectral_dealiasing == 'enable':
     env.Append(CXXFLAGS=['-DSWEET_USE_SPHERE_SPECTRAL_DEALIASING=1'])
 else:
     if jg.sphere_spectral_space == 'enable':
-        raise Exception(
-            "No anti-aliasing on sphere as compile option supported, please simply use command line options to specify lower physical resolution!")
+        raise Exception("No anti-aliasing on sphere as compile option supported, please simply use command line options to specify lower physical resolution!")
 
     env.Append(CXXFLAGS=['-DSWEET_USE_SPHERE_SPECTRAL_DEALIASING=0'])
 
@@ -159,14 +162,14 @@ jg.sconsAddFlags(env)
 # Override compiler settings from environment variable if one of these variables is set
 #
 override_list = [
-    'CC', 'CCFLAGS',
-    'CXX', 'CXXFLAGS',
-    'F90', 'F90FLAGS',
-    'FC', 'FCFLAGS',
-    'LINK', 'LINKFLAGS',
-    'LIBS',
-    # 'LD'
-]
+        'CC', 'CCFLAGS',
+        'CXX', 'CXXFLAGS',
+        'F90', 'F90FLAGS',
+        'FC', 'FCFLAGS',
+        'LINK', 'LINKFLAGS',
+        'LIBS',
+        #'LD'
+        ]
 
 for i in override_list:
 
@@ -177,9 +180,9 @@ for i in override_list:
                 print("INFO: Appending to "+i+"+= "+env['ENV'][mi])
                 env.Append(**{i: [env['ENV'][mi]]})
             else:
-                print("INFO: Using MULE_MPI* environment variable to set " +
-                      i+"="+env['ENV'][mi])
+                print("INFO: Using MULE_MPI* environment variable to set "+i+"="+env['ENV'][mi])
                 env[i] = env['ENV'][mi]
+
 
     else:
         if i in env['ENV']:
@@ -188,9 +191,9 @@ for i in override_list:
                 env.Append(**{i: [env['ENV'][i]]})
 
             else:
-                print("INFO: Overriding environment variable " +
-                      i+"="+env['ENV'][i])
+                print("INFO: Overriding environment variable "+i+"="+env['ENV'][i])
                 env[i] = env['ENV'][i]
+
 
 
 #
@@ -214,6 +217,7 @@ else:
     env.Append(CXXFLAGS=['-DSWEET_LIBPFASST=0'])
 
 
+
 env.Append(LIBS=['m'])
 
 
@@ -224,6 +228,7 @@ if compiler_type_cxx == 'gcc':
 
     # c++0x flag
     env.Append(CXXFLAGS=['-std=c++0x'])
+
 
     if jg.sweet_mpi == 'enable':
         # GNU compiler needs special treatment!
@@ -242,7 +247,7 @@ if compiler_type_cxx == 'gcc':
 
 
 elif compiler_type_cxx == 'intel':
-    reqversion = [12, 1]
+    reqversion = [12,1]
     iccversion_line = exec_command('icpc -dumpversion -w').splitlines()[0]
 
     if iccversion_line != 'Mainline':
@@ -274,11 +279,10 @@ elif compiler_type_cxx == 'intel':
 
 
 elif compiler_type_cxx == 'llvm':
-    reqversion = [9, 0]
+    reqversion = [9,0]
     if jg.threading == 'omp':
-        reqversion = [9, 0]
-    version_line = exec_command(
-        f"{os.environ['CXX']} --version").splitlines()[0]
+        reqversion = [9,0]
+    version_line = exec_command(f"{os.environ['CXX']} --version").splitlines()[0]
 
     verpos = version_line.find(" version ")
     if verpos == -1:
@@ -313,6 +317,7 @@ else:
     raise Exception("Unsupported compiler")
 
 
+
 """
 Different modes
 """
@@ -326,18 +331,19 @@ if jg.mode in ['debug', 'debug_thread', 'debug_leak']:
         # integer overflow check
         env.Append(CXXFLAGS=['-ftrapv'])
 
-        # env.Append(CXXFLAGS=['-fsanitize=address', '-fsanitize=undefined', '-fno-sanitize-recover=all', '-fsanitize=float-divide-by-zero', '-fsanitize=float-cast-overflow', '-fno-sanitize=null', '-fno-sanitize=alignment'])
+        #env.Append(CXXFLAGS=['-fsanitize=address', '-fsanitize=undefined', '-fno-sanitize-recover=all', '-fsanitize=float-divide-by-zero', '-fsanitize=float-cast-overflow', '-fno-sanitize=null', '-fno-sanitize=alignment'])
 
     elif compiler_type_cxx == 'llvm':
         env.Append(CXXFLAGS=["-O0", "-g3", "-Wall"])
 
         # Memory sanitizer
-        # env.Append(CXXFLAGS=['-fsanitize=memory'])
-        # env.Append(CXXFLAGS=['-fsanitize=address', '-fsanitize=undefined', '-fno-sanitize-recover=all', '-fsanitize=float-divide-by-zero', '-fsanitize=float-cast-overflow', '-fno-sanitize=null', '-fno-sanitize=alignment'])
+        #env.Append(CXXFLAGS=['-fsanitize=memory'])
+        #env.Append(CXXFLAGS=['-fsanitize=address', '-fsanitize=undefined', '-fno-sanitize-recover=all', '-fsanitize=float-divide-by-zero', '-fsanitize=float-cast-overflow', '-fno-sanitize=null', '-fno-sanitize=alignment'])
 
     elif compiler_type_cxx == 'intel':
         env.Append(CXXFLAGS=["-O0", "-g", "-traceback"])
 #        env.Append(CXXFLAGS='-fp-trap=common')
+
 
     if jg.fortran_source == 'enable':
         if compiler_type_cxx == 'gcc':
@@ -381,10 +387,12 @@ else:
     env.Append(CXXFLAGS=["-DSWEET_QUADMATH=0"])
 
 
+
 if jg.gui == 'enable':
     # compile flags
     env.Append(CXXFLAGS=['-I'+os.environ['HOME']+'/local/include'])
     env.Append(CXXFLAGS=['-DSWEET_GUI=1'])
+
 
     if exec_command('uname -s') == "Darwin":
         # ASSUME MACOSX SYSTEM
@@ -392,13 +400,13 @@ if jg.gui == 'enable':
     else:
         env.Append(LIBS=['GL'])
 
-    reqversion = [2, 0, 0]
+    reqversion = [2,0,0]
     sdlversion = exec_command('sdl2-config --version')
     sdlversion = sdlversion.replace("\n", "").split('.')
 
     for i in range(0, 3):
         if (int(sdlversion[i]) > int(reqversion[i])):
-            break
+            break;
         if (int(sdlversion[i]) < int(reqversion[i])):
             print('libSDL Version 2.0.0 necessary.')
             Exit(1)
@@ -408,6 +416,7 @@ if jg.gui == 'enable':
 
 else:
     env.Append(CXXFLAGS=['-DSWEET_GUI=0'])
+
 
 
 # Add LAPACK libraries
@@ -422,6 +431,8 @@ else:
     env.Append(CXXFLAGS=['-DSWEET_LAPACK=0'])
 
 
+  
+
 if jg.fortran_source == 'enable':
     env.Append(CXXFLAGS=['-DSWEET_FORTRAN=1'])
 
@@ -432,7 +443,7 @@ else:
     env.Append(CXXFLAGS=['-DSWEET_FORTRAN=0'])
 
 
-if exec_command("uname -s").replace("\n", "") == "Darwin":
+if exec_command('uname -s') == "Darwin":
     env.Append(CXXFLAGS=['-DMEMBLOCKALLOC_ENABLE_NUMA_ALLOC=0'])
 else:
     env.Append(LIBS=['numa'])
@@ -449,11 +460,13 @@ else:
     raise Exception("Internal error")
 
 
+
 if jg.eigen == 'enable':
     env.Append(CXXFLAGS=['-Ilocal_software/local/include/eigen3'])
     env.Append(CXXFLAGS=['-DSWEET_EIGEN=1'])
 else:
     env.Append(CXXFLAGS=['-DSWEET_EIGEN=0'])
+
 
 
 if jg.libsph == 'enable':
@@ -465,12 +478,13 @@ if jg.libsph == 'enable':
     jg.libfft = 'enable'
 
 
+
 if jg.libfft == 'enable':
 
     env.Append(CXXFLAGS='-DSWEET_USE_LIBFFT=1')
 
     if jg.mkl == 'enable':
-        print("INFO: Using Intel MKL instead of FFTW")
+        print("INFO: Using Intel MKL instead of FFTW");
 
         if jg.threading != 'omp':
             env.Append(CXXFLAGS=['-mkl=sequential'])
@@ -499,13 +513,13 @@ if jg.rexi_thread_parallel_sum == 'enable':
 
     #
     # Also add CXX flags here.
-    # This requires that *ALL* space-related
+    # This requires that *ALL* space-related 
     #
-    # pragma omp parallel for
+    #pragma omp parallel for
     #
     # loops are annoted with
     #
-    # if SWEET_THREADING_SPACE
+    #if SWEET_THREADING_SPACE
     #
     env.Append(CXXFLAGS=['-fopenmp'])
 
@@ -554,10 +568,8 @@ if jg.debug_symbols == 'enable':
     env.Append(LINKFLAGS=['-g'])
 
     if compiler_type_cxx == 'intel':
-        env.Append(CXXFLAGS=['-shared-intel',
-                   '-shared-libgcc', '-debug',  'inline-debug-info'])
-        env.Append(LINKFLAGS=['-shared-intel',
-                   '-shared-libgcc', '-debug',  'inline-debug-info'])
+        env.Append(CXXFLAGS=['-shared-intel', '-shared-libgcc', '-debug',  'inline-debug-info'])
+        env.Append(LINKFLAGS=['-shared-intel', '-shared-libgcc', '-debug',  'inline-debug-info'])
 
 
 """
@@ -580,13 +592,14 @@ elif compiler_type_cxx == 'llvm':
         env.Append(LIBS=['gfortran'])
 
 
+
 exec_name = jg.getProgramExec()
 
 
 #
 # BUILD directory
 #
-build_dir = '/tmp/'
+build_dir='/tmp/'
 user = os.environ.get('USERNAME')
 if user != None:
     build_dir += user.replace(' ', '')
@@ -595,16 +608,18 @@ if user != None:
 build_dir += 'scons_build_'+exec_name+'/'
 
 if jg.libpfasst == 'enable':
-    env.Append(F90FLAGS=['-Ilocal_software/local/include/libpfasst'])
+    env.Append(F90FLAGS = ['-Ilocal_software/local/include/libpfasst'])
 
 #
 # USE build directory for Fortran module output
 #
-env.Append(F90FLAGS=['-J'+build_dir])
+env.Append(F90FLAGS = ['-J'+build_dir])
 
 
 # Leave this deactivated!
 # env.Append(CPPPATH = ['/usr/local/include'])
+
+
 
 
 #
@@ -613,10 +628,11 @@ env.Append(F90FLAGS=['-J'+build_dir])
 
 
 # also include the 'src' directory to search for dependencies
-env.Append(CPPPATH=['.', './src/', './src/include'])
+env.Append(CPPPATH = ['.', './src/', './src/include'])
 
 # also for Fortran!
-env.Append(F90PATH=['.', './src/'])
+env.Append(F90PATH = ['.', './src/'])
+
 
 
 ######################
@@ -632,8 +648,7 @@ env.Append(CPPPATH=['./local_software/local/include'])
 
 if jg.program_name != 'DUMMY':
 
-    env.SConscript('sconscript.py', variant_dir=build_dir,
-                   duplicate=0, exports=['env', 'jg'])
+    env.SConscript('sconscript.py', variant_dir=build_dir, duplicate=0, exports=['env', 'jg'])
 
     print('')
     print('            Program: '+jg.program_name)
