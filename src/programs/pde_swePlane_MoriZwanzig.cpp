@@ -4,6 +4,8 @@
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/pde_swePlane_MoriZwanzig/
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/pde_swePlane_MoriZwanzig/time/
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/pde_swePlane_MoriZwanzig/benchmarks/
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/pde_swePlane/time/
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/pde_swePlane/benchmarks/
  *
  * MULE_SCONS_OPTIONS: --plane-spectral-space=enable
  */

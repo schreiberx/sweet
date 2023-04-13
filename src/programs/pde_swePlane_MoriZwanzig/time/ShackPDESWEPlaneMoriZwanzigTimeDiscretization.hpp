@@ -75,19 +75,19 @@ public:
 		split = StringSplit::split(timestepping_method, ",");
 		if (split.size() == 1)
 		{
-			std::string v = std::stoi(split[0]);
-			timestepping_order_SP = v;
-			timestepping_order_SQ = v;
-			timestepping_order_FQ = v;
+			std::string v = split[0];
+			timestepping_method_SP = v;
+			timestepping_method_SQ = v;
+			timestepping_method_FQ = v;
 		}
 		else if (split.size() == 3)
 		{
-			timestepping_order_SP = std::stoi(split[0]);
-			timestepping_order_SQ = std::stoi(split[1]);
-			timestepping_order_FQ = std::stoi(split[2]);
+			timestepping_method_SP = split[0];
+			timestepping_method_SQ = split[1];
+			timestepping_method_FQ = split[2];
 		}
 		else
-			SweetError("Invalid number of arguments in timestepping_method");
+			SWEETError("Invalid number of arguments in timestepping_method");
 
 		split = StringSplit::split(timestepping_order, ",");
 		if (split.size() == 1)
@@ -104,7 +104,7 @@ public:
 			timestepping_order_FQ = std::stoi(split[2]);
 		}
 		else
-			SweetError("Invalid number of arguments in timestepping_order");
+			SWEETError("Invalid number of arguments in timestepping_order");
 
 		split = StringSplit::split(timestepping_order2, ",");
 		if (split.size() == 1)
@@ -121,7 +121,7 @@ public:
 			timestepping_order2_FQ = std::stoi(split[2]);
 		}
 		else
-			SweetError("Invalid number of arguments in timestepping_order2");
+			SWEETError("Invalid number of arguments in timestepping_order2");
 
 		////split = StringSplit::split(semi_lagrangian_max_iterations, ",");
 		////if (split.size() == 1)
