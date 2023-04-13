@@ -48,19 +48,17 @@ public:
 
 	ShackPDESWEPlaneMoriZwanzig *shackPDESWEPlaneMZ;
 
-
-	double F;
-
 	PDESWEPlaneMoriZwanzigNormalModes normal_modes;
 
 
 	// min and max wavenumber modes for each wave type
-	// modes_SP[0] = [min_geostr, max_geostr]   --> min_geostr <= k < max_geostr
-	// modes_SP[1] = [min_west, max_west]
-	// modes_SP[2] = [min_east, max_east]
-	int modes_SP[3][2];
-	int modes_SQ[3][2];
-	int modes_SF[3][2];
+	// modes[i][0] = [min_geostr, max_geostr]   --> min_geostr <= k < max_geostr
+	// modes[i][1] = [min_west, max_west]
+	// modes[i][2] = [min_east, max_east]
+	// i = 0 : SP
+	// i = 1 : SQ
+	// i = 2 : FQ
+	int modes[3][3][2];
 
 	bool shackRegistration(sweet::ShackDictionary &io_dict)
 	{
@@ -81,19 +79,54 @@ public:
 
 	bool setup()
 	{
+		this->normal_modes.setup();
 
-		F = shackPDESWEPlaneMZ->F;
+		// define SP, SQ, FQ
+		this->modes[0][0][0] = this->shackPDESWEPlaneMZ->SP_geostrophic_min;
+		this->modes[0][0][1] = this->shackPDESWEPlaneMZ->SP_geostrophic_max;
+		this->modes[0][1][0] = this->shackPDESWEPlaneMZ->SP_gravity_west_min;
+		this->modes[0][1][1] = this->shackPDESWEPlaneMZ->SP_gravity_west_max;
+		this->modes[0][2][0] = this->shackPDESWEPlaneMZ->SP_gravity_east_min;
+		this->modes[0][2][1] = this->shackPDESWEPlaneMZ->SP_gravity_east_max;
+
+		this->modes[1][0][0] = this->shackPDESWEPlaneMZ->SQ_geostrophic_min;
+		this->modes[1][0][1] = this->shackPDESWEPlaneMZ->SQ_geostrophic_max;
+		this->modes[1][1][0] = this->shackPDESWEPlaneMZ->SQ_gravity_west_min;
+		this->modes[1][1][1] = this->shackPDESWEPlaneMZ->SQ_gravity_west_max;
+		this->modes[1][2][0] = this->shackPDESWEPlaneMZ->SQ_gravity_east_min;
+		this->modes[1][2][1] = this->shackPDESWEPlaneMZ->SQ_gravity_east_max;
+
+		this->modes[2][0][0] = this->shackPDESWEPlaneMZ->QF_geostrophic_min;
+		this->modes[2][0][1] = this->shackPDESWEPlaneMZ->QF_geostrophic_max;
+		this->modes[2][1][0] = this->shackPDESWEPlaneMZ->QF_gravity_west_min;
+		this->modes[2][1][1] = this->shackPDESWEPlaneMZ->QF_gravity_west_max;
+		this->modes[2][2][0] = this->shackPDESWEPlaneMZ->QF_gravity_east_min;
+		this->modes[2][2][1] = this->shackPDESWEPlaneMZ->QF_gravity_east_max;
+
+		// TODO: checks
 
 		return True;
 	}
 
 
-	void project_SP(
+
+	void project(
 			sweet::PlaneData_Spectral io_h_pert,
 			sweet::PlaneData_Spectral io_u,
-			sweet::PlaneData_Spectral io_v
+			sweet::PlaneData_Spectral io_v,
+			std::string projection_type;
 	)
 	{
+
+		int idx;
+		if (projection_type == "SP")
+			idx = 0;
+		else if (projection_type == "SQ")
+			idx = 1;
+		else if (projection_type == "FQ")
+			idx = 2;
+		else
+			SWEETError("Wrong projection type: " + projection_type );
 
 		complex eigenvalues[3];
 		complex eigenvectors[3][3];
@@ -107,9 +140,13 @@ public:
 		io_u.set_spectral_zero();
 		io_v.set_spectral_zero();
 
-		for (int k1 = kmin; k1 < kmax; k1++)
+		// get min and max K from all wave types
+		Kmin = std::min(std::min(this->modes[idx][0][0], this->modes[idx][1][0]), this->modes[idx][2][0]);
+		Kmax = std::max(std::max(this->modes[idx][0][1], this->modes[idx][1][1]), this->modes[idx][2][1]);
+
+		for (int k1 = Kmin; k1 < Kmax; k1++)
 		{
-			for (int k2 = kmin; k2 < kmax; k2++)
+			for (int k2 = Kmin; k2 < Kmax; k2++)
 			{
 				complex U_proj[3] = {0., 0., 0.};
 				normal_modes.eigendecomposition(k1, k2, eigenvalues, eigenvector);
@@ -117,8 +154,8 @@ public:
 				for (int wave_type = 0; wave_type < 3; wave_type++)
 				{
 
-					kmin = this->modes_SP[wave_type][0];
-					kmax = this->modes_SP[wave_type][1];
+					kmin = this->modes[idx][wave_type][0];
+					kmax = this->modes[idx][wave_type][1];
 
 					if (k1 < kmin || k1 > kmax || k2 < kmin || k2 > kmax)
 						continue;
@@ -138,6 +175,17 @@ public:
 				io_v.spectral_set(k1, k0, U_proj[2]);
 			}
 		}
+
+
+	}
+
+	void project_SP(
+			sweet::PlaneData_Spectral io_h_pert,
+			sweet::PlaneData_Spectral io_u,
+			sweet::PlaneData_Spectral io_v
+	)
+	{
+		this->project(io_h_pert, io_u, io_v, "SP");
 	}
 
 	void project_SQ(
@@ -146,6 +194,7 @@ public:
 			sweet::PlaneData_Spectral io_v
 	)
 	{
+		this->project(io_h_pert, io_u, io_v, "SQ");
 	}
 
 	void project_FQ(
@@ -154,6 +203,7 @@ public:
 			sweet::PlaneData_Spectral io_v
 	)
 	{
+		this->project(io_h_pert, io_u, io_v, "FQ");
 	}
 
 };
