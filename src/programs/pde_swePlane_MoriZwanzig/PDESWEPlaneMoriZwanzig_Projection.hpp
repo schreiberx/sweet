@@ -149,7 +149,7 @@ public:
 			for (int k2 = Kmin; k2 < Kmax; k2++)
 			{
 				complex U_proj[3] = {0., 0., 0.};
-				normal_modes.eigendecomposition(k1, k2, eigenvalues, eigenvector);
+				normal_modes.eigendecomposition(k1, k2, eigenvalues, eigenvectors);
 
 				for (int wave_type = 0; wave_type < 3; wave_type++)
 				{
