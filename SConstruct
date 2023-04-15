@@ -375,9 +375,6 @@ elif jg.mode == 'release':
     elif compiler_type_cxx == 'intel':
         env.Append(CXXFLAGS=["-O2", "-fno-alias"])
 
-        #if jg.mic != 'enable':
-        #    env.Append(CXXFLAGS=['-xHost'])
-
     if jg.fortran_source == 'enable':
         if compiler_type_cxx == 'gcc':
             env.Append(F90FLAGS=["-O2"])
