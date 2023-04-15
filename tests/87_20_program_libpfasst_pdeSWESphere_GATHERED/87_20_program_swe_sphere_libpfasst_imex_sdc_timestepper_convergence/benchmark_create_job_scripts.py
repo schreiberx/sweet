@@ -12,7 +12,7 @@ jg = JobGeneration()
 # Compilation Settings for reference & tests jobs #
 ###################################################
 
-jg.compile.program = 'libpfasst_swe_sphere_expl_sdc'
+jg.compile.program = 'programs/libpfasst/pde_sweSphere_imex_sdc'
 
 # enable libpfasst
 jg.compile.libpfasst = 'enable'
@@ -98,7 +98,7 @@ timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 6)]
 
 jg.runtime.libpfasst_nodes_type = 'SDC_GAUSS_LOBATTO'
 for jg.runtime.libpfasst_nnodes in [3,5]:
-    for jg.runtime.libpfasst_niters in range(1,6):
+    for jg.runtime.libpfasst_niters in range(1,5):
         for jg.runtime.timestep_size in timestep_sizes:
 
             if jg.runtime.max_simulation_time % jg.runtime.timestep_size != 0:
@@ -110,10 +110,9 @@ for jg.runtime.libpfasst_nnodes in [3,5]:
 
             jg.gen_jobscript_directory()
 
-
 jg.runtime.libpfasst_nodes_type = 'SDC_GAUSS_LEGENDRE'
 for jg.runtime.libpfasst_nnodes in [3,5]:
-    for jg.runtime.libpfasst_niters in range(1,6):
+    for jg.runtime.libpfasst_niters in range(2,5):
         for jg.runtime.timestep_size in timestep_sizes:
 
             if jg.runtime.max_simulation_time % jg.runtime.timestep_size != 0:

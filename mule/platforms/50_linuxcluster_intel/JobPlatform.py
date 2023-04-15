@@ -83,6 +83,11 @@ def jobscript_get_header(jg : JobGeneration):
     #
     # See https://www.lrz.de/services/compute/linux-cluster/batch_parallel/example_jobs/
     #
+
+    mule_user_email = os.getenv('MULE_USER_EMAIL')
+    if mule_user_email == None:
+        raise Exception("User email for the slurm script has not been specified. Please include it in env_vars.sh!")
+    
     content = """#! /bin/bash
 #SBATCH -o """+jg.p_job_stdout_filepath+"""
 #SBATCH -e """+jg.p_job_stderr_filepath+"""
@@ -100,8 +105,8 @@ def jobscript_get_header(jg : JobGeneration):
 #SBATCH --ntasks-per-node="""+str(p.num_ranks_per_node)+"""
 # the above is a good match for the
 # CooLMUC2 architecture.
-#SBATCH --mail-type=end 
-#SBATCH --mail-user=schreiberx@gmail.com
+#SBATCH --mail-type=ALL 
+#SBATCH --mail-user="""+mule_user_email+"""
 #SBATCH --export=NONE 
 #SBATCH --time="""+time_str+"""
 """

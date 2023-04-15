@@ -32,6 +32,7 @@ if [[ $? -eq 0 ]]; then
 	echo "$MULE_MPIF90 seems to support -fallow-argument-mismatch, using this per default"
 	echo "FFLAGS += -fallow-argument-mismatch" >> Makefile.local
 fi
+#Comment the next line when installing on linux cluster
 rm -rf "${TMPDIR}"
 
 
@@ -73,7 +74,7 @@ config_exec make
 
 echo_info "Installing..."
 
-# Copy modules
+# Copy modules and change this path if necessary
 echo_info cp -v -f ./include/*mod "$INCDIR_LIBPFASST"
 cp -v -f ./include/*mod "$INCDIR_LIBPFASST" || echo_error_exit "Failed to install .mod files"
 
