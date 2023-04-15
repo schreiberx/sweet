@@ -260,8 +260,10 @@ elif compiler_type_cxx == 'intel':
                 Exit(1)
 
     env.Append(LINKFLAGS=['-shared-intel'])
-    env.Append(LINKFLAGS=['-shared-libgcc'])
-    env.Append(LINKFLAGS=['-debug inline-debug-info'])
+    env.Append(LINKFLAGS=['-nofor-main'])
+    #env.Append(LINKFLAGS=['-shared-libgcc'])
+    #env.Append(LINKFLAGS=['-debug'])
+    #env.Append(LINKFLAGS=['inline-debug-info'])
 
     # eclipse specific flag
     env.Append(CXXFLAGS=['-fmessage-length=0'])
@@ -372,6 +374,9 @@ elif jg.mode == 'release':
 
     elif compiler_type_cxx == 'intel':
         env.Append(CXXFLAGS=["-O2", "-fno-alias"])
+
+        #if jg.mic != 'enable':
+        #    env.Append(CXXFLAGS=['-xHost'])
 
     if jg.fortran_source == 'enable':
         if compiler_type_cxx == 'gcc':
@@ -569,8 +574,6 @@ if jg.debug_symbols == 'enable':
 
     if compiler_type_cxx == 'intel':
         env.Append(CXXFLAGS=['-shared-intel', '-shared-libgcc', '-debug',  'inline-debug-info'])
-        env.Append(LINKFLAGS=['-shared-intel', '-shared-libgcc', '-debug',  'inline-debug-info'])
-
 
 """
 Fortran related support at the very end here
@@ -606,14 +609,16 @@ if user != None:
     build_dir += '/'
 
 build_dir += 'scons_build_'+exec_name+'/'
-
 if jg.libpfasst == 'enable':
     env.Append(F90FLAGS = ['-Ilocal_software/local/include/libpfasst'])
-
 #
 # USE build directory for Fortran module output
 #
-env.Append(F90FLAGS = ['-J'+build_dir])
+if compiler_type_cxx == 'intel':
+    env.Append(F90FLAGS = ['-module'])
+    env.Append(F90FLAGS = [build_dir])
+else:
+    env.Append(F90FLAGS = ['-J'+build_dir])
 
 
 # Leave this deactivated!
@@ -625,7 +630,6 @@ env.Append(F90FLAGS = ['-J'+build_dir])
 #
 # FORTRAN stuff
 #
-
 
 # also include the 'src' directory to search for dependencies
 env.Append(CPPPATH = ['.', './src/', './src/include'])
@@ -644,7 +648,6 @@ env.src_files = []
 # local software directories
 env.Append(LINKFLAGS=['-L./local_software/local/lib'])
 env.Append(CPPPATH=['./local_software/local/include'])
-
 
 if jg.program_name != 'DUMMY':
 
