@@ -105,7 +105,7 @@ def jobscript_get_header(jg : JobGeneration):
 #SBATCH --ntasks-per-node="""+str(p.num_ranks_per_node)+"""
 # the above is a good match for the
 # CooLMUC2 architecture.
-#SBATCH --mail-type=ALL 
+#SBATCH --mail-type=BEGIN,END 
 #SBATCH --mail-user="""+mule_user_email+"""
 #SBATCH --export=NONE 
 #SBATCH --time="""+time_str+"""
