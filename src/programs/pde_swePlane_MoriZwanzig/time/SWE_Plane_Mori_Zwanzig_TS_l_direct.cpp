@@ -14,7 +14,7 @@
 
 
 
-bool SWE_Plane_TS_l_direct::setup(
+bool SWE_Plane_Mori_Zwanzig_TS_l_direct::setup(
 		sweet::PlaneOperators *io_ops,
 		const std::string &i_function_name
 )
@@ -35,7 +35,7 @@ bool SWE_Plane_TS_l_direct::setup(
 }
 
 
-bool SWE_Plane_TS_l_direct::setup(
+bool SWE_Plane_Mori_Zwanzig_TS_l_direct::setup(
 		sweet::PlaneOperators *io_ops
 )
 {
@@ -43,7 +43,7 @@ bool SWE_Plane_TS_l_direct::setup(
 }
 
 
-void SWE_Plane_TS_l_direct::runTimestep(
+void SWE_Plane_Mori_Zwanzig_TS_l_direct::runTimestep(
 		sweet::PlaneData_Spectral &io_h_pert,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_u,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_v,	///< prognostic variables
@@ -62,7 +62,7 @@ void SWE_Plane_TS_l_direct::runTimestep(
 /**
  * Computation of analytical solution on staggered grid
  */
-void SWE_Plane_TS_l_direct::run_timestep_cgrid(
+void SWE_Plane_Mori_Zwanzig_TS_l_direct::run_timestep_cgrid(
 		sweet::PlaneData_Spectral &io_h_pert,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_u,		///< prognostic variables
 		sweet::PlaneData_Spectral &io_v,		///< prognostic variables
@@ -104,7 +104,7 @@ void SWE_Plane_TS_l_direct::run_timestep_cgrid(
 
 
 
-void SWE_Plane_TS_l_direct::run_timestep_agrid(
+void SWE_Plane_Mori_Zwanzig_TS_l_direct::run_timestep_agrid(
 		sweet::PlaneData_Spectral &io_h_pert,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_u,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_v,	///< prognostic variables
@@ -128,7 +128,7 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid(
  * 		doc/swe_solution_for_L/sympy_L_spec_decomposition.py
  * for the dimension full formulation.
  */
-void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
+void SWE_Plane_Mori_Zwanzig_TS_l_direct::run_timestep_agrid_planedata(
 		sweet::PlaneData_Spectral &io_h_pert,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_u,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_v,	///< prognostic variables
@@ -227,7 +227,7 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 					for (int k = 0; k < 3; k++)
 						d += v_lambda[j][k] * eigenvectors_inv[k][i];
 
-					U[k] += d * U_copy[j];
+					U[j] += d * U_copy[j];
 				}
 			}
 
@@ -255,418 +255,4 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 
 #endif
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-}
 

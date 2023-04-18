@@ -11,85 +11,86 @@
 #include <sweet/core/plane/PlaneOperators.hpp>
 #include <sweet/core/shacks/ShackDictionary.hpp>
 
-#include "benchmarks/ShackPDESWEPlaneBenchmarks.hpp"
-#include "benchmarks/ShackPDESWEPlaneBench_PolvaniBench.hpp"
+#include "benchmarks/ShackPDESWEPlaneMoriZwanzigBenchmarks.hpp"
+///#include "benchmarks/ShackPDESWEPlaneBench_PolvaniBench.hpp"
 
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-	#include "benchmarks/PDESWEPlaneBench_Polvani.hpp"
-	#include "benchmarks/PDESWEPlaneBench_MergeVortex.hpp"
-	#include "benchmarks/PDESWEPlaneBench_NormalModes.hpp"
-#endif
+/////#if SWEET_USE_PLANE_SPECTRAL_SPACE
+/////	#include "benchmarks/PDESWEPlaneBench_Polvani.hpp"
+/////	#include "benchmarks/PDESWEPlaneBench_MergeVortex.hpp"
+/////	#include "benchmarks/PDESWEPlaneBench_NormalModes.hpp"
+/////#endif
+/////
+/////#include "benchmarks/PDESWEPlaneBench_UnstableJet.hpp"
+/////#include "benchmarks/PDESWEPlaneBench_UnstableJetFast.hpp"
+/////#include "benchmarks/PDESWEPlaneBench_UnstableJetAdv.hpp"
+/////#include "benchmarks/PDESWEPlaneBench_GaussianBump.hpp"
 
-#include "benchmarks/PDESWEPlaneBench_UnstableJet.hpp"
-#include "benchmarks/PDESWEPlaneBench_UnstableJetFast.hpp"
-#include "benchmarks/PDESWEPlaneBench_UnstableJetAdv.hpp"
-#include "benchmarks/PDESWEPlaneBench_GaussianBump.hpp"
 
-
-#include "ShackPDESWEPlane.hpp"
+////#include "ShackPDESWEPlane.hpp"
+#include "ShackPDESWEPlaneMoriZwanzig.hpp"
 
 
 #include <sweet/core/shacksShared/ShackPlaneDataOps.hpp>
 #include <sweet/core/shacksShared/ShackTimestepControl.hpp>
 
 
-class PDESWEPlaneMoriZwanzigBenchmarksCombined : public PDESWEPlaneBenchmarksCombined
+class PDESWEPlaneMoriZwanzigBenchmarksCombined // : public PDESWEPlaneBenchmarksCombined
 {
 public:
 
-//////	sweet::ErrorBase error;
-//////
-//////	// plane or sphere data config
-//////	const void* ext_forces_data_config;
-//////
-//////	sweet::ShackDictionary *shackDict;
-//////	sweet::ShackPlaneDataOps *shackPlaneDataOps;
-//////	sweet::ShackTimestepControl *shackTimestepControl;
-//////	ShackPDESWEPlane *shackPDESWEPlane;
-//////	ShackPDESWEPlaneBenchmarks *shackPDESWEPlaneBenchmarks;
-//////	ShackPDESWEPlaneBench_PolvaniBench *shackPDESWEPlaneBench_polvaniBenchmark;
-//////
-//////	PDESWEPlaneBenchmarksCombined()	:
-//////		shackDict(nullptr),
-//////		shackPlaneDataOps(nullptr),
-//////		shackTimestepControl(nullptr),
-//////		shackPDESWEPlane(nullptr),
-//////		shackPDESWEPlaneBenchmarks(nullptr)
-//////	{
-//////	}
-//////
-//////
-//////	bool shackRegistration(
-//////			sweet::ShackDictionary *io_shackDict
-//////	)
-//////	{
-//////		shackDict = io_shackDict;
-//////
-//////		shackPlaneDataOps = shackDict->getAutoRegistration<sweet::ShackPlaneDataOps>();
-//////		shackTimestepControl = shackDict->getAutoRegistration<sweet::ShackTimestepControl>();
-//////		shackPDESWEPlane = shackDict->getAutoRegistration<ShackPDESWEPlane>();
-//////		shackPDESWEPlaneBenchmarks = shackDict->getAutoRegistration<ShackPDESWEPlaneBenchmarks>();
-//////		shackPDESWEPlaneBench_polvaniBenchmark = shackDict->getAutoRegistration<ShackPDESWEPlaneBench_PolvaniBench>();
-//////
-//////		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*io_shackDict);
-//////
-//////		return true;
-//////	}
-//////
-//////
-//////	bool shackRegistration(
-//////			sweet::ShackDictionary &io_shackDict
-//////	)
-//////	{
-//////		return shackRegistration(&io_shackDict);
-//////	}
-//////
-//////
-//////	bool clear()
-//////	{
-//////		// TODO
-//////		return true;
-//////	}
+	sweet::ErrorBase error;
+
+	// plane or sphere data config
+	const void* ext_forces_data_config;
+
+	sweet::ShackDictionary *shackDict;
+	sweet::ShackPlaneDataOps *shackPlaneDataOps;
+	sweet::ShackTimestepControl *shackTimestepControl;
+	ShackPDESWEPlaneMoriZwanzig *shackPDESWEPlane;
+	ShackPDESWEPlaneMoriZwanzigBenchmarks *shackPDESWEPlaneBenchmarks;
+	////ShackPDESWEPlaneBench_PolvaniBench *shackPDESWEPlaneBench_polvaniBenchmark;
+
+	PDESWEPlaneMoriZwanzigBenchmarksCombined()	:
+		shackDict(nullptr),
+		shackPlaneDataOps(nullptr),
+		shackTimestepControl(nullptr),
+		shackPDESWEPlane(nullptr),
+		shackPDESWEPlaneBenchmarks(nullptr)
+	{
+	}
+
+
+	bool shackRegistration(
+			sweet::ShackDictionary *io_shackDict
+	)
+	{
+		shackDict = io_shackDict;
+
+		shackPlaneDataOps = shackDict->getAutoRegistration<sweet::ShackPlaneDataOps>();
+		shackTimestepControl = shackDict->getAutoRegistration<sweet::ShackTimestepControl>();
+		shackPDESWEPlane = shackDict->getAutoRegistration<ShackPDESWEPlaneMoriZwanzig>();
+		shackPDESWEPlaneBenchmarks = shackDict->getAutoRegistration<ShackPDESWEPlaneMoriZwanzigBenchmarks>();
+		///shackPDESWEPlaneBench_polvaniBenchmark = shackDict->getAutoRegistration<ShackPDESWEPlaneBench_PolvaniBench>();
+
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*io_shackDict);
+
+		return true;
+	}
+
+
+	bool shackRegistration(
+			sweet::ShackDictionary &io_shackDict
+	)
+	{
+		return shackRegistration(&io_shackDict);
+	}
+
+
+	bool clear()
+	{
+		// TODO
+		return true;
+	}
 
 
 public:
@@ -106,17 +107,17 @@ public:
 
 
 		// todo: correct in function of epsilon and F
-		shackPDESWEPlane->coriolis = 0.;
+		shackPDESWEPlane->plane_rotating_f0 = 0.;
 		shackPDESWEPlane->gravitation = 9.80616;
 		shackPDESWEPlane->h0 = 10000;
 
-		return PDESWEPlaneBenchmarksCombined::setupInitialConditions(
-										o_h_pert,
-										o_u,
-										o_v,
-										io_ops,
-										io_planeDataConfig
-									)
+		////return PDESWEPlaneBenchmarksCombined::setupInitialConditions(
+		////								o_h_pert,
+		////								o_u,
+		////								o_v,
+		////								io_ops,
+		////								io_planeDataConfig
+		////							);
 
 
 

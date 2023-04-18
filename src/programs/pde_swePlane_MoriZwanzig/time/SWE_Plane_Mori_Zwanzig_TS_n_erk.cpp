@@ -115,64 +115,64 @@ void SWE_Plane_Mori_Zwanzig_TS_n_erk::euler_timestep_update_nonlinear_Q(
 )
 {
 
-		sweet::PlaneData_Spectral h_pert_N_SF(io_h_pert_SP.planeDataConfig);
-		sweet::PlaneData_Spectral u_N_SF(io_u_SP.planeDataConfig);
-		sweet::PlaneData_Spectral v_N_SF(io_v_SP.planeDataConfig);
-		sweet::PlaneData_Spectral h_pert_N_SS(io_h_pert_SP.planeDataConfig);
-		sweet::PlaneData_Spectral u_N_SS(io_u_SP.planeDataConfig);
-		sweet::PlaneData_Spectral v_N_SS(io_v_SP.planeDataConfig);
-		sweet::PlaneData_Spectral h_pert_N_FF(io_h_pert_SP.planeDataConfig);
-		sweet::PlaneData_Spectral u_N_FF(io_u_SP.planeDataConfig);
-		sweet::PlaneData_Spectral v_N_FF(io_v_SP.planeDataConfig);
-		sweet::PlaneData_Spectral h_pert_N_FF_2(io_h_pert_SP.planeDataConfig);
-		sweet::PlaneData_Spectral u_N_FF_2(io_u_SP.planeDataConfig);
-		sweet::PlaneData_Spectral v_N_FF_2(io_v_SP.planeDataConfig);
+		sweet::PlaneData_Spectral h_N_SF(i_h_SQ.planeDataConfig);
+		sweet::PlaneData_Spectral u_N_SF(i_u_SQ.planeDataConfig);
+		sweet::PlaneData_Spectral v_N_SF(i_v_SQ.planeDataConfig);
+		sweet::PlaneData_Spectral h_N_SS(i_h_SQ.planeDataConfig);
+		sweet::PlaneData_Spectral u_N_SS(i_u_SQ.planeDataConfig);
+		sweet::PlaneData_Spectral v_N_SS(i_v_SQ.planeDataConfig);
+		sweet::PlaneData_Spectral h_N_FF(i_h_SQ.planeDataConfig);
+		sweet::PlaneData_Spectral u_N_FF(i_u_SQ.planeDataConfig);
+		sweet::PlaneData_Spectral v_N_FF(i_v_SQ.planeDataConfig);
+		sweet::PlaneData_Spectral h_N_FF_2(i_h_SQ.planeDataConfig);
+		sweet::PlaneData_Spectral u_N_FF_2(i_u_SQ.planeDataConfig);
+		sweet::PlaneData_Spectral v_N_FF_2(i_v_SQ.planeDataConfig);
 
 		// compute nonlinear terms
 		this->euler_timestep_update_bilinear(
 							i_h_SQ, i_u_SQ, i_v_SQ,
 							i_h_FQ, i_u_FQ, i_v_FQ,
-							h_pert_N_SF, u_N_SF, v_N_SF,
+							h_N_SF, u_N_SF, v_N_SF,
 							i_timestamp
 					);
 
 		this->euler_timestep_update_bilinear(
 							i_h_SQ, i_u_SQ, i_v_SQ,
 							i_h_SQ, i_u_SQ, i_v_SQ,
-							h_pert_N_SS, u_N_SS, v_N_SS,
+							h_N_SS, u_N_SS, v_N_SS,
 							i_timestamp
 					);
 
 		this->euler_timestep_update_bilinear(
 							i_h_FQ, i_u_FQ, i_v_FQ,
 							i_h_FQ, i_u_FQ, i_v_FQ,
-							h_pert_N_FF, u_N_FF, v_N_FF,
+							h_N_FF, u_N_FF, v_N_FF,
 							i_timestamp
 					);
 
-		h_pert_N_FF_2 = h_pert_N_FF;
+		h_N_FF_2 = h_N_FF;
 		u_N_FF_2 = u_N_FF;
 		v_N_FF_2 = v_N_FF;
 
 
 		// project
-		this->projection->project_SQ(h_pert_N_SF, u_N_SF, v_N_SF);
-		this->projection->project_SQ(h_pert_N_FF, u_N_FF, v_N_FF);
-		this->projection->project_FQ(h_pert_N_SS, u_N_SS, v_N_SS);
-		this->projection->project_FQ(h_pert_N_FF_2, u_N_FF_2, v_N_FF_2);
+		this->projection->project_SQ(h_N_SF, u_N_SF, v_N_SF);
+		this->projection->project_SQ(h_N_FF, u_N_FF, v_N_FF);
+		this->projection->project_FQ(h_N_SS, u_N_SS, v_N_SS);
+		this->projection->project_FQ(h_N_FF_2, u_N_FF_2, v_N_FF_2);
 
 		// time update
-		o_h_SQ_t = h_pert_N_SF + h_pert_N_FF;
+		o_h_SQ_t = h_N_SF + h_N_FF;
 		o_u_SQ_t = u_N_SF + u_N_FF;
 		o_v_SQ_t = v_N_SF + v_N_FF;
 
-		o_h_FQ_t = h_pert_N_SS + h_pert_N_FF_2;
+		o_h_FQ_t = h_N_SS + h_N_FF_2;
 		o_u_FQ_t = u_N_SS + u_N_FF_2;
 		o_v_FQ_t = v_N_SS + v_N_FF_2;
 }
 
 void SWE_Plane_Mori_Zwanzig_TS_n_erk::runTimestep_P(
-		sweet::PlaneData_Spectral &io_h_pert_SP,	///< prognostic variables
+		sweet::PlaneData_Spectral &io_h_SP,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_u_SP,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_v_SP,	///< prognostic variables
 
@@ -187,24 +187,26 @@ void SWE_Plane_Mori_Zwanzig_TS_n_erk::runTimestep_P(
 	// solve equation for SP //
 	///////////////////////////
 
-	sweet::PlaneData_Spectral h_pert_N(io_h_pert_SP.planeDataConfig);
+	sweet::PlaneData_Spectral h_N(io_h_SP.planeDataConfig);
 	sweet::PlaneData_Spectral u_N(io_u_SP.planeDataConfig);
 	sweet::PlaneData_Spectral v_N(io_v_SP.planeDataConfig);
 
+	h_N = io_h_SP;
+	u_N = io_u_SP;
+	v_N = io_v_SP;
+
 	timestepping_rk_P.runTimestep(
 			this,
-			&SWE_Plane_Mori_Zwanzig_TS_l_rexi_n_erk::euler_timestep_update_nonlinear_SP,	///< pointer to function to compute euler time step updates
-			io_h_pert_SP, io_u_SP, io_v_SP,
-			io_h_pert_SP, io_u_SP, io_v_SP,
-			h_pert_N, u_N, v_N,
+			&SWE_Plane_Mori_Zwanzig_TS_n_erk::euler_timestep_update_nonlinear_P,	///< pointer to function to compute euler time step updates
+			h_N, u_N, v_N,
 			i_dt,
 			timestepping_order_nonlinear_P,
 			i_simulation_timestamp
 		);
 
-	this->projection->project_SP(h_pert_N, u_N, v_N);
+	this->projection->project_SP(h_N, u_N, v_N);
 
-	io_h_pert_SP += h_pert_N;
+	io_h_SP += h_N;
 	io_u_SP += u_N;
 	io_v_SP += v_N;
 }
@@ -627,7 +629,7 @@ void SWE_Plane_Mori_Zwanzig_TS_n_erk::runTimestep(
 				i_simulation_timestamp
 		);
 
-	this->runTimestep_P(
+	this->runTimestep_Q(
 				io_h_pert_SQ,
 				io_u_SQ,
 				io_v_SQ,
@@ -645,12 +647,12 @@ void SWE_Plane_Mori_Zwanzig_TS_n_erk::runTimestep(
 
 
 
-	void SWE_Plane_Mori_Zwanzig_TS_n_erk:setupBuffers(
-			const PlaneData_Config *i_planeDataConfig,
+	void SWE_Plane_Mori_Zwanzig_TS_n_erk::setupBuffers(
+			const sweet::PlaneData_Config *i_planeDataConfig,
 			int i_rk_order			///< Order of Runge-Kutta method
 	)
 	{
-		if (RK_h_t != nullptr)	///< already allocated?
+		if (RK_h_SQ_t != nullptr)	///< already allocated?
 			return;
 
 		int N = i_rk_order;
@@ -658,21 +660,21 @@ void SWE_Plane_Mori_Zwanzig_TS_n_erk::runTimestep(
 		if (N <= 0 || N > 4)
 			SWEETError("Invalid order for RK time stepping (Please set --timestepping-order and/or --timestepping-order2)");
 
-		RK_h_SQ_t = new PlaneData_Spectral*[N];
-		RK_u_SQ_t = new PlaneData_Spectral*[N];
-		RK_v_SQ_t = new PlaneData_Spectral*[N];
-		RK_h_FQ_t = new PlaneData_Spectral*[N];
-		RK_u_FQ_t = new PlaneData_Spectral*[N];
-		RK_v_FQ_t = new PlaneData_Spectral*[N];
+		RK_h_SQ_t = new sweet::PlaneData_Spectral*[N];
+		RK_u_SQ_t = new sweet::PlaneData_Spectral*[N];
+		RK_v_SQ_t = new sweet::PlaneData_Spectral*[N];
+		RK_h_FQ_t = new sweet::PlaneData_Spectral*[N];
+		RK_u_FQ_t = new sweet::PlaneData_Spectral*[N];
+		RK_v_FQ_t = new sweet::PlaneData_Spectral*[N];
 
 		for (int i = 0; i < N; i++)
 		{
-			RK_h_SQ_t[i] = new PlaneData_Spectral(i_planeDataConfig);
-			RK_u_SQ_t[i] = new PlaneData_Spectral(i_planeDataConfig);
-			RK_v_SQ_t[i] = new PlaneData_Spectral(i_planeDataConfig);
-			RK_h_FQ_t[i] = new PlaneData_Spectral(i_planeDataConfig);
-			RK_u_FQ_t[i] = new PlaneData_Spectral(i_planeDataConfig);
-			RK_v_FQ_t[i] = new PlaneData_Spectral(i_planeDataConfig);
+			RK_h_SQ_t[i] = new sweet::PlaneData_Spectral(i_planeDataConfig);
+			RK_u_SQ_t[i] = new sweet::PlaneData_Spectral(i_planeDataConfig);
+			RK_v_SQ_t[i] = new sweet::PlaneData_Spectral(i_planeDataConfig);
+			RK_h_FQ_t[i] = new sweet::PlaneData_Spectral(i_planeDataConfig);
+			RK_u_FQ_t[i] = new sweet::PlaneData_Spectral(i_planeDataConfig);
+			RK_v_FQ_t[i] = new sweet::PlaneData_Spectral(i_planeDataConfig);
 		}
 	}
 
@@ -682,9 +684,18 @@ void SWE_Plane_Mori_Zwanzig_TS_n_erk::runTimestep(
  */
 bool SWE_Plane_Mori_Zwanzig_TS_n_erk::setup(
 	sweet::PlaneOperators *io_ops,
-	const PlaneData_Config *i_planeDataConfig
+	const sweet::PlaneData_Config *i_planeDataConfig
 )
 {
+
+	RK_h_SQ_t = nullptr;
+	RK_u_SQ_t = nullptr;
+	RK_v_SQ_t = nullptr;
+	RK_h_FQ_t = nullptr;
+	RK_u_FQ_t = nullptr;
+	RK_v_FQ_t = nullptr;
+
+
 	use_only_linear_divergence = shackPDESWEPlane->use_only_linear_divergence;
 
 	timestepping_order_nonlinear_P = shackPDESWETimeDisc->timestepping_order_P;
@@ -702,34 +713,33 @@ bool SWE_Plane_Mori_Zwanzig_TS_n_erk::setup(
 
 SWE_Plane_Mori_Zwanzig_TS_n_erk::~SWE_Plane_Mori_Zwanzig_TS_n_erk()
 {
-		int N = this->timestepping_order_nonlinear_Q;
+	int N = this->timestepping_order_nonlinear_Q;
 
-		if (RK_h_SQ_t != nullptr)
+	if (RK_h_SQ_t != nullptr)
+	{
+		for (int i = 0; i < N; i++)
 		{
-			for (int i = 0; i < N; i++)
-			{
-				delete RK_h_SQ_t[i];
-				delete RK_u_SQ_t[i];
-				delete RK_v_SQ_t[i];
-				delete RK_h_FQ_t[i];
-				delete RK_u_FQ_t[i];
-				delete RK_v_FQ_t[i];
-			}
-
-			delete [] RK_h_SQ_t;
-			delete [] RK_u_SQ_t;
-			delete [] RK_v_SQ_t;
-			delete [] RK_h_FQ_t;
-			delete [] RK_u_FQ_t;
-			delete [] RK_v_FQ_t;
-
-			RK_h_SQ_t = nullptr;
-			RK_u_SQ_t = nullptr;
-			RK_v_SQ_t = nullptr;
-			RK_h_FQ_t = nullptr;
-			RK_u_FQ_t = nullptr;
-			RK_v_FQ_t = nullptr;
+			delete RK_h_SQ_t[i];
+			delete RK_u_SQ_t[i];
+			delete RK_v_SQ_t[i];
+			delete RK_h_FQ_t[i];
+			delete RK_u_FQ_t[i];
+			delete RK_v_FQ_t[i];
 		}
+
+		delete [] RK_h_SQ_t;
+		delete [] RK_u_SQ_t;
+		delete [] RK_v_SQ_t;
+		delete [] RK_h_FQ_t;
+		delete [] RK_u_FQ_t;
+		delete [] RK_v_FQ_t;
+
+		RK_h_SQ_t = nullptr;
+		RK_u_SQ_t = nullptr;
+		RK_v_SQ_t = nullptr;
+		RK_h_FQ_t = nullptr;
+		RK_u_FQ_t = nullptr;
+		RK_v_FQ_t = nullptr;
 	}
 }
 

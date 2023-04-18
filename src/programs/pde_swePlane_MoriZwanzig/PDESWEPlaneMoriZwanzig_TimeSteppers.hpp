@@ -11,9 +11,9 @@
 #include <sweet/core/ErrorBase.hpp>
 
 #include "time/PDESWEPlaneMoriZwanzigTS_BaseInterface.hpp"
-#include "../pde_swePlane/time/SWE_Plane_TS_l_direct.hpp"
-#include "../pde_swePlane/time/SWE_Plane_TS_l_rexi.hpp"
-#include "time/SWE_Plane_Mori_Zwanzig_TS_l_rexi_n_erk.hpp"
+#include "time/SWE_Plane_Mori_Zwanzig_TS_l_direct.hpp"
+#include "time/SWE_Plane_Mori_Zwanzig_TS_l_exp.hpp"
+#include "time/SWE_Plane_Mori_Zwanzig_TS_l_exp_n_erk.hpp"
 
 #include "time/ShackPDESWEPlaneMoriZwanzigTimeDiscretization.hpp"
 
@@ -25,7 +25,7 @@ class PDESWEPlaneMoriZwanzigTimeSteppers
 public:
 	sweet::ErrorBase error;
 
-	SWE_Plane_TS_l_direct *l_direct = nullptr;
+	SWE_Plane_Mori_Zwanzig_TS_l_direct *l_direct = nullptr;
 
 	PDESWEPlaneMoriZwanzigTS_BaseInterface *timestepper = nullptr;
 
@@ -58,7 +58,7 @@ public:
 	{
 		shackPDESWEPlaneMoriZwanzigTimeDiscretization = io_shackDict.getAutoRegistration<ShackPDESWEPlaneMoriZwanzigTimeDiscretization>();
 
-		SWE_Plane_TS_l_direct dummy;
+		SWE_Plane_Mori_Zwanzig_TS_l_direct dummy;
 		dummy.shackRegistration(&io_shackDict);
 
 		ERROR_FORWARD_ALWAYS_RETURN_BOOLEAN(io_shackDict);
@@ -77,9 +77,9 @@ public:
 
 		linear_only = false;
 
-		if (timestepping_method == "l_rexi_n_erk")
+		if (timestepping_method == "l_exp_n_erk")
 		{
-			timestepper = static_cast<PDESWEPlaneMoriZwanzigTS_BaseInterface*>(new SWE_Plane_Mori_Zwanzig_TS_l_rexi_n_erk);
+			timestepper = static_cast<PDESWEPlaneMoriZwanzigTS_BaseInterface*>(new SWE_Plane_Mori_Zwanzig_TS_l_exp_n_erk);
 		}
 		////else if (timestepping_method == "l_rexi")
 		////{
@@ -98,7 +98,7 @@ public:
 			std::cout << "Available --timestepping-method :"  << std::endl;
 			////std::cout << "      l_direct       : Linear:     Analytical solution to linear SW operator"  << std::endl;
 			////std::cout << "      l_rexi         : Linear:     Pure REXI, our little dog." << std::endl;
-			std::cout << "      l_rexi_n_erk   : Non-linear: Linear REXI, Non-linear RK, Strang-split" << std::endl;
+			std::cout << "      l_exp_n_erk   : Non-linear: Linear REXI, Non-linear RK, Strang-split" << std::endl;
 
 			SWEETError("No valid --timestepping-method provided");
 		}

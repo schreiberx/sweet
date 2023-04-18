@@ -19,14 +19,14 @@
 #include <sweet/core/plane/PlaneOperators.hpp>
 #include <sweet/expIntegration/ShackExpIntegration.hpp>
 
-#include "PDESWEPlaneTS_BaseInterface.hpp"
+#include "../../pde_swePlane/time/PDESWEPlaneTS_BaseInterface.hpp"
 #include "SWE_Plane_Mori_Zwanzig_TS_l_direct.hpp"
 
 #if SWEET_MPI
 #	include <mpi.h>
 #endif
 
-class SWE_Plane_TS_l_rexi	:
+class SWE_Plane_Mori_Zwanzig_TS_l_exp	:
 		public PDESWEPlaneTS_BaseInterface
 {
 
@@ -35,10 +35,10 @@ public:
 	bool final_timestep;
 
 	/// use direct solution instead of REXI
-	bool rexi_use_direct_solution;
+	bool exp_use_direct_solution;
 
 	/// Direct solution for linear parts
-	SWE_Plane_TS_l_direct ts_l_direct;
+	SWE_Plane_Mori_Zwanzig_TS_l_direct ts_l_direct;
 
 public:
 	bool setup(
@@ -92,7 +92,7 @@ public:
 
 
 
-	virtual ~SWE_Plane_Mori_Zwanzig_TS_l_rexi();
+	virtual ~SWE_Plane_Mori_Zwanzig_TS_l_exp();
 };
 
 #endif

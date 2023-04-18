@@ -10,11 +10,11 @@
 
 #include <limits>
 #include <sweet/core/plane/PlaneData_Spectral.hpp>
-#include <sweet/core/time/TimesteppingExplicitRKBilinearPlaneData.hpp>
+#include <sweet/core/time/TimesteppingExplicitRKPlaneData.hpp>
 #include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/plane/PlaneOperators.hpp>
-#include "../../pde_swePlane/time/SWE_Plane_TS_l_rexi.hpp"
-#include "../../pde_swePlane/time/SWE_Plane_TS_n_erk.hpp"
+#include "SWE_Plane_Mori_Zwanzig_TS_l_exp.hpp"
+#include "SWE_Plane_Mori_Zwanzig_TS_n_erk.hpp"
 
 #include "PDESWEPlaneMoriZwanzigTS_BaseInterface.hpp"
 #include "../PDESWEPlaneMoriZwanzig_Projection.hpp"
@@ -60,7 +60,7 @@ public:
 			double i_simulation_timestamp = -1
 	);
 
-	virtual ~SWE_Plane_Mori_Zwanzig_TS_l_rexi_n_erk() {}
+	virtual ~SWE_Plane_Mori_Zwanzig_TS_l_exp_n_erk() {}
 };
 
 #endif

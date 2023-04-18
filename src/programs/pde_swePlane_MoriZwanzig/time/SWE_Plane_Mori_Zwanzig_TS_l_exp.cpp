@@ -47,9 +47,9 @@ bool SWE_Plane_Mori_Zwanzig_TS_l_exp::setup(
 	assert(shackPlaneDataOps != nullptr);
 	assert(shackExpIntegration != nullptr);
 
-	rexi_use_direct_solution = (shackExpIntegration->exp_method == "direct");
+	exp_use_direct_solution = (shackExpIntegration->exp_method == "direct");
 
-	if (rexi_use_direct_solution)
+	if (exp_use_direct_solution)
 	{
 		ts_l_direct.setup(io_ops, i_function_name);
 		return true;
@@ -107,7 +107,7 @@ void SWE_Plane_Mori_Zwanzig_TS_l_exp::run_timestep_real(
 
 	final_timestep = false;
 
-	if (rexi_use_direct_solution)
+	if (exp_use_direct_solution)
 	{
 
 		o_h_pert = i_h_pert;

@@ -19,14 +19,14 @@
 
 #include <sweet/core/shacksShared/ShackPlaneDataOps.hpp>
 #include <sweet/expIntegration/ShackExpIntegration.hpp>
-#include "ShackPDESWEPlaneTimeDiscretization.hpp"
-#include "../ShackPDESWEPlane.hpp"
-#include "PDESWEPlaneMoriZwanzig_NormalModes.hpp"
+#include "ShackPDESWEPlaneMoriZwanzigTimeDiscretization.hpp"
+#include "../ShackPDESWEPlaneMoriZwanzig.hpp"
+#include "../PDESWEPlaneMoriZwanzig_NormalModes.hpp"
 
 #include "../../pde_swePlane/time/PDESWEPlaneTS_BaseInterface.hpp"
 
 
-class SWE_Plane_TS_l_direct	:
+class SWE_Plane_Mori_Zwanzig_TS_l_direct	:
 		public PDESWEPlaneTS_BaseInterface
 {
 	typedef double T;
@@ -96,7 +96,7 @@ public:
 			sweet::PlaneOperators *io_ops
 	);
 
-	virtual ~SWE_Plane_TS_l_direct() {}
+	virtual ~SWE_Plane_Mori_Zwanzig_TS_l_direct() {}
 };
 
 #endif

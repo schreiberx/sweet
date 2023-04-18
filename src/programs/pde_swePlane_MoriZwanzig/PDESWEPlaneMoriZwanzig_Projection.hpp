@@ -96,16 +96,16 @@ public:
 		this->modes[1][2][0] = this->shackPDESWEPlaneMZ->SQ_gravity_east_min;
 		this->modes[1][2][1] = this->shackPDESWEPlaneMZ->SQ_gravity_east_max;
 
-		this->modes[2][0][0] = this->shackPDESWEPlaneMZ->QF_geostrophic_min;
-		this->modes[2][0][1] = this->shackPDESWEPlaneMZ->QF_geostrophic_max;
-		this->modes[2][1][0] = this->shackPDESWEPlaneMZ->QF_gravity_west_min;
-		this->modes[2][1][1] = this->shackPDESWEPlaneMZ->QF_gravity_west_max;
-		this->modes[2][2][0] = this->shackPDESWEPlaneMZ->QF_gravity_east_min;
-		this->modes[2][2][1] = this->shackPDESWEPlaneMZ->QF_gravity_east_max;
+		this->modes[2][0][0] = this->shackPDESWEPlaneMZ->FQ_geostrophic_min;
+		this->modes[2][0][1] = this->shackPDESWEPlaneMZ->FQ_geostrophic_max;
+		this->modes[2][1][0] = this->shackPDESWEPlaneMZ->FQ_gravity_west_min;
+		this->modes[2][1][1] = this->shackPDESWEPlaneMZ->FQ_gravity_west_max;
+		this->modes[2][2][0] = this->shackPDESWEPlaneMZ->FQ_gravity_east_min;
+		this->modes[2][2][1] = this->shackPDESWEPlaneMZ->FQ_gravity_east_max;
 
 		// TODO: checks
 
-		return True;
+		return true;
 	}
 
 
@@ -114,7 +114,7 @@ public:
 			sweet::PlaneData_Spectral io_h_pert,
 			sweet::PlaneData_Spectral io_u,
 			sweet::PlaneData_Spectral io_v,
-			std::string projection_type;
+			std::string projection_type
 	)
 	{
 
@@ -133,16 +133,16 @@ public:
 
 
 		sweet::PlaneData_Spectral h_copy = io_h_pert;
-		sweet::PlaneData_Spectral u_copy = io_u_pert;
-		sweet::PlaneData_Spectral v_copy = io_v_pert;
+		sweet::PlaneData_Spectral u_copy = io_u;
+		sweet::PlaneData_Spectral v_copy = io_v;
 
-		io_h_pert.set_spectral_zero();
-		io_u.set_spectral_zero();
-		io_v.set_spectral_zero();
+		io_h_pert.spectral_set_zero();
+		io_u.spectral_set_zero();
+		io_v.spectral_set_zero();
 
 		// get min and max K from all wave types
-		Kmin = std::min(std::min(this->modes[idx][0][0], this->modes[idx][1][0]), this->modes[idx][2][0]);
-		Kmax = std::max(std::max(this->modes[idx][0][1], this->modes[idx][1][1]), this->modes[idx][2][1]);
+		int Kmin = std::min(std::min(this->modes[idx][0][0], this->modes[idx][1][0]), this->modes[idx][2][0]);
+		int Kmax = std::max(std::max(this->modes[idx][0][1], this->modes[idx][1][1]), this->modes[idx][2][1]);
 
 		for (int k1 = Kmin; k1 < Kmax; k1++)
 		{
@@ -154,25 +154,25 @@ public:
 				for (int wave_type = 0; wave_type < 3; wave_type++)
 				{
 
-					kmin = this->modes[idx][wave_type][0];
-					kmax = this->modes[idx][wave_type][1];
+					int kmin = this->modes[idx][wave_type][0];
+					int kmax = this->modes[idx][wave_type][1];
 
 					if (k1 < kmin || k1 > kmax || k2 < kmin || k2 > kmax)
 						continue;
 
-					complex coef_prog = 0.;
-					coef_proj += eigenvector[0][wave_type] * h_copy.spectral_get(k1, k0);
-					coef_proj += eigenvector[1][wave_type] * u_copy.spectral_get(k1, k0);
-					coef_proj += eigenvector[2][wave_type] * v_copy.spectral_get(k1, k0);
+					complex coef_proj = 0.;
+					coef_proj += eigenvectors[0][wave_type] * h_copy.spectral_get(k2, k1);
+					coef_proj += eigenvectors[1][wave_type] * u_copy.spectral_get(k2, k1);
+					coef_proj += eigenvectors[2][wave_type] * v_copy.spectral_get(k2, k1);
 
 					for (int j = 0; j < 3; j++)
-						U_proj[j] += coef_proj * eigenvector[j][wave_type];
+						U_proj[j] += coef_proj * eigenvectors[j][wave_type];
 
 				}
 
-				io_h_pert.spectral_set(k1, k0, U_proj[0]);
-				io_u.spectral_set(k1, k0, U_proj[1]);
-				io_v.spectral_set(k1, k0, U_proj[2]);
+				io_h_pert.spectral_set(k2, k1, U_proj[0]);
+				io_u.spectral_set(k2, k1, U_proj[1]);
+				io_v.spectral_set(k2, k1, U_proj[2]);
 			}
 		}
 

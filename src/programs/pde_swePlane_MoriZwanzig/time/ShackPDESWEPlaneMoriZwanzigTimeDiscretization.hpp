@@ -21,21 +21,18 @@ public:
 	/// String of time stepping method
 	/// See doc/swe/swe_plane_timesteppings
 	std::string timestepping_method;
-	std::string timestepping_method_SP;
-	std::string timestepping_method_SQ;
-	std::string timestepping_method_FQ;
+	std::string timestepping_method_P;
+	std::string timestepping_method_Q;
 
 	/// Order of time stepping
 	std::string timestepping_order;
-	int timestepping_order_SP = -1;
-	int timestepping_order_SQ = -1;
-	int timestepping_order_FQ = -1;
+	int timestepping_order_P = -1;
+	int timestepping_order_Q = -1;
 
 	/// Order of 2nd time stepping which might be used
 	std::string timestepping_order2;
-	int timestepping_order2_SP = -1;
-	int timestepping_order2_SQ = -1;
-	int timestepping_order2_FQ = -1;
+	int timestepping_order2_P = -1;
+	int timestepping_order2_Q = -1;
 
 	///// Number of iterations for semi-Lagrangian methods
 	//std::string semi_lagrangian_max_iterations;
@@ -62,66 +59,67 @@ public:
 
 	bool processProgramArguments(sweet::ProgramArguments &i_pa)
 	{
-		i_pa.getArgumentValueByKey("--timestepping-method", timestepping_method);
-		i_pa.getArgumentValueByKey("-R", timestepping_order);
-		i_pa.getArgumentValueByKey("--timestepping-order", timestepping_order);
-		i_pa.getArgumentValueByKey("--timestepping-order2", timestepping_order2);
+		///i_pa.getArgumentValueByKey("--timestepping-method", timestepping_method);
+		///i_pa.getArgumentValueByKey("-R", timestepping_order);
+		///i_pa.getArgumentValueByKey("--timestepping-order", timestepping_order);
+		//i_pa.getArgumentValueByKey("--timestepping-order2", timestepping_order2);
 		//i_pa.getArgumentValueByKey("--semi-lagrangian-max-iterations", semi_lagrangian_max_iterations);
 		//i_pa.getArgumentValueByKey("--semi-lagrangian-convergence-threshold", semi_lagrangian_convergence_threshold);
 
+		i_pa.getArgumentValueByKey("--MZ-timestepping-method-P", timestepping_method_P);
+		i_pa.getArgumentValueByKey("--MZ-timestepping-method-Q", timestepping_method_Q);
+		i_pa.getArgumentValueByKey("--MZ-timestepping-order-P", timestepping_order_P);
+		i_pa.getArgumentValueByKey("--MZ-timestepping-order-Q", timestepping_order_Q);
+		i_pa.getArgumentValueByKey("--MZ-timestepping-order2-P", timestepping_order2_P);
+		i_pa.getArgumentValueByKey("--MZ-timestepping-order2-Q", timestepping_order2_Q);
 
-		std::vector<std::string> split;
 
-		split = StringSplit::split(timestepping_method, ",");
-		if (split.size() == 1)
-		{
-			std::string v = split[0];
-			timestepping_method_SP = v;
-			timestepping_method_SQ = v;
-			timestepping_method_FQ = v;
-		}
-		else if (split.size() == 3)
-		{
-			timestepping_method_SP = split[0];
-			timestepping_method_SQ = split[1];
-			timestepping_method_FQ = split[2];
-		}
-		else
-			SWEETError("Invalid number of arguments in timestepping_method");
+		////std::vector<std::string> split;
 
-		split = StringSplit::split(timestepping_order, ",");
-		if (split.size() == 1)
-		{
-			int v = std::stoi(split[0]);
-			timestepping_order_SP = v;
-			timestepping_order_SQ = v;
-			timestepping_order_FQ = v;
-		}
-		else if (split.size() == 3)
-		{
-			timestepping_order_SP = std::stoi(split[0]);
-			timestepping_order_SQ = std::stoi(split[1]);
-			timestepping_order_FQ = std::stoi(split[2]);
-		}
-		else
-			SWEETError("Invalid number of arguments in timestepping_order");
+		////split = StringSplit::split(timestepping_method, ",");
+		////if (split.size() == 1)
+		////{
+		////	std::string v = split[0];
+		////	timestepping_method_P = v;
+		////	timestepping_method_Q = v;
+		////}
+		////else if (split.size() == 2)
+		////{
+		////	timestepping_method_P = split[0];
+		////	timestepping_method_Q = split[1];
+		////}
+		////else
+		////	SWEETError("Invalid number of arguments in timestepping_method");
 
-		split = StringSplit::split(timestepping_order2, ",");
-		if (split.size() == 1)
-		{
-			int v = std::stoi(split[0]);
-			timestepping_order2_SP = v;
-			timestepping_order2_SQ = v;
-			timestepping_order2_FQ = v;
-		}
-		else if (split.size() == 3)
-		{
-			timestepping_order2_SP = std::stoi(split[0]);
-			timestepping_order2_SQ = std::stoi(split[1]);
-			timestepping_order2_FQ = std::stoi(split[2]);
-		}
-		else
-			SWEETError("Invalid number of arguments in timestepping_order2");
+		/////split = StringSplit::split(timestepping_order, ",");
+		/////if (split.size() == 1)
+		/////{
+		/////	int v = std::stoi(split[0]);
+		/////	timestepping_order_P = v;
+		/////	timestepping_order_Q = v;
+		/////}
+		/////else if (split.size() == 2)
+		/////{
+		/////	timestepping_order_P = std::stoi(split[0]);
+		/////	timestepping_order_Q = std::stoi(split[1]);
+		/////}
+		/////else
+		/////	SWEETError("Invalid number of arguments in timestepping_order");
+
+		/////split = StringSplit::split(timestepping_order2, ",");
+		/////if (split.size() == 1)
+		/////{
+		/////	int v = std::stoi(split[0]);
+		/////	timestepping_order2_P = v;
+		/////	timestepping_order2_Q = v;
+		/////}
+		/////else if (split.size() == 2)
+		/////{
+		/////	timestepping_order2_P = std::stoi(split[0]);
+		/////	timestepping_order2_Q = std::stoi(split[1]);
+		/////}
+		/////else
+		/////	SWEETError("Invalid number of arguments in timestepping_order2");
 
 		////split = StringSplit::split(semi_lagrangian_max_iterations, ",");
 		////if (split.size() == 1)

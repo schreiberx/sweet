@@ -14,7 +14,8 @@
 #include <sweet/core/shacksShared/ShackIOData.hpp>
 #include <sweet/expIntegration/ShackExpIntegration.hpp>
 #include "ShackPDESWEPlaneMoriZwanzigTimeDiscretization.hpp"
-#include "../../pde_swePlane/benchmarks/ShackPDESWEPlaneBenchmarks.hpp"
+///#include "../../pde_swePlane/benchmarks/ShackPDESWEPlaneBenchmarks.hpp"
+#include "../benchmarks/ShackPDESWEPlaneMoriZwanzigBenchmarks.hpp"
 #include "../ShackPDESWEPlaneMoriZwanzig.hpp"
 
 
@@ -37,7 +38,7 @@ public:
 	sweet::ShackIOData *shackIOData;
 	sweet::ShackExpIntegration *shackExpIntegration;
 	ShackPDESWEPlaneMoriZwanzigTimeDiscretization *shackPDESWETimeDisc;
-	ShackPDESWEPlaneBenchmarks *shackPDESWEBenchmark;
+	ShackPDESWEPlaneMoriZwanzigBenchmarks *shackPDESWEBenchmark;
 	ShackPDESWEPlaneMoriZwanzig *shackPDESWEPlane;
 
 	sweet::PlaneOperators *ops;
@@ -67,7 +68,7 @@ public:
 		shackIOData = io_shackDict->getAutoRegistration<sweet::ShackIOData>();
 		shackExpIntegration = io_shackDict->getAutoRegistration<sweet::ShackExpIntegration>();
 		shackPDESWETimeDisc = io_shackDict->getAutoRegistration<ShackPDESWEPlaneMoriZwanzigTimeDiscretization>();
-		shackPDESWEBenchmark = io_shackDict->getAutoRegistration<ShackPDESWEPlaneBenchmarks>();
+		shackPDESWEBenchmark = io_shackDict->getAutoRegistration<ShackPDESWEPlaneMoriZwanzigBenchmarks>();
 		shackPDESWEPlane = io_shackDict->getAutoRegistration<ShackPDESWEPlaneMoriZwanzig>();
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*io_shackDict);
 

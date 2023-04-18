@@ -24,7 +24,6 @@ public:
 
 	double F;
 
-
 	/**
 	 * Average height for perturbed formulation
 	 *
@@ -89,6 +88,29 @@ public:
 	 * Check for instabilities and stop
 	 */
 	bool instability_checks = false;
+
+
+	/*
+	 * Min and max wavaenumbers for each wave type
+	*/
+	int SP_geostrophic_min = -1;
+	int SP_geostrophic_max = -1;
+	int SP_gravity_west_min = -1;
+	int SP_gravity_west_max = -1;
+	int SP_gravity_east_min = -1;
+	int SP_gravity_east_max = -1;
+	int SQ_geostrophic_min = -1;
+	int SQ_geostrophic_max = -1;
+	int SQ_gravity_west_min = -1;
+	int SQ_gravity_west_max = -1;
+	int SQ_gravity_east_min = -1;
+	int SQ_gravity_east_max = -1;
+	int FQ_geostrophic_min = -1;
+	int FQ_geostrophic_max = -1;
+	int FQ_gravity_west_min = -1;
+	int FQ_gravity_west_max = -1;
+	int FQ_gravity_east_min = -1;
+	int FQ_gravity_east_max = -1;
 
 
 	void printProgramArguments(const std::string& i_prefix = "")

@@ -48,7 +48,6 @@ public:
 	ShackPDESWEPlaneMoriZwanzig *shackPDESWEPlaneMZ;
 
 	double F;
-	complex I(0.0, 1.0);
 
 	sweet::ExpFunctions<T> expFunctions;
 
@@ -72,17 +71,20 @@ public:
 	bool setup()
 	{
 		F = shackPDESWEPlaneMZ->F;
-		return True;
+		return true;
 	}
 
 	void eigendecomposition(
-					int i_k0,
-					int i_k1,
+					T i_k1,
+					T i_k2,
 					complex o_eigenvalues[3],
 					complex o_eigenvectors[3][3]
 				)
 	{
-		if (i_k0 == 0 && i_k1 == 0)
+
+		complex I(0.0, 1.0);
+
+		if (i_k1 == 0 && i_k2 == 0)
 		{
 			/*
 				* http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,0,0%7D,%7B0,0,f%7D,%7B0,-f,0%7D%7D
@@ -94,7 +96,7 @@ public:
 			o_eigenvectors[2][0] = 0.;
 			//R-
 			o_eigenvectors[0][1] = 0.;
-			o_eigenvectors[1][1] = -I.;
+			o_eigenvectors[1][1] = -I;
 			o_eigenvectors[2][1] = 1.;
 			//R+
 			o_eigenvectors[0][2] = 0.;
@@ -124,9 +126,9 @@ public:
 			double FI = 1. / F;
 			double Fs = std::sqrt(F);
 			double FsI = std::sqrt(FI);
-			double normK2 = std::sqrt(i_k0 * i_k0 + i_k1 * i_k1);
-			complex b = -i_k0 * I;
-			complex c = -i_k1 * I;
+			double normK2 = std::sqrt(i_k1 * i_k1 + i_k2 * i_k2);
+			complex b = -i_k1 * I;
+			complex c = -i_k2 * I;
 			complex om = expFunctions.l_sqrtcplx(FI * normK2 + 1.);
 
 			// R0
@@ -142,7 +144,7 @@ public:
 			///o_eigenvectors[1][1] = -I * (om * i_k0 * F + i_k1 * (normK2 + F) ) * FsI / (om * normK2);
 			///o_eigenvectors[2][1] = 1.0;
 			o_eigenvectors[0][1] = I * (om * i_k1 + i_k2) * Fs / ( i_k1 * i_k1 + F ) ;
-			o_eigenvectors[1][1] = ( om * i_k0 * i_k1 + normK2 + F ) / ( om * (i_k1 * i_k1 + F) )
+			o_eigenvectors[1][1] = ( om * i_k1 * i_k2 + normK2 + F ) / ( om * (i_k2 * i_k2 + F) );
 			o_eigenvectors[2][1] = 1.0;
 
 			// R+
@@ -150,7 +152,7 @@ public:
 			///o_eigenvectors[1][2] = -I * (om * i_k0 * F - i_k1 * (normK2 + F) ) * FsI / (om * normK2);
 			///o_eigenvectors[2][2] = 1.0;
 			o_eigenvectors[0][2] = I * (-om * i_k1 + i_k2) * Fs / ( i_k1 * i_k1 + F ) ;
-			o_eigenvectors[1][2] = ( om * i_k0 * i_k1 - normK2 - F ) / ( om * (i_k1 * i_k1 + F) )
+			o_eigenvectors[1][2] = ( om * i_k1 * i_k2 - normK2 - F ) / ( om * (i_k2 * i_k2 + F) );
 			o_eigenvectors[2][2] = 1.0;
 
 			o_eigenvalues[0] = 0.0;

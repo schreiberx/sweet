@@ -21,16 +21,18 @@
 #include <sweet/core/shacksShared/ShackIOData.hpp>
 #include <sweet/core/plane/PlaneDataGridMapping.hpp>
 #include "../pde_swePlane/ShackPDESWEPlane_Diagnostics.hpp"
-#include "../pde_swePlane/benchmarks/ShackPDESWEPlaneBenchmarks.hpp"
+///#include "../pde_swePlane/benchmarks/ShackPDESWEPlaneBenchmarks.hpp"
+#include "benchmarks/ShackPDESWEPlaneMoriZwanzigBenchmarks.hpp"
 
 // Benchmarks
-#include "../pde_swePlane/PDESWEPlane_BenchmarksCombined.hpp"
+////#include "../pde_swePlane/PDESWEPlane_BenchmarksCombined.hpp"
+#include "PDESWEPlaneMoriZwanzig_BenchmarksCombined.hpp"
 
 // Time steppers
 #include "PDESWEPlaneMoriZwanzig_TimeSteppers.hpp"
 
-// If doing normal mode analysis
-#include "../pde_swePlane/PDESWEPlane_NormalModes.hpp"
+//////// If doing normal mode analysis
+//////#include "../pde_swePlane/PDESWEPlane_NormalModes.hpp"
 
 #if SWEET_MPI
 #	include <mpi.h>
@@ -132,7 +134,7 @@ public:
 	PDESWEPlaneMoriZwanzigTimeSteppers pdeSWEPlaneMoriZwanzigTimeSteppers;
 
 	// Handler to all benchmarks
-	PDESWEPlaneBenchmarksCombined planeBenchmarksCombined;
+	PDESWEPlaneMoriZwanzigBenchmarksCombined planeBenchmarksCombined;
 
 	/*
 	 * Shack directory and shacks to work with
@@ -143,7 +145,7 @@ public:
 	sweet::ShackTimestepControl *shackTimestepControl;
 	ShackPDESWEPlaneMoriZwanzig *shackPDESWEPlane;
 	ShackPDESWEPlaneMoriZwanzigTimeDiscretization *shackTimeDisc;
-	ShackPDESWEPlaneBenchmarks *shackPDESWEPlaneBenchmarks;
+	ShackPDESWEPlaneMoriZwanzigBenchmarks *shackPDESWEPlaneBenchmarks;
 	ShackPDESWEPlaneDiagnostics *shackPDESWEPlaneDiagnostics;
 
 	class BenchmarkErrors
@@ -218,6 +220,7 @@ public:
 
 	BenchmarkErrors benchmarkErrors;
 
+#if 0
 	class NormalModesData
 	{
 	public:
@@ -264,6 +267,7 @@ public:
 	};
 
 	NormalModesData *normalmodes;
+#endif
 
 	/// Diagnostic measures at initial stage, Initialize with 0
 	double diagnostics_energy_start = 0;
@@ -304,7 +308,7 @@ public:
 		shackPDESWEPlane = shackProgArgDict.getAutoRegistration<ShackPDESWEPlaneMoriZwanzig>();
 		shackIOData = shackProgArgDict.getAutoRegistration<sweet::ShackIOData>();
 		shackTimeDisc = shackProgArgDict.getAutoRegistration<ShackPDESWEPlaneMoriZwanzigTimeDiscretization>();
-		shackPDESWEPlaneBenchmarks = shackProgArgDict.getAutoRegistration<ShackPDESWEPlaneBenchmarks>();
+		shackPDESWEPlaneBenchmarks = shackProgArgDict.getAutoRegistration<ShackPDESWEPlaneMoriZwanzigBenchmarks>();
 		shackPDESWEPlaneDiagnostics = shackProgArgDict.getAutoRegistration<ShackPDESWEPlaneDiagnostics>();
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
@@ -317,22 +321,26 @@ public:
 		pdeSWEPlaneMoriZwanzigTimeSteppers.shackRegistration(shackProgArgDict);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(pdeSWEPlaneMoriZwanzigTimeSteppers);
 
+#if 0
 		if (shackPDESWEPlane->normal_mode_analysis_generation)
 		{
 			normalmodes = new NormalModesData;
 			normalmodes->shackRegistration(shackProgArgDict);
 		}
+#endif
 
 		return true;
 	}
 
 	void clear_1_shackRegistration()
 	{
+#if 0
 		if (shackPDESWEPlane->normal_mode_analysis_generation)
 		{
 			delete normalmodes;
 			normalmodes = nullptr;
 		}
+#endif
 
 		shackPlaneDataOps = nullptr;
 		shackTimestepControl = nullptr;
@@ -492,12 +500,14 @@ public:
 
 	void clear_3_main()
 	{
+#if 0
 		if (shackPDESWEPlane->normal_mode_analysis_generation)
 		{
 			normalmodes->clear();
 			delete normalmodes;
 			normalmodes = nullptr;
 		}
+#endif
 		
 #if SWEET_GUI
 		vis_plane_data.clear();
@@ -595,6 +605,7 @@ public:
 	//Update diagnostic variables related to normal modes
 	void dump_normal_modes()
 	{
+#if 0
 		if (!compute_normal_modes )
 			return;
 
@@ -604,6 +615,7 @@ public:
 #endif
 
 		return;
+#endif
 	}
 
 	//Calculate the model diagnostics
@@ -887,7 +899,7 @@ public:
 			}
 #endif
 
-#if 1
+#if 0
 			// Normal mode stuff
 			if (compute_normal_modes)
 			{
