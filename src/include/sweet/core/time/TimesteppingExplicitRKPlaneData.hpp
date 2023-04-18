@@ -38,6 +38,7 @@ public:
 		runge_kutta_order = i_rk_order;
 		int N = i_rk_order;
 
+		std::cout << "AAAAAAAAAAA " << N << std::endl;
 		if (N <= 0 || N > 4)
 			SWEETError("Invalid order for RK time stepping (Please set --timestepping-order and/or --timestepping-order2)");
 

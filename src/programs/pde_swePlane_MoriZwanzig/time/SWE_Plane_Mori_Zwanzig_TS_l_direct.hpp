@@ -23,11 +23,13 @@
 #include "../ShackPDESWEPlaneMoriZwanzig.hpp"
 #include "../PDESWEPlaneMoriZwanzig_NormalModes.hpp"
 
-#include "../../pde_swePlane/time/PDESWEPlaneTS_BaseInterface.hpp"
+///#include "../../pde_swePlane/time/PDESWEPlaneTS_BaseInterface.hpp"
+#include "PDESWEPlaneMoriZwanzigTS_BaseInterface.hpp"
+
 
 
 class SWE_Plane_Mori_Zwanzig_TS_l_direct	:
-		public PDESWEPlaneTS_BaseInterface
+		public PDESWEPlaneMoriZwanzigTS_BaseInterface
 {
 	typedef double T;
 
@@ -38,11 +40,30 @@ class SWE_Plane_Mori_Zwanzig_TS_l_direct	:
 	sweet::PlaneDataGridMapping planeDataGridMapping;
 
 public:
+	bool shackRegistration(
+			sweet::ShackDictionary *io_shackDict
+	);
+
+public:
 
 	void runTimestep(
-			sweet::PlaneData_Spectral &io_h,	///< prognostic variables
-			sweet::PlaneData_Spectral &io_u,	///< prognostic variables
-			sweet::PlaneData_Spectral &io_v,	///< prognostic variables
+////			sweet::PlaneData_Spectral &io_h,	///< prognostic variables
+////			sweet::PlaneData_Spectral &io_u,	///< prognostic variables
+////			sweet::PlaneData_Spectral &io_v,	///< prognostic variables
+
+			sweet::PlaneData_Spectral &io_h_pert_SP,	///< prognostic variables
+			sweet::PlaneData_Spectral &io_u_SP,		///< prognostic variables
+			sweet::PlaneData_Spectral &io_v_SP,		///< prognostic variables
+
+			sweet::PlaneData_Spectral &io_h_pert_SQ,	///< prognostic variables
+			sweet::PlaneData_Spectral &io_u_SQ,		///< prognostic variables
+			sweet::PlaneData_Spectral &io_v_SQ,		///< prognostic variables
+
+			sweet::PlaneData_Spectral &io_h_pert_FQ,	///< prognostic variables
+			sweet::PlaneData_Spectral &io_u_FQ,		///< prognostic variables
+			sweet::PlaneData_Spectral &io_v_FQ,		///< prognostic variables
+
+
 
 			double i_dt = 0,
 			double i_simulation_timestamp = -1
@@ -50,9 +71,22 @@ public:
 
 
 	void run_timestep_cgrid(
-			sweet::PlaneData_Spectral &io_h_pert,	///< prognostic variables
-			sweet::PlaneData_Spectral &io_u,		///< prognostic variables
-			sweet::PlaneData_Spectral &io_v,		///< prognostic variables
+////			sweet::PlaneData_Spectral &io_h_pert,	///< prognostic variables
+////			sweet::PlaneData_Spectral &io_u,		///< prognostic variables
+////			sweet::PlaneData_Spectral &io_v,		///< prognostic variables
+
+			sweet::PlaneData_Spectral &io_h_pert_SP,	///< prognostic variables
+			sweet::PlaneData_Spectral &io_u_SP,		///< prognostic variables
+			sweet::PlaneData_Spectral &io_v_SP,		///< prognostic variables
+
+			sweet::PlaneData_Spectral &io_h_pert_SQ,	///< prognostic variables
+			sweet::PlaneData_Spectral &io_u_SQ,		///< prognostic variables
+			sweet::PlaneData_Spectral &io_v_SQ,		///< prognostic variables
+
+			sweet::PlaneData_Spectral &io_h_pert_FQ,	///< prognostic variables
+			sweet::PlaneData_Spectral &io_u_FQ,		///< prognostic variables
+			sweet::PlaneData_Spectral &io_v_FQ,		///< prognostic variables
+
 
 			double i_dt,
 			double i_simulation_timestamp
@@ -60,9 +94,22 @@ public:
 
 
 	void run_timestep_agrid(
-			sweet::PlaneData_Spectral &io_h,	///< prognostic variables
-			sweet::PlaneData_Spectral &io_u,	///< prognostic variables
-			sweet::PlaneData_Spectral &io_v,	///< prognostic variables
+////			sweet::PlaneData_Spectral &io_h,	///< prognostic variables
+////			sweet::PlaneData_Spectral &io_u,	///< prognostic variables
+////			sweet::PlaneData_Spectral &io_v,	///< prognostic variables
+
+			sweet::PlaneData_Spectral &io_h_pert_SP,	///< prognostic variables
+			sweet::PlaneData_Spectral &io_u_SP,		///< prognostic variables
+			sweet::PlaneData_Spectral &io_v_SP,		///< prognostic variables
+
+			sweet::PlaneData_Spectral &io_h_pert_SQ,	///< prognostic variables
+			sweet::PlaneData_Spectral &io_u_SQ,		///< prognostic variables
+			sweet::PlaneData_Spectral &io_v_SQ,		///< prognostic variables
+
+			sweet::PlaneData_Spectral &io_h_pert_FQ,	///< prognostic variables
+			sweet::PlaneData_Spectral &io_u_FQ,		///< prognostic variables
+			sweet::PlaneData_Spectral &io_v_FQ,		///< prognostic variables
+
 
 			double i_dt,
 			double i_simulation_timestamp
@@ -70,9 +117,22 @@ public:
 
 
 	void run_timestep_agrid_planedata(
-			sweet::PlaneData_Spectral &io_h,	///< prognostic variables
-			sweet::PlaneData_Spectral &io_u,	///< prognostic variables
-			sweet::PlaneData_Spectral &io_v,	///< prognostic variables
+////			sweet::PlaneData_Spectral &io_h,	///< prognostic variables
+////			sweet::PlaneData_Spectral &io_u,	///< prognostic variables
+////			sweet::PlaneData_Spectral &io_v,	///< prognostic variables
+
+			sweet::PlaneData_Spectral &io_h_pert_SP,	///< prognostic variables
+			sweet::PlaneData_Spectral &io_u_SP,		///< prognostic variables
+			sweet::PlaneData_Spectral &io_v_SP,		///< prognostic variables
+
+			sweet::PlaneData_Spectral &io_h_pert_SQ,	///< prognostic variables
+			sweet::PlaneData_Spectral &io_u_SQ,		///< prognostic variables
+			sweet::PlaneData_Spectral &io_v_SQ,		///< prognostic variables
+
+			sweet::PlaneData_Spectral &io_h_pert_FQ,	///< prognostic variables
+			sweet::PlaneData_Spectral &io_u_FQ,		///< prognostic variables
+			sweet::PlaneData_Spectral &io_v_FQ,		///< prognostic variables
+
 
 			double i_dt,
 			double i_simulation_timestamp

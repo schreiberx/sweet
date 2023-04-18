@@ -20,9 +20,9 @@ class ShackPDESWEPlaneMoriZwanzig	:
 {
 public:
 
-	double epsilon;
+	double epsilon = -1;
 
-	double F;
+	double F = -1;
 
 	/**
 	 * Average height for perturbed formulation
@@ -135,7 +135,28 @@ public:
 	bool processProgramArguments(sweet::ProgramArguments &i_pa)
 	{
 		i_pa.getArgumentValueBy3Keys("--pde-epsilon", "--epsilon", "--MZ-epsilon", epsilon);
-		i_pa.getArgumentValueBy3Keys("--pde-F", "-F", "--MZ-F", epsilon);
+		i_pa.getArgumentValueBy3Keys("--pde-F", "-F", "--MZ-F", F);
+
+		i_pa.getArgumentValueByKey("--MZ-SP-geostr-min", SP_geostrophic_min);
+		i_pa.getArgumentValueByKey("--MZ-SP-geostr-max", SP_geostrophic_max);
+		i_pa.getArgumentValueByKey("--MZ-SP-gw-min",     SP_gravity_west_min);
+		i_pa.getArgumentValueByKey("--MZ-SP-gw-max",     SP_gravity_west_max);
+		i_pa.getArgumentValueByKey("--MZ-SP-ge-min",     SP_gravity_east_min);
+		i_pa.getArgumentValueByKey("--MZ-SP-ge-max",     SP_gravity_east_max);
+
+		i_pa.getArgumentValueByKey("--MZ-SQ-geostr-min", SQ_geostrophic_min);
+		i_pa.getArgumentValueByKey("--MZ-SQ-geostr-max", SQ_geostrophic_max);
+		i_pa.getArgumentValueByKey("--MZ-SQ-gw-min",     SQ_gravity_west_min);
+		i_pa.getArgumentValueByKey("--MZ-SQ-gw-max",     SQ_gravity_west_max);
+		i_pa.getArgumentValueByKey("--MZ-SQ-ge-min",     SQ_gravity_east_min);
+		i_pa.getArgumentValueByKey("--MZ-SQ-ge-max",     SQ_gravity_east_max);
+
+		i_pa.getArgumentValueByKey("--MZ-FQ-geostr-min", FQ_geostrophic_min);
+		i_pa.getArgumentValueByKey("--MZ-FQ-geostr-max", FQ_geostrophic_max);
+		i_pa.getArgumentValueByKey("--MZ-FQ-gw-min",     FQ_gravity_west_min);
+		i_pa.getArgumentValueByKey("--MZ-FQ-gw-max",     FQ_gravity_west_max);
+		i_pa.getArgumentValueByKey("--MZ-FQ-ge-min",     FQ_gravity_east_min);
+		i_pa.getArgumentValueByKey("--MZ-FQ-ge-max",     FQ_gravity_east_max);
 
 		i_pa.getArgumentValueBy3Keys("--pde-h0", "-H", "--h0", h0);
 		i_pa.getArgumentValueBy2Keys("--pde-viscosity", "-u", viscosity);

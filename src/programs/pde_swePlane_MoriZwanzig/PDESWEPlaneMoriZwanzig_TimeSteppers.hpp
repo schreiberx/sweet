@@ -73,7 +73,9 @@ public:
 		assert(io_ops != nullptr);
 		assert(io_shackDict != nullptr);
 
-		const std::string &timestepping_method = shackPDESWEPlaneMoriZwanzigTimeDiscretization->timestepping_method;
+		// TODO: different tsm for each equation
+		///const std::string &timestepping_method = shackPDESWEPlaneMoriZwanzigTimeDiscretization->timestepping_method;
+		const std::string &timestepping_method = shackPDESWEPlaneMoriZwanzigTimeDiscretization->timestepping_method_P;
 
 		linear_only = false;
 

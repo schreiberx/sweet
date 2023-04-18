@@ -15,7 +15,6 @@
 #include <sweet/core/plane/PlaneOperators.hpp>
 
 #include "PDESWEPlaneMoriZwanzigTS_BaseInterface.hpp"
-#include "../PDESWEPlaneMoriZwanzig_Projection.hpp"
 
 class SWE_Plane_Mori_Zwanzig_TS_n_erk	: public PDESWEPlaneMoriZwanzigTS_BaseInterface
 {
@@ -34,8 +33,6 @@ class SWE_Plane_Mori_Zwanzig_TS_n_erk	: public PDESWEPlaneMoriZwanzigTS_BaseInte
 	bool use_only_linear_divergence;
 
 	sweet::TimesteppingExplicitRKPlaneData timestepping_rk_P;
-
-	PDESWEPlaneMoriZwanzigProjection* projection = nullptr;
 
 public:
 	bool shackRegistration(

@@ -74,10 +74,13 @@ public:
 		shackPDESWEPlaneMZ = io_dict.getAutoRegistration<ShackPDESWEPlaneMoriZwanzig>();
 		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(io_dict);
 
+		normal_modes.shackRegistration(io_dict);
+
 		return true;
 	}
 
-	bool setup()
+
+	bool setup(sweet::PlaneData_Config i_planeDataConfig)
 	{
 		this->normal_modes.setup();
 
@@ -103,7 +106,64 @@ public:
 		this->modes[2][2][0] = this->shackPDESWEPlaneMZ->FQ_gravity_east_min;
 		this->modes[2][2][1] = this->shackPDESWEPlaneMZ->FQ_gravity_east_max;
 
-		// TODO: checks
+		// treat negative values
+		for (int i = 0; i < 3; i++)
+			for (int wave_type = 0; wave_type < 3; wave_type++)
+				for (int j = 0; j < 3; j++)
+					if (this->modes[i][wave_type][j] < 0)
+						this->modes[i][wave_type][j] = 0
+
+
+		std::vector<std::string> strs = {"SP", "SQ", "FQ"};
+		std::vector<std::string> strw = {"geostrophic", "gravity west", "gravity east"};
+		// Check if SP, SQ, FQ overlap
+		for (int i = 0; i < 3; i++)
+		{
+			for (int j = i + 1; j < 3; j++)
+			{
+				for (int wave_type = 0; wave_type < 3; wave_type++)
+				{
+					int min1 = this->modes[i][wave_type][0];
+					int max1 = this->modes[i][wave_type][1];
+					int min2 = this->modes[j][wave_type][0];
+					int max2 = this->modes[j][wave_type][1];
+
+					if (
+						min2 < max1 && max2 > max1 ||
+						min2 < min1 && max2 > min1 ||
+						min1 < max2 && max1 > max2 ||
+						min1 < max2 && max1 > max2
+					)
+						SWEETError("Regions " + strs[i] + " and " + strs[j] + " overlap in " + strw[wave_type] + " waves!");
+				}
+			}
+		}
+
+		// check if SP, SQ, FQ cover the entire spectral space
+		for (int wave_type = 0; wave_type < 3; wave_type++)
+		{
+			// check if there is a min = zero
+			bool zero_ok = false;
+			for (int i = 0; i < 3; i++)
+				if (this->modes[i][wave_type][0] == 0 && this->modes[i][wave_type][0] > 0)
+				{
+					zero_ok = true;
+					break;
+				}
+			if (!zero_ok)
+				SWEETError(strw[wave_type] + " waves are not fully covered by SP, SQ and FQ!");
+
+			// sum modes to check if they ara all taken into account
+			int sum = 0;
+			for (int i = 0; i < 3; i++)
+			{
+				int min = this->modes[i][wave_type][0];
+				int max = this->modes[i][wave_type][1] - 1;
+				sum += (min + max) * (max - min + 1) / 2;
+			}
+			if (sum != (i_planeDataConfig->spectral_data_size[0] - 1) * i_planeDataConfig->spectral_data_size[0] / 2)
+				SWEETError(strw[wave_type] + " waves are not fully covered by SP, SQ and FQ!");
+		}
 
 		return true;
 	}
@@ -161,6 +221,7 @@ public:
 						continue;
 
 					complex coef_proj = 0.;
+					std::cout << "BBBBBB " << wave_type << " " << k2 << " " << k1 << " " << std::endl;
 					coef_proj += eigenvectors[0][wave_type] * h_copy.spectral_get(k2, k1);
 					coef_proj += eigenvectors[1][wave_type] * u_copy.spectral_get(k2, k1);
 					coef_proj += eigenvectors[2][wave_type] * v_copy.spectral_get(k2, k1);

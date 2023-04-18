@@ -60,12 +60,12 @@ int main_mpi(int i_argc, char *i_argv[])
 		simulation.shackTimestepControl->validateMaxSimulationTimeOrTimestepNr();
 		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(*(simulation.shackTimestepControl));
 
-		if (simulation.shackPDESWEPlane->normal_mode_analysis_generation > 0)
-		{
-			simulation.normal_mode_analysis();
-		}
-		else
-		{
+		////if (simulation.shackPDESWEPlane->normal_mode_analysis_generation > 0)
+		////{
+		////	simulation.normal_mode_analysis();
+		////}
+		////else
+		////{
 			StopwatchBox::getInstance().main_timestepping.start();
 
 			while (!simulation.should_quit())
@@ -81,7 +81,7 @@ int main_mpi(int i_argc, char *i_argv[])
 			}
 
 			StopwatchBox::getInstance().main_timestepping.stop();
-		}
+		////}
 		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
 	}
 

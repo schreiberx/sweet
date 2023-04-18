@@ -96,11 +96,11 @@ public:
 			o_eigenvectors[2][0] = 0.;
 			//R-
 			o_eigenvectors[0][1] = 0.;
-			o_eigenvectors[1][1] = -I;
+			o_eigenvectors[1][1] = I;
 			o_eigenvectors[2][1] = 1.;
 			//R+
 			o_eigenvectors[0][2] = 0.;
-			o_eigenvectors[1][2] = I;
+			o_eigenvectors[1][2] = -I;
 			o_eigenvectors[2][2] = 1.;
 
 			o_eigenvalues[1] = 0.;
@@ -143,16 +143,16 @@ public:
 			///o_eigenvectors[0][1] = I * (om * i_k0 + i_k1) * FsI / normK2;
 			///o_eigenvectors[1][1] = -I * (om * i_k0 * F + i_k1 * (normK2 + F) ) * FsI / (om * normK2);
 			///o_eigenvectors[2][1] = 1.0;
-			o_eigenvectors[0][1] = I * (om * i_k1 + i_k2) * Fs / ( i_k1 * i_k1 + F ) ;
-			o_eigenvectors[1][1] = ( om * i_k1 * i_k2 + normK2 + F ) / ( om * (i_k2 * i_k2 + F) );
+			o_eigenvectors[0][1] = I * (-om * i_k2 + i_k1) * Fs / ( i_k2 * i_k2 + F ) ;
+			o_eigenvectors[1][1] = ( om * i_k1 * i_k2 - normK2 - F ) / ( om * (i_k2 * i_k2 + F) );
 			o_eigenvectors[2][1] = 1.0;
 
 			// R+
 			///o_eigenvectors[0][2] = -I * (om * i_k0 - i_k1) * FsI / normK2;
 			///o_eigenvectors[1][2] = -I * (om * i_k0 * F - i_k1 * (normK2 + F) ) * FsI / (om * normK2);
 			///o_eigenvectors[2][2] = 1.0;
-			o_eigenvectors[0][2] = I * (-om * i_k1 + i_k2) * Fs / ( i_k1 * i_k1 + F ) ;
-			o_eigenvectors[1][2] = ( om * i_k1 * i_k2 - normK2 - F ) / ( om * (i_k2 * i_k2 + F) );
+			o_eigenvectors[0][2] = I * (om * i_k2 + i_k1) * Fs / ( i_k2 * i_k2 + F ) ;
+			o_eigenvectors[1][2] = ( om * i_k1 * i_k2 + normK2 + F ) / ( om * (i_k2 * i_k2 + F) );
 			o_eigenvectors[2][2] = 1.0;
 
 			o_eigenvalues[0] = 0.0;

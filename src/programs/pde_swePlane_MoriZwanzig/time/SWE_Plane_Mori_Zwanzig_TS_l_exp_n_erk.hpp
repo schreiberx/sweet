@@ -31,7 +31,6 @@ class SWE_Plane_Mori_Zwanzig_TS_l_exp_n_erk	: public PDESWEPlaneMoriZwanzigTS_Ba
 	SWE_Plane_Mori_Zwanzig_TS_l_exp ts_l_exp;
 	SWE_Plane_Mori_Zwanzig_TS_n_erk ts_n_erk;
 
-	PDESWEPlaneMoriZwanzigProjection* projection = nullptr;
 
 public:
 	bool shackRegistration(

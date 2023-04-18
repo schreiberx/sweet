@@ -15,6 +15,7 @@ bool SWE_Plane_Mori_Zwanzig_TS_l_exp_n_erk::shackRegistration(
 {
 
 	ts_l_exp.shackRegistration(io_shackDict);
+	ts_n_erk.shackRegistration(io_shackDict);
 	PDESWEPlaneMoriZwanzigTS_BaseInterface::shackRegistration(io_shackDict);
 
 	return true;
@@ -41,6 +42,7 @@ void SWE_Plane_Mori_Zwanzig_TS_l_exp_n_erk::runTimestep(
 	if (i_dt <= 0)
 		SWEETError("SWE_Plane_TS_l_exp_n_erk: Only constant time step size allowed");
 
+	sweet::PlaneData_Spectral dummy(io_u_SP.planeDataConfig);
 
 	///////////////////////////
 	// solve equation for SP //
@@ -50,6 +52,8 @@ void SWE_Plane_Mori_Zwanzig_TS_l_exp_n_erk::runTimestep(
 
 		ts_l_exp.runTimestep(
 				io_h_pert_SP, io_u_SP, io_v_SP,
+				dummy, dummy, dummy,
+				dummy, dummy, dummy,
 				i_dt,
 				i_simulation_timestamp
 			);
@@ -71,6 +75,8 @@ void SWE_Plane_Mori_Zwanzig_TS_l_exp_n_erk::runTimestep(
 
 		ts_l_exp.runTimestep(
 				io_h_pert_SP, io_u_SP, io_v_SP,
+				dummy, dummy, dummy,
+				dummy, dummy, dummy,
 				i_dt * .5,
 				i_simulation_timestamp
 			);
@@ -88,6 +94,8 @@ void SWE_Plane_Mori_Zwanzig_TS_l_exp_n_erk::runTimestep(
 
 		ts_l_exp.runTimestep(
 				io_h_pert_SP, io_u_SP, io_v_SP,
+				dummy, dummy, dummy,
+				dummy, dummy, dummy,
 				i_dt * .5,
 				i_simulation_timestamp
 			);
@@ -109,6 +117,8 @@ void SWE_Plane_Mori_Zwanzig_TS_l_exp_n_erk::runTimestep(
 	{
 
 		ts_l_exp.runTimestep(
+				dummy, dummy, dummy,
+				dummy, dummy, dummy,
 				io_h_pert_FQ, io_u_FQ, io_v_FQ,
 				i_dt,
 				i_simulation_timestamp
@@ -130,6 +140,8 @@ void SWE_Plane_Mori_Zwanzig_TS_l_exp_n_erk::runTimestep(
 	{
 
 		ts_l_exp.runTimestep(
+				dummy, dummy, dummy,
+				dummy, dummy, dummy,
 				io_h_pert_FQ, io_u_FQ, io_v_FQ,
 				i_dt * .5,
 				i_simulation_timestamp
@@ -148,6 +160,8 @@ void SWE_Plane_Mori_Zwanzig_TS_l_exp_n_erk::runTimestep(
 			);
 
 		ts_l_exp.runTimestep(
+				dummy, dummy, dummy,
+				dummy, dummy, dummy,
 				io_h_pert_FQ, io_u_FQ, io_v_FQ,
 				i_dt * .5,
 				i_simulation_timestamp
@@ -174,9 +188,12 @@ bool SWE_Plane_Mori_Zwanzig_TS_l_exp_n_erk::setup(
 	sweet::PlaneOperators *io_ops
 )
 {
+	ops = io_ops;
+
 	use_only_linear_divergence = shackPDESWEPlane->use_only_linear_divergence;
 
 	ts_l_exp.setup(io_ops, "phi0");
+	ts_n_erk.setup(io_ops, io_ops->planeDataConfig);
 
 	timestepping_order_nonlinear_P = shackPDESWETimeDisc->timestepping_order_P;
 	timestepping_order_nonlinear_Q = shackPDESWETimeDisc->timestepping_order_Q;

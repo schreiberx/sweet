@@ -17,6 +17,7 @@
 ///#include "../../pde_swePlane/benchmarks/ShackPDESWEPlaneBenchmarks.hpp"
 #include "../benchmarks/ShackPDESWEPlaneMoriZwanzigBenchmarks.hpp"
 #include "../ShackPDESWEPlaneMoriZwanzig.hpp"
+#include "../PDESWEPlaneMoriZwanzig_Projection.hpp"
 
 
 #if SWEET_PARAREAL || SWEET_XBRAID
@@ -42,6 +43,8 @@ public:
 	ShackPDESWEPlaneMoriZwanzig *shackPDESWEPlane;
 
 	sweet::PlaneOperators *ops;
+
+	PDESWEPlaneMoriZwanzigProjection projection;
 
 	PDESWEPlaneMoriZwanzigTS_BaseInterface()	:
 		shackDict(nullptr),
@@ -72,6 +75,8 @@ public:
 		shackPDESWEPlane = io_shackDict->getAutoRegistration<ShackPDESWEPlaneMoriZwanzig>();
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*io_shackDict);
 
+		projection.shackRegistration(*io_shackDict);
+
 		return true;
 	}
 
@@ -81,6 +86,7 @@ public:
 	)
 	{
 		ops = io_ops;
+		projection.setup();
 		return true;
 	}
 

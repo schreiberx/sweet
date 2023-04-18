@@ -321,6 +321,8 @@ public:
 		pdeSWEPlaneMoriZwanzigTimeSteppers.shackRegistration(shackProgArgDict);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(pdeSWEPlaneMoriZwanzigTimeSteppers);
 
+		projection.shackRegistration(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(projection);
 #if 0
 		if (shackPDESWEPlane->normal_mode_analysis_generation)
 		{
@@ -410,6 +412,9 @@ public:
 			);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(planeBenchmarksCombined);
 
+
+		projection.setup();
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(projection);
 
 		// copy and project initial solutions
 		dataAndOps_SQ.prog_h_pert = dataAndOps_SP.prog_h_pert;
@@ -657,22 +662,22 @@ public:
 
 
 
-	void normal_mode_analysis()
-	{
-#if 0
-		normalmodes->pdeSWEPlaneNormalModes.normal_mode_analysis(
-								dataAndOps.prog_h_pert,
-								dataAndOps.prog_u,
-								dataAndOps.prog_v,
-								3,
-								&shackProgArgDict,
-								this,
-								&ProgramPDESWEPlaneMoriZwanzig::runTimestep
-						);
-
-		std::cout << "\n Done normal mode analysis in separate class" << std::endl;
-#endif
-	}
+/////	void normal_mode_analysis()
+/////	{
+/////#if 0
+/////		normalmodes->pdeSWEPlaneNormalModes.normal_mode_analysis(
+/////								dataAndOps.prog_h_pert,
+/////								dataAndOps.prog_u,
+/////								dataAndOps.prog_v,
+/////								3,
+/////								&shackProgArgDict,
+/////								this,
+/////								&ProgramPDESWEPlaneMoriZwanzig::runTimestep
+/////						);
+/////
+/////		std::cout << "\n Done normal mode analysis in separate class" << std::endl;
+/////#endif
+/////	}
 
 
 	/**

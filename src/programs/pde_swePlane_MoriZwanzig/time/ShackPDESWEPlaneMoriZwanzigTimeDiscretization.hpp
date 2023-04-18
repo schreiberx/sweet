@@ -66,6 +66,9 @@ public:
 		//i_pa.getArgumentValueByKey("--semi-lagrangian-max-iterations", semi_lagrangian_max_iterations);
 		//i_pa.getArgumentValueByKey("--semi-lagrangian-convergence-threshold", semi_lagrangian_convergence_threshold);
 
+
+		std::cout << "BBBBBBBBBBBBBBBBBBBBBB " << std::endl;
+
 		i_pa.getArgumentValueByKey("--MZ-timestepping-method-P", timestepping_method_P);
 		i_pa.getArgumentValueByKey("--MZ-timestepping-method-Q", timestepping_method_Q);
 		i_pa.getArgumentValueByKey("--MZ-timestepping-order-P", timestepping_order_P);
