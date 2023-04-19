@@ -48,6 +48,7 @@ public:
 
 		for (int i = 0; i < N; i++)
 		{
+			std::cout << "DDDDDDDDDDDDD " << i << " " << N << std::endl;
 			RK_h_t[i] = new PlaneData_Spectral(i_planeDataConfig);
 			RK_u_t[i] = new PlaneData_Spectral(i_planeDataConfig);
 			RK_v_t[i] = new PlaneData_Spectral(i_planeDataConfig);

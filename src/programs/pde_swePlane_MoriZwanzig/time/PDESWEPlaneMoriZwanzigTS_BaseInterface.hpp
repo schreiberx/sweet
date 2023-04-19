@@ -46,6 +46,8 @@ public:
 
 	PDESWEPlaneMoriZwanzigProjection projection;
 
+	std::string equation;
+
 	PDESWEPlaneMoriZwanzigTS_BaseInterface()	:
 		shackDict(nullptr),
 		shackTimestepControl(nullptr),
@@ -82,11 +84,17 @@ public:
 
 
 	virtual bool setup(
-		sweet::PlaneOperators *io_ops
+		sweet::PlaneOperators *io_ops,
+		std::string i_equation
 	)
 	{
 		ops = io_ops;
-		projection.setup();
+		projection.setup(io_ops->planeDataConfig);
+
+		equation = i_equation;
+		if (equation != "P" && equation != "Q")
+			SWEETError("Invalid equation: " + equation);
+
 		return true;
 	}
 

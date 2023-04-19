@@ -80,7 +80,7 @@ public:
 	}
 
 
-	bool setup(sweet::PlaneData_Config i_planeDataConfig)
+	bool setup(sweet::PlaneData_Config* i_planeDataConfig)
 	{
 		this->normal_modes.setup();
 
@@ -109,9 +109,9 @@ public:
 		// treat negative values
 		for (int i = 0; i < 3; i++)
 			for (int wave_type = 0; wave_type < 3; wave_type++)
-				for (int j = 0; j < 3; j++)
+				for (int j = 0; j < 2; j++)
 					if (this->modes[i][wave_type][j] < 0)
-						this->modes[i][wave_type][j] = 0
+						this->modes[i][wave_type][j] = 0;
 
 
 		std::vector<std::string> strs = {"SP", "SQ", "FQ"};
@@ -145,7 +145,7 @@ public:
 			// check if there is a min = zero
 			bool zero_ok = false;
 			for (int i = 0; i < 3; i++)
-				if (this->modes[i][wave_type][0] == 0 && this->modes[i][wave_type][0] > 0)
+				if (this->modes[i][wave_type][0] == 0 && this->modes[i][wave_type][1] > 0)
 				{
 					zero_ok = true;
 					break;
@@ -160,8 +160,10 @@ public:
 				int min = this->modes[i][wave_type][0];
 				int max = this->modes[i][wave_type][1] - 1;
 				sum += (min + max) * (max - min + 1) / 2;
+				////std::cout << i << " " << min << " " << max << " " << (min + max) * (max - min + 1) / 2 << " " << sum << std::endl;
 			}
-			if (sum != (i_planeDataConfig->spectral_data_size[0] - 1) * i_planeDataConfig->spectral_data_size[0] / 2)
+			/////std::cout << i_planeDataConfig->spectral_data_size[0] << " " << i_planeDataConfig->spectral_data_size[1] << " " << (i_planeDataConfig->spectral_data_size[1] - 1) * i_planeDataConfig->spectral_data_size[1] / 2 << " " << sum << std::endl;
+			if (sum != (i_planeDataConfig->spectral_data_size[1] - 1) * i_planeDataConfig->spectral_data_size[1] / 2)
 				SWEETError(strw[wave_type] + " waves are not fully covered by SP, SQ and FQ!");
 		}
 
@@ -171,9 +173,9 @@ public:
 
 
 	void project(
-			sweet::PlaneData_Spectral io_h_pert,
-			sweet::PlaneData_Spectral io_u,
-			sweet::PlaneData_Spectral io_v,
+			sweet::PlaneData_Spectral &io_h_pert,
+			sweet::PlaneData_Spectral &io_u,
+			sweet::PlaneData_Spectral &io_v,
 			std::string projection_type
 	)
 	{
@@ -204,6 +206,19 @@ public:
 		int Kmin = std::min(std::min(this->modes[idx][0][0], this->modes[idx][1][0]), this->modes[idx][2][0]);
 		int Kmax = std::max(std::max(this->modes[idx][0][1], this->modes[idx][1][1]), this->modes[idx][2][1]);
 
+		int wave_type_min;
+		int wave_type_max;
+		if (projection_type == "SP" || projection_type == "SQ") // only R0
+		{
+			wave_type_min = 0;
+			wave_type_max = 0;
+		}
+		else // R- and R+
+		{
+			wave_type_min = 1;
+			wave_type_max = 2;
+		}
+
 		for (int k1 = Kmin; k1 < Kmax; k1++)
 		{
 			for (int k2 = Kmin; k2 < Kmax; k2++)
@@ -211,23 +226,27 @@ public:
 				complex U_proj[3] = {0., 0., 0.};
 				normal_modes.eigendecomposition(k1, k2, eigenvalues, eigenvectors);
 
-				for (int wave_type = 0; wave_type < 3; wave_type++)
+				for (int wave_type = wave_type_min; wave_type <= wave_type_max; wave_type++)
 				{
 
 					int kmin = this->modes[idx][wave_type][0];
 					int kmax = this->modes[idx][wave_type][1];
 
-					if (k1 < kmin || k1 > kmax || k2 < kmin || k2 > kmax)
+					if (k1 < kmin || k1 >= kmax || k2 < kmin || k2 >= kmax)
 						continue;
 
 					complex coef_proj = 0.;
-					std::cout << "BBBBBB " << wave_type << " " << k2 << " " << k1 << " " << std::endl;
 					coef_proj += eigenvectors[0][wave_type] * h_copy.spectral_get(k2, k1);
 					coef_proj += eigenvectors[1][wave_type] * u_copy.spectral_get(k2, k1);
 					coef_proj += eigenvectors[2][wave_type] * v_copy.spectral_get(k2, k1);
 
 					for (int j = 0; j < 3; j++)
+					{
+						std::cout << "AAAAA " << j << " " << k1 << " " << k2 << " " << coef_proj << " " << eigenvectors[j][wave_type] << std::endl;
 						U_proj[j] += coef_proj * eigenvectors[j][wave_type];
+					}
+
+					std::cout << "AAAAA " << projection_type << " " << k1 << " " << k2 << " " << U_proj[0] << " " << std::endl;
 
 				}
 
@@ -241,27 +260,27 @@ public:
 	}
 
 	void project_SP(
-			sweet::PlaneData_Spectral io_h_pert,
-			sweet::PlaneData_Spectral io_u,
-			sweet::PlaneData_Spectral io_v
+			sweet::PlaneData_Spectral &io_h_pert,
+			sweet::PlaneData_Spectral &io_u,
+			sweet::PlaneData_Spectral &io_v
 	)
 	{
 		this->project(io_h_pert, io_u, io_v, "SP");
 	}
 
 	void project_SQ(
-			sweet::PlaneData_Spectral io_h_pert,
-			sweet::PlaneData_Spectral io_u,
-			sweet::PlaneData_Spectral io_v
+			sweet::PlaneData_Spectral &io_h_pert,
+			sweet::PlaneData_Spectral &io_u,
+			sweet::PlaneData_Spectral &io_v
 	)
 	{
 		this->project(io_h_pert, io_u, io_v, "SQ");
 	}
 
 	void project_FQ(
-			sweet::PlaneData_Spectral io_h_pert,
-			sweet::PlaneData_Spectral io_u,
-			sweet::PlaneData_Spectral io_v
+			sweet::PlaneData_Spectral &io_h_pert,
+			sweet::PlaneData_Spectral &io_u,
+			sweet::PlaneData_Spectral &io_v
 	)
 	{
 		this->project(io_h_pert, io_u, io_v, "FQ");

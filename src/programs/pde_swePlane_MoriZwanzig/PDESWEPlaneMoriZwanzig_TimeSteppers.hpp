@@ -33,6 +33,8 @@ public:
 
 	bool linear_only = false;
 
+	std::string equation;
+
 	PDESWEPlaneMoriZwanzigTimeSteppers()
 	{
 	}
@@ -67,15 +69,24 @@ public:
 
 	bool setup(
 			sweet::PlaneOperators *io_ops,
-			sweet::ShackDictionary *io_shackDict
+			sweet::ShackDictionary *io_shackDict,
+			std::string i_equation
 	)
 	{
 		assert(io_ops != nullptr);
 		assert(io_shackDict != nullptr);
 
+		equation = i_equation;
+		if (equation != "P" && equation != "Q")
+			SWEETError("Invalid equation: " + equation);
+
 		// TODO: different tsm for each equation
 		///const std::string &timestepping_method = shackPDESWEPlaneMoriZwanzigTimeDiscretization->timestepping_method;
-		const std::string &timestepping_method = shackPDESWEPlaneMoriZwanzigTimeDiscretization->timestepping_method_P;
+		std::string timestepping_method;
+		if (equation == "P")
+			timestepping_method = shackPDESWEPlaneMoriZwanzigTimeDiscretization->timestepping_method_P;
+		else
+			timestepping_method = shackPDESWEPlaneMoriZwanzigTimeDiscretization->timestepping_method_Q;
 
 		linear_only = false;
 
@@ -108,7 +119,7 @@ public:
 		timestepper->shackRegistration(io_shackDict);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*timestepper);
 
-		timestepper->setup(io_ops);
+		timestepper->setup(io_ops, equation);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*timestepper);
 
 		return true;

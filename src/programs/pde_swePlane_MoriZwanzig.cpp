@@ -68,6 +68,9 @@ int main_mpi(int i_argc, char *i_argv[])
 		////{
 			StopwatchBox::getInstance().main_timestepping.start();
 
+			simulation.timestep_do_output();
+			std::cout << "CHECKING STABILITY" << std::endl;
+			simulation.instability_detected();
 			while (!simulation.should_quit())
 			{
 				simulation.runTimestep();

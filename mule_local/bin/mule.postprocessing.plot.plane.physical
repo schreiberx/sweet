@@ -1,0 +1,200 @@
+#! /usr/bin/env python3
+
+import sys
+import numpy as np
+import matplotlib.pyplot as plt
+
+from mule.postprocessing.PlaneDataPhysical import PlaneDataPhysical
+import mule.utils
+
+
+if len(sys.argv) <= 1:
+    print("Usage:")
+    print(" "+sys.argv[0]+" [file.csv/file.sweet] [outputfile.ext] [min] [max]")
+    sys.exit(1)
+
+#####################input_filename = sys.argv[1]
+#####################
+#####################vmin = None
+#####################vmax = None
+#####################
+#####################if len(sys.argv) > 4:
+#####################    vmin = float(sys.argv[3])
+#####################    vmax = float(sys.argv[4])
+#####################
+#####################output_filepath = None
+#####################if len(sys.argv) > 2:
+#####################    output_filepath = sys.argv[2]
+#####################
+#####################print(f"Loading data from '{input_filename}'")
+#####################
+#####################planedata = PlaneDataPhysical(input_filename)
+#####################data = planedata.data
+#####################
+########################if spheredata.file_info == None:
+########################    raise Exception("TODO")
+########################else:
+########################    file_info = spheredata.file_info
+#####################
+#####################
+###################### Clear plot
+#####################plt.close()
+#####################
+#####################fig, ax = plt.subplots(1, 1, figsize=(13, 8))
+#####################
+###################### Locations of ticks
+#####################xtickslocs = np.arange(data.shape[1]) + 0.5
+#####################ytickslocs = np.arange(data.shape[0]) + 0.5
+#####################
+######################### Labels of ticks
+########################xticklabels = file_info['lons']
+########################yticklabels = file_info['lats']
+########################
+########################xticklabels = np.array([round(_, 1) for _ in xticklabels])
+########################yticklabels = np.array([round(_, 1) for _ in yticklabels])
+########################
+########################assert len(xtickslocs) == len(xticklabels)
+########################assert len(ytickslocs) == len(yticklabels)
+#####################
+#####################if True:
+#####################    """
+#####################    Cleanup ticks so that there are only Nx ticks
+#####################    """
+#####################    Nx = 16
+#####################    N = len(xticklabels)
+#####################    step = max(1, N//Nx)
+#####################    r = np.arange(Nx, dtype=int)*step
+#####################    xtickslocs = xtickslocs[r]
+#####################    xticklabels = xticklabels[r]
+#####################
+#####################    Ny = 8
+#####################    N = len(yticklabels)
+#####################    step = max(1, N//Ny)
+#####################    r = np.arange(Ny, dtype=int)*step
+#####################    ytickslocs = ytickslocs[r]
+#####################    yticklabels = yticklabels[r]
+#####################
+###################### Make pixel centered around integer coordinates
+#####################extent = [-0.5, data_physical.shape[1]-0.5, data_physical.shape[0]-0.5, -0.5]
+#####################imhandler = ax.imshow(data_physical, cmap="viridis", extent=extent, vmin=vmin, vmax=vmax)
+#####################
+#####################if 'vrt' in input_filename:
+#####################    e=2e-5
+#####################    ax.contour(data_physical, levels=np.arange(e, e*50, e), linestyles='solid', linewidths=0.2, colors='black')
+#####################    ax.contour(data_physical, levels=np.arange(-e*50, 0, e), linestyles='dashed', linewidths=0.2, colors='black')
+#####################else:
+#####################    e=2e-5
+#####################    ax.contour(data_physical, colors="black", origin='lower', linewidths=0.5)
+#####################
+#####################
+###################### Fontsize
+#####################fontsize = 12
+#####################
+###################### Colorbar
+#####################cbar = fig.colorbar(imhandler, ax=ax)
+#####################cbar.ax.tick_params(labelsize=fontsize) 
+#####################
+#####################
+###################### Axis labels
+######################ax = fig.gca()
+#####################
+#####################ax.set_xticks(xtickslocs)
+#####################ax.set_xticklabels([round(_, 1) for _ in xticklabels], fontsize=fontsize)
+#####################ax.set_xlabel("Longitude", fontsize=fontsize)
+#####################
+#####################ax.set_yticks(ytickslocs)
+#####################ax.set_yticklabels([round(_, 1) for _ in yticklabels], fontsize=fontsize)
+#####################ax.set_ylabel("Latitude", fontsize=fontsize)
+#####################
+#####################
+#####################input_filename_noext = mule.utils.remove_file_ending(input_filename)
+#####################ax.set_title(input_filename_noext)
+#####################
+#####################
+#####################fig.tight_layout()
+#####################
+#####################
+#####################if output_filepath is None:
+#####################    plt.show()
+#####################
+#####################else:
+#####################    plt.savefig(output_filepath)
+
+
+hs = 5
+h_contour_levels = np.append(np.arange(900, 1000-hs, hs), np.arange(1000+hs, 1100, hs))
+fontsize = 12
+first = True
+for filename in sys.argv[1:]:
+
+    print(filename)
+    #data = np.loadtxt(filename, skiprows=3)
+    data = np.loadtxt(filename, skiprows=3)
+
+    #data = data[1:,1:]
+
+    if first:
+        cmin = np.amin(data)
+        cmax = np.amax(data)
+
+        if 'eta' in filename:
+            cmin = 1e-4
+            cmax = -1e-4
+            #cmin *= 1.2
+            #cmax *= 1.2
+
+    plt.figure()
+
+
+    #plt.imshow(data, interpolation='nearest', extent=extent, origin='lower', aspect='auto')
+    plt.imshow(data, interpolation='nearest', origin='lower', aspect='auto')
+
+    plt.clim(cmin, cmax)
+    cbar = plt.colorbar()
+    cbar.ax.tick_params(labelsize=fontsize) 
+
+    plt.title(filename, fontsize=fontsize)
+
+
+    if 'prog_eta' in filename:
+        plt.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, levels=eta_contour_levels, linewidths=0.5)
+    elif 'prog_h' in filename:
+        #plt.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, levels=h_contour_levels, linewidths=0.5)
+        plt.contour(data, colors="black", origin='lower', vmin=cmin, vmax=cmax, levels=h_contour_levels, linewidths=0.5)
+    elif '_u' in filename:
+        hs = 0.001
+        h_contour_levels = np.append(np.arange(-0.1, 0-hs, hs), np.arange(hs, 0.1, hs))
+        plt.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, levels=h_contour_levels, linewidths=0.5)
+    else:
+        if cmin != cmax:
+            pass
+            #plt.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, linewidths=0.5)
+
+    ax = plt.gca()
+    ax.xaxis.set_label_coords(0.5, -0.075)
+
+    #plt.show()
+    outfilename = filename.replace('.sweet', '.png')
+    print(outfilename)
+
+    plt.savefig(outfilename, dpi=200)
+    plt.close()
+
+    first = False
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

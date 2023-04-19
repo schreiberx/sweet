@@ -698,9 +698,6 @@ bool SWE_Plane_Mori_Zwanzig_TS_n_erk::setup(
 	RK_v_FQ_t = nullptr;
 
 
-	std::cout << "CCCCCCCCCCCCCCC " << shackPDESWEPlane << " " <<  std::endl;
-	std::cout << "CCCCCCCCCCCCCCC " << shackPDESWEPlane << " " << shackPDESWETimeDisc << " " <<  std::endl;
-	std::cout << "CCCCCCCCCCCCCCC " << shackPDESWEPlane << " " << shackPDESWETimeDisc << " " << shackPDESWETimeDisc->timestepping_order_P << std::endl;
 	use_only_linear_divergence = shackPDESWEPlane->use_only_linear_divergence;
 
 	timestepping_order_nonlinear_P = shackPDESWETimeDisc->timestepping_order_P;

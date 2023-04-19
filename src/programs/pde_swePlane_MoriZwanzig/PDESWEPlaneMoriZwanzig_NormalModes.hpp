@@ -135,9 +135,18 @@ public:
 			////o_eigenvectors[0][0] = -c * FsI;
 			////o_eigenvectors[1][0] = -b * FsI;
 			////o_eigenvectors[2][0] = 1.0;
-			o_eigenvectors[0][0] = 1. / (b * FsI);
-			o_eigenvectors[1][0] = - c / b;
-			o_eigenvectors[2][0] = 1.0;
+			if (i_k1 == 0)
+			{
+				o_eigenvectors[0][0] = - Fs / c;
+				o_eigenvectors[1][0] = 1.0;
+				o_eigenvectors[2][0] = 0.0;
+			}
+			else
+			{
+				o_eigenvectors[0][0] = Fs / b;
+				o_eigenvectors[1][0] = - c / b;
+				o_eigenvectors[2][0] = 1.0;
+			}
 
 			// R-
 			///o_eigenvectors[0][1] = I * (om * i_k0 + i_k1) * FsI / normK2;

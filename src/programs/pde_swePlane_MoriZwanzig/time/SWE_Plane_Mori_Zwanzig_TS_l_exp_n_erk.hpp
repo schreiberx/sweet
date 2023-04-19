@@ -39,7 +39,8 @@ public:
 
 public:
 	bool setup(
-			sweet::PlaneOperators *io_ops
+			sweet::PlaneOperators *io_ops,
+			std::string i_equation
 	);
 
 	void runTimestep(

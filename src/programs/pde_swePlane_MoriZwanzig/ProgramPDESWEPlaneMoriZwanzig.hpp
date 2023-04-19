@@ -131,7 +131,8 @@ public:
 
 
 	// time integrators
-	PDESWEPlaneMoriZwanzigTimeSteppers pdeSWEPlaneMoriZwanzigTimeSteppers;
+	PDESWEPlaneMoriZwanzigTimeSteppers pdeSWEPlaneMoriZwanzigTimeSteppers_P;
+	PDESWEPlaneMoriZwanzigTimeSteppers pdeSWEPlaneMoriZwanzigTimeSteppers_Q;
 
 	// Handler to all benchmarks
 	PDESWEPlaneMoriZwanzigBenchmarksCombined planeBenchmarksCombined;
@@ -146,7 +147,7 @@ public:
 	ShackPDESWEPlaneMoriZwanzig *shackPDESWEPlane;
 	ShackPDESWEPlaneMoriZwanzigTimeDiscretization *shackTimeDisc;
 	ShackPDESWEPlaneMoriZwanzigBenchmarks *shackPDESWEPlaneBenchmarks;
-	ShackPDESWEPlaneDiagnostics *shackPDESWEPlaneDiagnostics;
+	/////ShackPDESWEPlaneDiagnostics *shackPDESWEPlaneDiagnostics;
 
 	class BenchmarkErrors
 	{
@@ -291,8 +292,8 @@ public:
 		shackTimestepControl(nullptr),
 		shackPDESWEPlane(nullptr),
 		shackTimeDisc(nullptr),
-		shackPDESWEPlaneBenchmarks(nullptr),
-		shackPDESWEPlaneDiagnostics(nullptr)
+		shackPDESWEPlaneBenchmarks(nullptr)
+		/////shackPDESWEPlaneDiagnostics(nullptr)
 	{
 		ERROR_CHECK_COND_RETURN(shackProgArgDict);
 	}
@@ -309,7 +310,7 @@ public:
 		shackIOData = shackProgArgDict.getAutoRegistration<sweet::ShackIOData>();
 		shackTimeDisc = shackProgArgDict.getAutoRegistration<ShackPDESWEPlaneMoriZwanzigTimeDiscretization>();
 		shackPDESWEPlaneBenchmarks = shackProgArgDict.getAutoRegistration<ShackPDESWEPlaneMoriZwanzigBenchmarks>();
-		shackPDESWEPlaneDiagnostics = shackProgArgDict.getAutoRegistration<ShackPDESWEPlaneDiagnostics>();
+		//////shackPDESWEPlaneDiagnostics = shackProgArgDict.getAutoRegistration<ShackPDESWEPlaneDiagnostics>();
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		/*
@@ -318,8 +319,11 @@ public:
 		planeBenchmarksCombined.shackRegistration(shackProgArgDict);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(planeBenchmarksCombined);
 
-		pdeSWEPlaneMoriZwanzigTimeSteppers.shackRegistration(shackProgArgDict);
-		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(pdeSWEPlaneMoriZwanzigTimeSteppers);
+		pdeSWEPlaneMoriZwanzigTimeSteppers_P.shackRegistration(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(pdeSWEPlaneMoriZwanzigTimeSteppers_P);
+
+		pdeSWEPlaneMoriZwanzigTimeSteppers_Q.shackRegistration(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(pdeSWEPlaneMoriZwanzigTimeSteppers_Q);
 
 		projection.shackRegistration(shackProgArgDict);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(projection);
@@ -350,7 +354,8 @@ public:
 		shackTimeDisc = nullptr;
 
 		planeBenchmarksCombined.clear();
-		pdeSWEPlaneMoriZwanzigTimeSteppers.clear();
+		pdeSWEPlaneMoriZwanzigTimeSteppers_P.clear();
+		pdeSWEPlaneMoriZwanzigTimeSteppers_Q.clear();
 		shackProgArgDict.clear();
 	}
 
@@ -397,8 +402,10 @@ public:
 		/*
 		 * After we setup the plane, we can setup the time steppers and their buffers
 		 */
-		pdeSWEPlaneMoriZwanzigTimeSteppers.setup(&dataAndOps_SP.ops, &shackProgArgDict);
-		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(pdeSWEPlaneMoriZwanzigTimeSteppers);
+		pdeSWEPlaneMoriZwanzigTimeSteppers_P.setup(&dataAndOps_SP.ops, &shackProgArgDict, "P");
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(pdeSWEPlaneMoriZwanzigTimeSteppers_P);
+		pdeSWEPlaneMoriZwanzigTimeSteppers_Q.setup(&dataAndOps_SP.ops, &shackProgArgDict, "Q");
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(pdeSWEPlaneMoriZwanzigTimeSteppers_Q);
 
 		std::cout << "Printing shack information:" << std::endl;
 		shackProgArgDict.printShackData();
@@ -412,8 +419,7 @@ public:
 			);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(planeBenchmarksCombined);
 
-
-		projection.setup();
+		projection.setup(dataAndOps_SP.ops.planeDataConfig);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(projection);
 
 		// copy and project initial solutions
@@ -424,10 +430,15 @@ public:
 		dataAndOps_FQ.prog_u = dataAndOps_SP.prog_u;
 		dataAndOps_FQ.prog_v = dataAndOps_SP.prog_v;
 
+		sweet::PlaneData_Spectral h_orig = dataAndOps_SP.prog_h_pert;
+
 		projection.project_SP(dataAndOps_SP.prog_h_pert, dataAndOps_SP.prog_u, dataAndOps_SP.prog_v);
 		projection.project_SQ(dataAndOps_SQ.prog_h_pert, dataAndOps_SQ.prog_u, dataAndOps_SQ.prog_v);
 		projection.project_FQ(dataAndOps_FQ.prog_h_pert, dataAndOps_FQ.prog_u, dataAndOps_FQ.prog_v);
 
+		std::cout << "ZZZZZZZZ " << (h_orig - dataAndOps_SP.prog_h_pert).spectral_reduce_sum_sq() << std::endl;
+		std::cout << "ZZZZZZZZ " << (h_orig - dataAndOps_SQ.prog_h_pert).spectral_reduce_sum_sq() << std::endl;
+		std::cout << "ZZZZZZZZ " << (h_orig - dataAndOps_FQ.prog_h_pert).spectral_reduce_sum_sq() << std::endl;
 
 		dataAndOps_SP.t0_prog_h_pert = dataAndOps_SP.prog_h_pert;
 		dataAndOps_SQ.t0_prog_h_pert = dataAndOps_SQ.prog_h_pert;
@@ -462,7 +473,7 @@ public:
 			compute_error_difference_to_initial_condition = true;
 
 			//Compute difference to analytical solution (makes more sense in linear cases, but might be useful in others too)
-			compute_error_to_analytical_solution = pdeSWEPlaneMoriZwanzigTimeSteppers.linear_only;
+			compute_error_to_analytical_solution = pdeSWEPlaneMoriZwanzigTimeSteppers_P.linear_only;
 		}
 		else
 		{
@@ -486,18 +497,18 @@ public:
 			dataAndOps.prog_v.file_physical_loadData(shackIOData->initial_condition_data_filenames[2].c_str(), shackIOData->initial_condition_input_data_binary);
 #endif
 
-		if (shackPDESWEPlaneBenchmarks->benchmark_name == "normalmodes" )
-			compute_normal_modes = true;
+		/////if (shackPDESWEPlaneBenchmarks->benchmark_name == "normalmodes" )
+		/////	compute_normal_modes = true;
 
-		if (compute_normal_modes)
-		{
-			update_normal_modes();
-			update_diagnostics();
-		}
+		/////if (compute_normal_modes)
+		/////{
+		/////	update_normal_modes();
+		/////	update_diagnostics();
+		/////}
 
-		diagnostics_energy_start = shackPDESWEPlaneDiagnostics->total_energy;
-		diagnostics_mass_start = shackPDESWEPlaneDiagnostics->total_mass;
-		diagnostics_potential_enstrophy_start = shackPDESWEPlaneDiagnostics->total_potential_enstrophy;
+		/////diagnostics_energy_start = shackPDESWEPlaneDiagnostics->total_energy;
+		/////diagnostics_mass_start = shackPDESWEPlaneDiagnostics->total_mass;
+		/////diagnostics_potential_enstrophy_start = shackPDESWEPlaneDiagnostics->total_potential_enstrophy;
 
 		return true;
 	}
@@ -518,7 +529,8 @@ public:
 		vis_plane_data.clear();
 #endif
 
-		pdeSWEPlaneMoriZwanzigTimeSteppers.clear();
+		pdeSWEPlaneMoriZwanzigTimeSteppers_P.clear();
+		pdeSWEPlaneMoriZwanzigTimeSteppers_Q.clear();
 
 		dataAndOps_SP.clear();
 		dataAndOps_SQ.clear();
@@ -687,13 +699,24 @@ public:
 	{
 		shackTimestepControl->timestepHelperStart();
 
-		pdeSWEPlaneMoriZwanzigTimeSteppers.timestepper->runTimestep(
+		// TODO: use different time step sizes
+
+		pdeSWEPlaneMoriZwanzigTimeSteppers_P.timestepper->runTimestep(
 				dataAndOps_SP.prog_h_pert, dataAndOps_SP.prog_u, dataAndOps_SP.prog_v,
 				dataAndOps_SQ.prog_h_pert, dataAndOps_SQ.prog_u, dataAndOps_SQ.prog_v,
 				dataAndOps_FQ.prog_h_pert, dataAndOps_FQ.prog_u, dataAndOps_FQ.prog_v,
 				shackTimestepControl->current_timestep_size,
 				shackTimestepControl->current_simulation_time
 			);
+
+		pdeSWEPlaneMoriZwanzigTimeSteppers_Q.timestepper->runTimestep(
+				dataAndOps_SP.prog_h_pert, dataAndOps_SP.prog_u, dataAndOps_SP.prog_v,
+				dataAndOps_SQ.prog_h_pert, dataAndOps_SQ.prog_u, dataAndOps_SQ.prog_v,
+				dataAndOps_FQ.prog_h_pert, dataAndOps_FQ.prog_u, dataAndOps_FQ.prog_v,
+				shackTimestepControl->current_timestep_size,
+				shackTimestepControl->current_simulation_time
+			);
+
 
 		shackTimestepControl->timestepHelperEnd();
 
@@ -745,14 +768,28 @@ public:
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 	std::string write_file_spec(
 			const sweet::PlaneData_Spectral &i_planeData,
+			std::string i_name	///< name of output variable
+		)
+	{
+		std::cout << "ZZZZZZZZZZZ " << std::endl;
+		const char* name = i_name.c_str();
+		return write_file_spec(i_planeData, name);
+	}
+
+	std::string write_file_spec(
+			const sweet::PlaneData_Spectral &i_planeData,
 			const char* i_name	///< name of output variable
 		)
 	{
 		char buffer[1024];
 
+		std::cout << "DDDDDD" << std::endl;
 		const char* filename_template = shackIOData->output_file_name.c_str();
+		std::cout << "EEEEEE" << std::endl;
 		sprintf(buffer, filename_template, i_name, shackTimestepControl->current_simulation_time*shackIOData->output_time_scale);
+		std::cout << "FFFFFF" << std::endl;
 		i_planeData.file_spectral_abs_saveData_ascii(buffer);
+		std::cout << "GGGGGG" << std::endl;
 		//i_planeData.file_spectral_saveData_ascii(buffer);
 		return buffer;
 	}
@@ -934,7 +971,7 @@ public:
 			write_output_file(rows);
 #endif
 
-#if 1
+#if 0
 			if (diagnostics_mass_start > 0.00001 && std::abs((shackPDESWEPlaneDiagnostics->total_mass-diagnostics_mass_start)/diagnostics_mass_start) > 10000000.0)
 			{
 				std::cerr << "\n DIAGNOSTICS MASS DIFF TOO LARGE:\t" << std::abs((shackPDESWEPlaneDiagnostics->total_mass-diagnostics_mass_start)/diagnostics_mass_start) << std::endl;
@@ -1058,6 +1095,16 @@ public:
 
 	bool instability_detected()
 	{
+		std::cout << "CHECKING STABILITY" << std::endl;
+		std::cout << dataAndOps_SP.prog_h_pert.toPhys().physical_reduce_boolean_all_finite() << std::endl;
+		std::cout << dataAndOps_SP.prog_u.toPhys().physical_reduce_boolean_all_finite() << std::endl;
+		std::cout << dataAndOps_SP.prog_v.toPhys().physical_reduce_boolean_all_finite() << std::endl;
+		std::cout << dataAndOps_SQ.prog_h_pert.toPhys().physical_reduce_boolean_all_finite() << std::endl;
+		std::cout << dataAndOps_SQ.prog_u.toPhys().physical_reduce_boolean_all_finite() << std::endl;
+		std::cout << dataAndOps_SQ.prog_v.toPhys().physical_reduce_boolean_all_finite() << std::endl;
+		std::cout << dataAndOps_FQ.prog_h_pert.toPhys().physical_reduce_boolean_all_finite() << std::endl;
+		std::cout << dataAndOps_FQ.prog_u.toPhys().physical_reduce_boolean_all_finite() << std::endl;
+		std::cout << dataAndOps_FQ.prog_v.toPhys().physical_reduce_boolean_all_finite() << std::endl;
 		return !(	
 					dataAndOps_SP.prog_h_pert.toPhys().physical_reduce_boolean_all_finite() &&
 					dataAndOps_SP.prog_u.toPhys().physical_reduce_boolean_all_finite() &&

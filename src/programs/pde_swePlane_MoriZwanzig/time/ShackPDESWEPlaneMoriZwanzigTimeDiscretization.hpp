@@ -67,7 +67,6 @@ public:
 		//i_pa.getArgumentValueByKey("--semi-lagrangian-convergence-threshold", semi_lagrangian_convergence_threshold);
 
 
-		std::cout << "BBBBBBBBBBBBBBBBBBBBBB " << std::endl;
 
 		i_pa.getArgumentValueByKey("--MZ-timestepping-method-P", timestepping_method_P);
 		i_pa.getArgumentValueByKey("--MZ-timestepping-method-Q", timestepping_method_Q);
@@ -75,7 +74,6 @@ public:
 		i_pa.getArgumentValueByKey("--MZ-timestepping-order-Q", timestepping_order_Q);
 		i_pa.getArgumentValueByKey("--MZ-timestepping-order2-P", timestepping_order2_P);
 		i_pa.getArgumentValueByKey("--MZ-timestepping-order2-Q", timestepping_order2_Q);
-
 
 		////std::vector<std::string> split;
 

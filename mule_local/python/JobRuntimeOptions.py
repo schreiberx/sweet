@@ -54,8 +54,8 @@ class JobRuntimeOptions(InfoError):
 
 
         self.timestepping_method = None
-        self.timestepping_order = 1
-        self.timestepping_order2 = 1
+        self.timestepping_order = None
+        self.timestepping_order2 = None
         self.timestep_size = None
         self.max_timesteps_nr = -1
 
