@@ -51,4 +51,11 @@ export MULE_CC_COMPILER=intel
 export MULE_CXX_COMPILER=intel
 export MULE_F90_COMPILER=intel
 
-export MULE_USER_EMAIL=
+export MULE_USER_EMAIL=keerthi.gaddameedi@tum.de
+
+if [ $MULE_USER_EMAIL=='keerthi.gaddameedi@tum.de' ]; then
+    echo_error "#######################################################################################################"
+    echo_error "#         INCLUDE YOUR EMAIL in mule/platforms/50_linux_cluster/env_vars.sh!                          #"
+    echo_error "#         IF NO EMAIL IS PROVIDED, YOU CAN GET BLOCKED FROM LRZ's cluster.                            #"
+    echo_error "#######################################################################################################"
+fi
