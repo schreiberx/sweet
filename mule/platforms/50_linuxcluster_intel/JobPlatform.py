@@ -117,7 +117,9 @@ def jobscript_get_header(jg : JobGeneration):
     	content += "#SBATCH --qos=cm2_large\n"
 
     mule_user_email = os.getenv('MULE_USER_EMAIL')
-    if mule_user_email != None:
+    if mule_user_email == None:
+        raise Exception("User email for the slurm script has not been specified. Please include it in env_vars.sh!")
+    else:
         content += """#SBATCH --mail-type=BEGIN,END 
         #SBATCH --mail-user="""+mule_user_email+"""
         """
