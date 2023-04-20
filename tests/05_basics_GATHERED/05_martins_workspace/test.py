@@ -5,7 +5,7 @@ import os
 import numpy as np
 
 #Dummy email for tests on the linux cluster platform
-os.environ["MULE_USER_EMAIL"]="dummy_email@linuxcluster.com"
+os.environ['MULE_USER_EMAIL']='dummy_email@linuxcluster.com'
 
 from mule.JobMule import *
 from mule.utils import exec_program
