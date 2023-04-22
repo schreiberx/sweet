@@ -8,13 +8,6 @@
 # Job ID in each line
 #
 
-if [[ -z "$MULE_USER_EMAIL" ]]; then
-       echo "****************************************************************************************************"
-       echo "* ERROR: Please set the env variable MULE_USER_EMAIL in mule/local/platforms/50_linuxcluster_intel/env_vars.sh!"
-       echo "****************************************************************************************************"
-       exit 1
-fi
-
 if [[ -z "$1" ]]; then
 	DIRS=job_bench*
 else

@@ -50,3 +50,5 @@ export MULE_MPILIBS=stdc++
 export MULE_CC_COMPILER=intel
 export MULE_CXX_COMPILER=intel
 export MULE_F90_COMPILER=intel
+
+export MULE_USER_EMAIL=

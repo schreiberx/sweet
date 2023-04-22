@@ -4,6 +4,9 @@ import sys
 import os
 os.chdir(os.path.dirname(sys.argv[0]))
 
+#Dummy email for tests on the linux cluster platform
+os.environ['MULE_USER_EMAIL']='dummy_email@linuxcluster.com'
+
 from mule.JobMule import *
 from itertools import product
 from mule.utils import exec_program
