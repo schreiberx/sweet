@@ -156,10 +156,10 @@ void SWE_Plane_Mori_Zwanzig_TS_n_erk::euler_timestep_update_nonlinear_Q(
 
 
 		// project
-		this->projection.project_SQ(h_N_SF, u_N_SF, v_N_SF);
-		this->projection.project_SQ(h_N_FF, u_N_FF, v_N_FF);
-		this->projection.project_FQ(h_N_SS, u_N_SS, v_N_SS);
-		this->projection.project_FQ(h_N_FF_2, u_N_FF_2, v_N_FF_2);
+		this->projection.project_S(h_N_SF, u_N_SF, v_N_SF);
+		this->projection.project_S(h_N_FF, u_N_FF, v_N_FF);
+		this->projection.project_F(h_N_SS, u_N_SS, v_N_SS);
+		this->projection.project_F(h_N_FF_2, u_N_FF_2, v_N_FF_2);
 
 		// time update
 		o_h_SQ_t = h_N_SF + h_N_FF;
@@ -204,7 +204,7 @@ void SWE_Plane_Mori_Zwanzig_TS_n_erk::runTimestep_P(
 			i_simulation_timestamp
 		);
 
-	this->projection.project_SP(h_N, u_N, v_N);
+	this->projection.project_S(h_N, u_N, v_N);
 
 	io_h_SP += h_N;
 	io_u_SP += u_N;

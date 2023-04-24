@@ -432,9 +432,9 @@ public:
 
 		sweet::PlaneData_Spectral h_orig = dataAndOps_SP.prog_h_pert;
 
-		projection.project_SP(dataAndOps_SP.prog_h_pert, dataAndOps_SP.prog_u, dataAndOps_SP.prog_v);
-		projection.project_SQ(dataAndOps_SQ.prog_h_pert, dataAndOps_SQ.prog_u, dataAndOps_SQ.prog_v);
-		projection.project_FQ(dataAndOps_FQ.prog_h_pert, dataAndOps_FQ.prog_u, dataAndOps_FQ.prog_v);
+		projection.project_S(dataAndOps_SP.prog_h_pert, dataAndOps_SP.prog_u, dataAndOps_SP.prog_v);
+		projection.project_S(dataAndOps_SQ.prog_h_pert, dataAndOps_SQ.prog_u, dataAndOps_SQ.prog_v);
+		projection.project_F(dataAndOps_FQ.prog_h_pert, dataAndOps_FQ.prog_u, dataAndOps_FQ.prog_v);
 
 		std::cout << "ZZZZZZZZ " << (h_orig - dataAndOps_SP.prog_h_pert).spectral_reduce_sum_sq() << std::endl;
 		std::cout << "ZZZZZZZZ " << (h_orig - dataAndOps_SQ.prog_h_pert).spectral_reduce_sum_sq() << std::endl;
@@ -789,7 +789,7 @@ public:
 		sprintf(buffer, filename_template, i_name, shackTimestepControl->current_simulation_time*shackIOData->output_time_scale);
 		std::cout << "FFFFFF" << std::endl;
 		i_planeData.file_spectral_abs_saveData_ascii(buffer);
-		std::cout << "GGGGGG" << std::endl;
+		std::cout << "GGGGGG " << buffer << " " << filename_template << std::endl;
 		//i_planeData.file_spectral_saveData_ascii(buffer);
 		return buffer;
 	}
@@ -860,13 +860,13 @@ public:
 				output_filenames += ";" + write_file(dataAndOps->ops.ke(t_u,t_v), ("diag_ke_" + sol_case).c_str());
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-				output_filenames += ";" + write_file_spec(dataAndOps->ops.ke(t_u,t_v), ("diag_ke_" + sol_case + "_spec").c_str());
+				////////output_filenames += ";" + write_file_spec(dataAndOps->ops.ke(t_u,t_v), ("diag_ke_" + sol_case + "_spec").c_str());
 
-				output_filenames += ";" + write_file_spec(t_h, ("prog_h_pert_" + sol_case + "_spec").c_str());
-				output_filenames += ";" + write_file_spec(t_u, ("prog_u_" + sol_case + "_spec").c_str());
-				output_filenames += ";" + write_file_spec(t_v, ("prog_v_" + sol_case + "_spec").c_str());
+				////////output_filenames += ";" + write_file_spec(t_h, ("prog_h_pert_" + sol_case + "_spec").c_str());
+				////////output_filenames += ";" + write_file_spec(t_u, ("prog_u_" + sol_case + "_spec").c_str());
+				////////output_filenames += ";" + write_file_spec(t_v, ("prog_v_" + sol_case + "_spec").c_str());
 
-				output_filenames += ";" + write_file_spec(dataAndOps->ops.ke(t_u,t_v).toPhys(), ("diag_ke_" + sol_case + "_spec").c_str());
+				////////output_filenames += ";" + write_file_spec(dataAndOps->ops.ke(t_u,t_v).toPhys(), ("diag_ke_" + sol_case + "_spec").c_str());
 #endif
 
 				output_filenames += ";" + write_file(dataAndOps->ops.vort(t_u, t_v), ("diag_vort_" + sol_case).c_str());

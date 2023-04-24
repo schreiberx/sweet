@@ -106,20 +106,10 @@ public:
 		assert(io_planeDataConfig != nullptr);
 
 
-		// todo: correct in function of epsilon and F
-		shackPDESWEPlane->plane_rotating_f0 = 1. / shackPDESWEPlane->epsilon;
-		shackPDESWEPlane->gravitation = 1. / shackPDESWEPlane->epsilon / std::sqrt(shackPDESWEPlane->F);
-		shackPDESWEPlane->h0 = shackPDESWEPlane->gravitation;
-
-		////return PDESWEPlaneBenchmarksCombined::setupInitialConditions(
-		////								o_h_pert,
-		////								o_u,
-		////								o_v,
-		////								io_ops,
-		////								io_planeDataConfig
-		////							);
-
-
+		/////// todo: correct in function of epsilon and F
+		/////shackPDESWEPlane->plane_rotating_f0 = 1. / shackPDESWEPlane->epsilon;
+		/////shackPDESWEPlane->gravitation = 1. / shackPDESWEPlane->epsilon / std::sqrt(shackPDESWEPlane->F);
+		/////shackPDESWEPlane->h0 = shackPDESWEPlane->gravitation;
 
 		auto callback_gaussian_bump =
 				[&](

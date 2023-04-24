@@ -93,24 +93,18 @@ public:
 	/*
 	 * Min and max wavaenumbers for each wave type
 	*/
-	int SP_geostrophic_min = -1;
-	int SP_geostrophic_max = -1;
-	int SP_gravity_west_min = -1;
-	int SP_gravity_west_max = -1;
-	int SP_gravity_east_min = -1;
-	int SP_gravity_east_max = -1;
-	int SQ_geostrophic_min = -1;
-	int SQ_geostrophic_max = -1;
-	int SQ_gravity_west_min = -1;
-	int SQ_gravity_west_max = -1;
-	int SQ_gravity_east_min = -1;
-	int SQ_gravity_east_max = -1;
-	int FQ_geostrophic_min = -1;
-	int FQ_geostrophic_max = -1;
-	int FQ_gravity_west_min = -1;
-	int FQ_gravity_west_max = -1;
-	int FQ_gravity_east_min = -1;
-	int FQ_gravity_east_max = -1;
+	int S_geostrophic_min = -1;
+	int S_geostrophic_max = -1;
+	int S_gravity_west_min = -1;
+	int S_gravity_west_max = -1;
+	int S_gravity_east_min = -1;
+	int S_gravity_east_max = -1;
+	int F_geostrophic_min = -1;
+	int F_geostrophic_max = -1;
+	int F_gravity_west_min = -1;
+	int F_gravity_west_max = -1;
+	int F_gravity_east_min = -1;
+	int F_gravity_east_max = -1;
 
 
 	void printProgramArguments(const std::string& i_prefix = "")
@@ -137,26 +131,19 @@ public:
 		i_pa.getArgumentValueBy3Keys("--pde-epsilon", "--epsilon", "--MZ-epsilon", epsilon);
 		i_pa.getArgumentValueBy3Keys("--pde-F", "-F", "--MZ-F", F);
 
-		i_pa.getArgumentValueByKey("--MZ-SP-geostr-min", SP_geostrophic_min);
-		i_pa.getArgumentValueByKey("--MZ-SP-geostr-max", SP_geostrophic_max);
-		i_pa.getArgumentValueByKey("--MZ-SP-gw-min",     SP_gravity_west_min);
-		i_pa.getArgumentValueByKey("--MZ-SP-gw-max",     SP_gravity_west_max);
-		i_pa.getArgumentValueByKey("--MZ-SP-ge-min",     SP_gravity_east_min);
-		i_pa.getArgumentValueByKey("--MZ-SP-ge-max",     SP_gravity_east_max);
+		i_pa.getArgumentValueByKey("--MZ-S-geostr-min", S_geostrophic_min);
+		i_pa.getArgumentValueByKey("--MZ-S-geostr-max", S_geostrophic_max);
+		i_pa.getArgumentValueByKey("--MZ-S-gw-min",     S_gravity_west_min);
+		i_pa.getArgumentValueByKey("--MZ-S-gw-max",     S_gravity_west_max);
+		i_pa.getArgumentValueByKey("--MZ-S-ge-min",     S_gravity_east_min);
+		i_pa.getArgumentValueByKey("--MZ-S-ge-max",     S_gravity_east_max);
 
-		i_pa.getArgumentValueByKey("--MZ-SQ-geostr-min", SQ_geostrophic_min);
-		i_pa.getArgumentValueByKey("--MZ-SQ-geostr-max", SQ_geostrophic_max);
-		i_pa.getArgumentValueByKey("--MZ-SQ-gw-min",     SQ_gravity_west_min);
-		i_pa.getArgumentValueByKey("--MZ-SQ-gw-max",     SQ_gravity_west_max);
-		i_pa.getArgumentValueByKey("--MZ-SQ-ge-min",     SQ_gravity_east_min);
-		i_pa.getArgumentValueByKey("--MZ-SQ-ge-max",     SQ_gravity_east_max);
-
-		i_pa.getArgumentValueByKey("--MZ-FQ-geostr-min", FQ_geostrophic_min);
-		i_pa.getArgumentValueByKey("--MZ-FQ-geostr-max", FQ_geostrophic_max);
-		i_pa.getArgumentValueByKey("--MZ-FQ-gw-min",     FQ_gravity_west_min);
-		i_pa.getArgumentValueByKey("--MZ-FQ-gw-max",     FQ_gravity_west_max);
-		i_pa.getArgumentValueByKey("--MZ-FQ-ge-min",     FQ_gravity_east_min);
-		i_pa.getArgumentValueByKey("--MZ-FQ-ge-max",     FQ_gravity_east_max);
+		i_pa.getArgumentValueByKey("--MZ-F-geostr-min", F_geostrophic_min);
+		i_pa.getArgumentValueByKey("--MZ-F-geostr-max", F_geostrophic_max);
+		i_pa.getArgumentValueByKey("--MZ-F-gw-min",     F_gravity_west_min);
+		i_pa.getArgumentValueByKey("--MZ-F-gw-max",     F_gravity_west_max);
+		i_pa.getArgumentValueByKey("--MZ-F-ge-min",     F_gravity_east_min);
+		i_pa.getArgumentValueByKey("--MZ-F-ge-max",     F_gravity_east_max);
 
 		i_pa.getArgumentValueBy3Keys("--pde-h0", "-H", "--h0", h0);
 		i_pa.getArgumentValueBy2Keys("--pde-viscosity", "-u", viscosity);
@@ -172,6 +159,12 @@ public:
 		i_pa.getArgumentValueByKey("--compute-errors", compute_errors);
 
 		i_pa.getArgumentValueByKey("--instability-checks", instability_checks);
+
+		// todo: correct in function of epsilon and F
+		plane_rotating_f0 = 1. / epsilon;
+		gravitation = 1. / epsilon / std::sqrt(F);
+		h0 = gravitation;
+
 
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(i_pa);
 		return true;

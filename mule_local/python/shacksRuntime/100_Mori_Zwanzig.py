@@ -3,24 +3,18 @@ from mule.JobCompileOptions import *
 class Mori_Zwanzig:
 
     def __init__(self):
-        self.MZ_SP_geostrophic_min =  None
-        self.MZ_SP_geostrophic_max =  None
-        self.MZ_SP_gravity_west_min = None
-        self.MZ_SP_gravity_west_max = None
-        self.MZ_SP_gravity_east_min = None
-        self.MZ_SP_gravity_east_max = None
-        self.MZ_SQ_geostrophic_min =  None
-        self.MZ_SQ_geostrophic_max =  None
-        self.MZ_SQ_gravity_west_min = None
-        self.MZ_SQ_gravity_west_max = None
-        self.MZ_SQ_gravity_east_min = None
-        self.MZ_SQ_gravity_east_max = None
-        self.MZ_FQ_geostrophic_min =  None
-        self.MZ_FQ_geostrophic_max =  None
-        self.MZ_FQ_gravity_west_min = None
-        self.MZ_FQ_gravity_west_max = None
-        self.MZ_FQ_gravity_east_min = None
-        self.MZ_FQ_gravity_east_max = None
+        self.MZ_S_geostrophic_min =  None
+        self.MZ_S_geostrophic_max =  None
+        self.MZ_S_gravity_west_min = None
+        self.MZ_S_gravity_west_max = None
+        self.MZ_S_gravity_east_min = None
+        self.MZ_S_gravity_east_max = None
+        self.MZ_F_geostrophic_min =  None
+        self.MZ_F_geostrophic_max =  None
+        self.MZ_F_gravity_west_min = None
+        self.MZ_F_gravity_west_max = None
+        self.MZ_F_gravity_east_min = None
+        self.MZ_F_gravity_east_max = None
 
         self.MZ_epsilon = None
         self.MZ_F = None
@@ -43,44 +37,31 @@ class Mori_Zwanzig:
         if not 'runtime.mori_zwanzig' in filter_list:
             if self.xbraid_enabled:
                 uniqueIDStr += '_MZ'
-                if self.MZ_SP_geostrophic_min != None:
-                    uniqueIDStr += '_MZ_SP_min_geostr'+str(self.MZ_SP_geostrophic_min)
-                if self.MZ_SP_geostrophic_max != None:
-                    uniqueIDStr += '_MZ_SP_max_geostr'+str(self.MZ_SP_geostrophic_max)
-                if self.MZ_SP_gravity_west_min != None:
-                    uniqueIDStr += '_MZ_SP_min_gw'+str(self.MZ_SP_gravity_west_min)
-                if self.MZ_SP_gravity_west_max != None:
-                    uniqueIDStr += '_MZ_SP_max_gw'+str(self.MZ_SP_gravity_west_max)
-                if self.MZ_SP_gravity_east_min != None:
-                    uniqueIDStr += '_MZ_SP_min_ge'+str(self.MZ_SP_gravity_east_min)
-                if self.MZ_SP_gravity_east_max != None:
-                    uniqueIDStr += '_MZ_SP_max_ge'+str(self.MZ_SP_gravity_east_max)
+                if self.MZ_S_geostrophic_min != None:
+                    uniqueIDStr += '_MZ_S_min_geostr'+str(self.MZ_S_geostrophic_min)
+                if self.MZ_S_geostrophic_max != None:
+                    uniqueIDStr += '_MZ_S_max_geostr'+str(self.MZ_S_geostrophic_max)
+                if self.MZ_S_gravity_west_min != None:
+                    uniqueIDStr += '_MZ_S_min_gw'+str(self.MZ_S_gravity_west_min)
+                if self.MZ_S_gravity_west_max != None:
+                    uniqueIDStr += '_MZ_S_max_gw'+str(self.MZ_S_gravity_west_max)
+                if self.MZ_S_gravity_east_min != None:
+                    uniqueIDStr += '_MZ_S_min_ge'+str(self.MZ_S_gravity_east_min)
+                if self.MZ_S_gravity_east_max != None:
+                    uniqueIDStr += '_MZ_S_max_ge'+str(self.MZ_S_gravity_east_max)
 
-                if self.MZ_SQ_geostrophic_min != None:
-                    uniqueIDStr += '_MZ_SQ_min_geostr'+str(self.MZ_SQ_geostrophic_min)
-                if self.MZ_SQ_geostrophic_max != None:
-                    uniqueIDStr += '_MZ_SQ_max_geostr'+str(self.MZ_SQ_geostrophic_max)
-                if self.MZ_SQ_gravity_west_min != None:
-                    uniqueIDStr += '_MZ_SQ_min_gw'+str(self.MZ_SQ_gravity_west_min)
-                if self.MZ_SQ_gravity_west_max != None:
-                    uniqueIDStr += '_MZ_SQ_max_gw'+str(self.MZ_SQ_gravity_west_max)
-                if self.MZ_SQ_gravity_east_min != None:
-                    uniqueIDStr += '_MZ_SQ_min_ge'+str(self.MZ_SQ_gravity_east_min)
-                if self.MZ_SQ_gravity_east_max != None:
-                    uniqueIDStr += '_MZ_SQ_max_ge'+str(self.MZ_SQ_gravity_east_max)
-
-                if self.MZ_FQ_geostrophic_min != None:
-                    uniqueIDStr += '_MZ_FQ_min_geostr'+str(self.MZ_FQ_geostrophic_min)
-                if self.MZ_FQ_geostrophic_max != None:
-                    uniqueIDStr += '_MZ_FQ_max_geostr'+str(self.MZ_FQ_geostrophic_max)
-                if self.MZ_FQ_gravity_west_min != None:
-                    uniqueIDStr += '_MZ_FQ_min_gw'+str(self.MZ_FQ_gravity_west_min)
-                if self.MZ_FQ_gravity_west_max != None:
-                    uniqueIDStr += '_MZ_FQ_max_gw'+str(self.MZ_FQ_gravity_west_max)
-                if self.MZ_FQ_gravity_east_min != None:
-                    uniqueIDStr += '_MZ_FQ_min_ge'+str(self.MZ_FQ_gravity_east_min)
-                if self.MZ_FQ_gravity_east_max != None:
-                    uniqueIDStr += '_MZ_FQ_max_ge'+str(self.MZ_FQ_gravity_east_max)
+                if self.MZ_F_geostrophic_min != None:
+                    uniqueIDStr += '_MZ_F_min_geostr'+str(self.MZ_F_geostrophic_min)
+                if self.MZ_F_geostrophic_max != None:
+                    uniqueIDStr += '_MZ_F_max_geostr'+str(self.MZ_F_geostrophic_max)
+                if self.MZ_F_gravity_west_min != None:
+                    uniqueIDStr += '_MZ_F_min_gw'+str(self.MZ_F_gravity_west_min)
+                if self.MZ_F_gravity_west_max != None:
+                    uniqueIDStr += '_MZ_F_max_gw'+str(self.MZ_F_gravity_west_max)
+                if self.MZ_F_gravity_east_min != None:
+                    uniqueIDStr += '_MZ_F_min_ge'+str(self.MZ_F_gravity_east_min)
+                if self.MZ_F_gravity_east_max != None:
+                    uniqueIDStr += '_MZ_F_max_ge'+str(self.MZ_F_gravity_east_max)
 
                 if self.MZ_epsilon != None:
                     uniqueIDStr += '_MZ_epsilon'+str(self.MZ_epsilon)
@@ -106,26 +87,19 @@ class Mori_Zwanzig:
         retRuntimeOptionsStr = ''
 
         ## XBraid parameters
-        retRuntimeOptionsStr += " --MZ-SP-geostr-min="             + str(self.MZ_SP_geostrophic_min)
-        retRuntimeOptionsStr += " --MZ-SP-geostr-max="             + str(self.MZ_SP_geostrophic_max)
-        retRuntimeOptionsStr += " --MZ-SP-gw-min="                 + str(self.MZ_SP_gravity_west_min)
-        retRuntimeOptionsStr += " --MZ-SP-gw-max="                 + str(self.MZ_SP_gravity_west_max)
-        retRuntimeOptionsStr += " --MZ-SP-ge-min="                 + str(self.MZ_SP_gravity_east_min)
-        retRuntimeOptionsStr += " --MZ-SP-ge-max="                 + str(self.MZ_SP_gravity_east_max)
+        retRuntimeOptionsStr += " --MZ-S-geostr-min="             + str(self.MZ_S_geostrophic_min)
+        retRuntimeOptionsStr += " --MZ-S-geostr-max="             + str(self.MZ_S_geostrophic_max)
+        retRuntimeOptionsStr += " --MZ-S-gw-min="                 + str(self.MZ_S_gravity_west_min)
+        retRuntimeOptionsStr += " --MZ-S-gw-max="                 + str(self.MZ_S_gravity_west_max)
+        retRuntimeOptionsStr += " --MZ-S-ge-min="                 + str(self.MZ_S_gravity_east_min)
+        retRuntimeOptionsStr += " --MZ-S-ge-max="                 + str(self.MZ_S_gravity_east_max)
 
-        retRuntimeOptionsStr += " --MZ-SQ-geostr-min="             + str(self.MZ_SQ_geostrophic_min)
-        retRuntimeOptionsStr += " --MZ-SQ-geostr-max="             + str(self.MZ_SQ_geostrophic_max)
-        retRuntimeOptionsStr += " --MZ-SQ-gw-min="                 + str(self.MZ_SQ_gravity_west_min)
-        retRuntimeOptionsStr += " --MZ-SQ-gw-max="                 + str(self.MZ_SQ_gravity_west_max)
-        retRuntimeOptionsStr += " --MZ-SQ-ge-min="                 + str(self.MZ_SQ_gravity_east_min)
-        retRuntimeOptionsStr += " --MZ-SQ-ge-max="                 + str(self.MZ_SQ_gravity_east_max)
-
-        retRuntimeOptionsStr += " --MZ-FQ-geostr-min="             + str(self.MZ_FQ_geostrophic_min)
-        retRuntimeOptionsStr += " --MZ-FQ-geostr-max="             + str(self.MZ_FQ_geostrophic_max)
-        retRuntimeOptionsStr += " --MZ-FQ-gw-min="                 + str(self.MZ_FQ_gravity_west_min)
-        retRuntimeOptionsStr += " --MZ-FQ-gw-max="                 + str(self.MZ_FQ_gravity_west_max)
-        retRuntimeOptionsStr += " --MZ-FQ-ge-min="                 + str(self.MZ_FQ_gravity_east_min)
-        retRuntimeOptionsStr += " --MZ-FQ-ge-max="                 + str(self.MZ_FQ_gravity_east_max)
+        retRuntimeOptionsStr += " --MZ-F-geostr-min="             + str(self.MZ_F_geostrophic_min)
+        retRuntimeOptionsStr += " --MZ-F-geostr-max="             + str(self.MZ_F_geostrophic_max)
+        retRuntimeOptionsStr += " --MZ-F-gw-min="                 + str(self.MZ_F_gravity_west_min)
+        retRuntimeOptionsStr += " --MZ-F-gw-max="                 + str(self.MZ_F_gravity_west_max)
+        retRuntimeOptionsStr += " --MZ-F-ge-min="                 + str(self.MZ_F_gravity_east_min)
+        retRuntimeOptionsStr += " --MZ-F-ge-max="                 + str(self.MZ_F_gravity_east_max)
 
         retRuntimeOptionsStr += " --MZ-epsilon="                   + str(self.MZ_epsilon)
         retRuntimeOptionsStr += " --MZ-F="                         + str(self.MZ_F)
