@@ -22,17 +22,19 @@ class SWE_Plane_Mori_Zwanzig_TS_n_erk	: public PDESWEPlaneMoriZwanzigTS_BaseInte
 	int timestepping_order_nonlinear_Q;
 
 	// runge kutta data storages
-	sweet::PlaneData_Spectral** RK_h_SQ_t = nullptr;
-	sweet::PlaneData_Spectral** RK_u_SQ_t = nullptr;
-	sweet::PlaneData_Spectral** RK_v_SQ_t = nullptr;
-	sweet::PlaneData_Spectral** RK_h_FQ_t = nullptr;
-	sweet::PlaneData_Spectral** RK_u_FQ_t = nullptr;
-	sweet::PlaneData_Spectral** RK_v_FQ_t = nullptr;
+	sweet::PlaneData_Spectral** RK_h_A_t = nullptr;
+	sweet::PlaneData_Spectral** RK_u_A_t = nullptr;
+	sweet::PlaneData_Spectral** RK_v_A_t = nullptr;
+	sweet::PlaneData_Spectral** RK_h_B_t = nullptr;
+	sweet::PlaneData_Spectral** RK_u_B_t = nullptr;
+	sweet::PlaneData_Spectral** RK_v_B_t = nullptr;
 
 
 	bool use_only_linear_divergence;
 
 	sweet::TimesteppingExplicitRKPlaneData timestepping_rk_P;
+
+	std::string equation; // SF or PQ
 
 public:
 	bool shackRegistration(
@@ -90,6 +92,27 @@ private:
 			double i_timestamp
 	);
 
+private:
+	void euler_timestep_update_nonlinear_SF(
+			const sweet::PlaneData_Spectral &i_h_A,	///< prognostic variables
+			const sweet::PlaneData_Spectral &i_u_A,	///< prognostic variables
+			const sweet::PlaneData_Spectral &i_v_A,	///< prognostic variables
+
+			const sweet::PlaneData_Spectral &i_h_B,	///< prognostic variables
+			const sweet::PlaneData_Spectral &i_u_B,	///< prognostic variables
+			const sweet::PlaneData_Spectral &i_v_B,	///< prognostic variables
+
+			sweet::PlaneData_Spectral &o_h_A_t,	///< time updates
+			sweet::PlaneData_Spectral &o_u_A_t,	///< time updates
+			sweet::PlaneData_Spectral &o_v_A_t,	///< time updates
+
+			sweet::PlaneData_Spectral &o_h_B_t,	///< time updates
+			sweet::PlaneData_Spectral &o_u_B_t,	///< time updates
+			sweet::PlaneData_Spectral &o_v_B_t,	///< time updates
+
+			double i_timestamp
+	);
+
 
 	void setupBuffers(
 			const sweet::PlaneData_Config *i_planeDataConfig,
@@ -99,7 +122,8 @@ private:
 public:
 	bool setup(
 			sweet::PlaneOperators *io_ops,
-			const sweet::PlaneData_Config *i_planeDataConfig
+			const sweet::PlaneData_Config *i_planeDataConfig,
+			std::string i_equation		// SF, P or Q
 	);
 
 	void runTimestep(
@@ -141,7 +165,57 @@ public:
 			double i_simulation_timestamp = -1
 	);
 
+	void runTimestep_SF(
+			sweet::PlaneData_Spectral &io_h_pert_S,	///< prognostic variables
+			sweet::PlaneData_Spectral &io_u_S,	///< prognostic variables
+			sweet::PlaneData_Spectral &io_v_S,	///< prognostic variables
 
+			sweet::PlaneData_Spectral &io_h_pert_F,	///< prognostic variables
+			sweet::PlaneData_Spectral &io_u_F,	///< prognostic variables
+			sweet::PlaneData_Spectral &io_v_F,	///< prognostic variables
+
+			double i_dt = 0,
+			double i_simulation_timestamp = -1
+	);
+
+private:
+	void runTimestep_Q_SF(
+			void (SWE_Plane_Mori_Zwanzig_TS_n_erk::*i_compute_euler_timestep_update)(
+					const sweet::PlaneData_Spectral &i_h_A,
+					const sweet::PlaneData_Spectral &i_u_A,
+					const sweet::PlaneData_Spectral &i_v_A,
+
+					const sweet::PlaneData_Spectral &i_h_B,
+					const sweet::PlaneData_Spectral &i_u_B,
+					const sweet::PlaneData_Spectral &i_v_B,
+
+					sweet::PlaneData_Spectral &o_h_A,
+					sweet::PlaneData_Spectral &o_u_A,
+					sweet::PlaneData_Spectral &o_v_A,
+
+					sweet::PlaneData_Spectral &o_h_B,
+					sweet::PlaneData_Spectral &o_u_B,
+					sweet::PlaneData_Spectral &o_v_B,
+
+					double i_dt
+			),
+
+			sweet::PlaneData_Spectral &io_h_pert_A,	///< prognostic variables
+			sweet::PlaneData_Spectral &io_u_A,	///< prognostic variables
+			sweet::PlaneData_Spectral &io_v_A,	///< prognostic variables
+
+			sweet::PlaneData_Spectral &io_h_pert_B,	///< prognostic variables
+			sweet::PlaneData_Spectral &io_u_B,	///< prognostic variables
+			sweet::PlaneData_Spectral &io_v_B,	///< prognostic variables
+
+			double i_dt = 0,
+			double i_simulation_timestamp = -1
+	);
+
+
+
+
+public:
 	virtual ~SWE_Plane_Mori_Zwanzig_TS_n_erk();
 };
 

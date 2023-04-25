@@ -77,7 +77,7 @@ public:
 		assert(io_shackDict != nullptr);
 
 		equation = i_equation;
-		if (equation != "P" && equation != "Q")
+		if (equation != "P" && equation != "Q" && equation != "SF")
 			SWEETError("Invalid equation: " + equation);
 
 		// TODO: different tsm for each equation

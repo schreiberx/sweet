@@ -128,11 +128,15 @@ public:
 	SimDataAndOps dataAndOps_SP;
 	SimDataAndOps dataAndOps_SQ;
 	SimDataAndOps dataAndOps_FQ;
+	SimDataAndOps dataAndOps_S;
+	SimDataAndOps dataAndOps_F;
+	SimDataAndOps dataAndOps_dummy;
 
 
 	// time integrators
 	PDESWEPlaneMoriZwanzigTimeSteppers pdeSWEPlaneMoriZwanzigTimeSteppers_P;
 	PDESWEPlaneMoriZwanzigTimeSteppers pdeSWEPlaneMoriZwanzigTimeSteppers_Q;
+	PDESWEPlaneMoriZwanzigTimeSteppers pdeSWEPlaneMoriZwanzigTimeSteppers_SF;
 
 	// Handler to all benchmarks
 	PDESWEPlaneMoriZwanzigBenchmarksCombined planeBenchmarksCombined;
@@ -325,6 +329,9 @@ public:
 		pdeSWEPlaneMoriZwanzigTimeSteppers_Q.shackRegistration(shackProgArgDict);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(pdeSWEPlaneMoriZwanzigTimeSteppers_Q);
 
+		pdeSWEPlaneMoriZwanzigTimeSteppers_SF.shackRegistration(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(pdeSWEPlaneMoriZwanzigTimeSteppers_SF);
+
 		projection.shackRegistration(shackProgArgDict);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(projection);
 #if 0
@@ -356,6 +363,7 @@ public:
 		planeBenchmarksCombined.clear();
 		pdeSWEPlaneMoriZwanzigTimeSteppers_P.clear();
 		pdeSWEPlaneMoriZwanzigTimeSteppers_Q.clear();
+		pdeSWEPlaneMoriZwanzigTimeSteppers_SF.clear();
 		shackProgArgDict.clear();
 	}
 
@@ -395,9 +403,15 @@ public:
 		dataAndOps_SP.setup(shackPlaneDataOps);
 		dataAndOps_SQ.setup(shackPlaneDataOps);
 		dataAndOps_FQ.setup(shackPlaneDataOps);
+		dataAndOps_S.setup(shackPlaneDataOps);
+		dataAndOps_F.setup(shackPlaneDataOps);
+		dataAndOps_dummy.setup(shackPlaneDataOps);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(dataAndOps_SP);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(dataAndOps_SQ);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(dataAndOps_FQ);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(dataAndOps_S);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(dataAndOps_F);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(dataAndOps_dummy);
 
 		/*
 		 * After we setup the plane, we can setup the time steppers and their buffers
@@ -406,6 +420,8 @@ public:
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(pdeSWEPlaneMoriZwanzigTimeSteppers_P);
 		pdeSWEPlaneMoriZwanzigTimeSteppers_Q.setup(&dataAndOps_SP.ops, &shackProgArgDict, "Q");
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(pdeSWEPlaneMoriZwanzigTimeSteppers_Q);
+		pdeSWEPlaneMoriZwanzigTimeSteppers_SF.setup(&dataAndOps_SP.ops, &shackProgArgDict, "SF");
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(pdeSWEPlaneMoriZwanzigTimeSteppers_SF);
 
 		std::cout << "Printing shack information:" << std::endl;
 		shackProgArgDict.printShackData();
@@ -436,6 +452,13 @@ public:
 		projection.project_S(dataAndOps_SQ.prog_h_pert, dataAndOps_SQ.prog_u, dataAndOps_SQ.prog_v);
 		projection.project_F(dataAndOps_FQ.prog_h_pert, dataAndOps_FQ.prog_u, dataAndOps_FQ.prog_v);
 
+		dataAndOps_S.prog_h_pert = dataAndOps_SP.prog_h_pert;
+		dataAndOps_S.prog_u = dataAndOps_SP.prog_u;
+		dataAndOps_S.prog_v = dataAndOps_SP.prog_v;
+		dataAndOps_F.prog_h_pert = dataAndOps_FQ.prog_h_pert;
+		dataAndOps_F.prog_u = dataAndOps_FQ.prog_u;
+		dataAndOps_F.prog_v = dataAndOps_FQ.prog_v;
+
 		std::cout << "ZZZZZZZZ " << (h_orig - dataAndOps_SP.prog_h_pert).spectral_reduce_sum_sq() << std::endl;
 		std::cout << "ZZZZZZZZ " << (h_orig - dataAndOps_SQ.prog_h_pert).spectral_reduce_sum_sq() << std::endl;
 		std::cout << "ZZZZZZZZ " << (h_orig - dataAndOps_FQ.prog_h_pert).spectral_reduce_sum_sq() << std::endl;
@@ -443,6 +466,8 @@ public:
 		dataAndOps_SP.t0_prog_h_pert = dataAndOps_SP.prog_h_pert;
 		dataAndOps_SQ.t0_prog_h_pert = dataAndOps_SQ.prog_h_pert;
 		dataAndOps_FQ.t0_prog_h_pert = dataAndOps_FQ.prog_h_pert;
+		dataAndOps_S.t0_prog_h_pert = dataAndOps_S.prog_h_pert;
+		dataAndOps_F.t0_prog_h_pert = dataAndOps_F.prog_h_pert;
 
 		/*
 		 * Finish registration & getting class interfaces so that nobody can do some
@@ -531,10 +556,13 @@ public:
 
 		pdeSWEPlaneMoriZwanzigTimeSteppers_P.clear();
 		pdeSWEPlaneMoriZwanzigTimeSteppers_Q.clear();
+		pdeSWEPlaneMoriZwanzigTimeSteppers_SF.clear();
 
 		dataAndOps_SP.clear();
 		dataAndOps_SQ.clear();
 		dataAndOps_FQ.clear();
+		dataAndOps_S.clear();
+		dataAndOps_F.clear();
 	}
 	
 
@@ -701,6 +729,8 @@ public:
 
 		// TODO: use different time step sizes
 
+		std::cout << "t = " << shackTimestepControl->current_simulation_time << " / " << shackTimestepControl->max_simulation_time << std::endl;
+
 		pdeSWEPlaneMoriZwanzigTimeSteppers_P.timestepper->runTimestep(
 				dataAndOps_SP.prog_h_pert, dataAndOps_SP.prog_u, dataAndOps_SP.prog_v,
 				dataAndOps_SQ.prog_h_pert, dataAndOps_SQ.prog_u, dataAndOps_SQ.prog_v,
@@ -713,6 +743,14 @@ public:
 				dataAndOps_SP.prog_h_pert, dataAndOps_SP.prog_u, dataAndOps_SP.prog_v,
 				dataAndOps_SQ.prog_h_pert, dataAndOps_SQ.prog_u, dataAndOps_SQ.prog_v,
 				dataAndOps_FQ.prog_h_pert, dataAndOps_FQ.prog_u, dataAndOps_FQ.prog_v,
+				shackTimestepControl->current_timestep_size,
+				shackTimestepControl->current_simulation_time
+			);
+
+		pdeSWEPlaneMoriZwanzigTimeSteppers_SF.timestepper->runTimestep(
+				dataAndOps_S.prog_h_pert, dataAndOps_S.prog_u, dataAndOps_S.prog_v,
+				dataAndOps_dummy.prog_h_pert, dataAndOps_dummy.prog_u, dataAndOps_dummy.prog_v,
+				dataAndOps_F.prog_h_pert, dataAndOps_F.prog_u, dataAndOps_F.prog_v,
 				shackTimestepControl->current_timestep_size,
 				shackTimestepControl->current_simulation_time
 			);
@@ -771,7 +809,6 @@ public:
 			std::string i_name	///< name of output variable
 		)
 	{
-		std::cout << "ZZZZZZZZZZZ " << std::endl;
 		const char* name = i_name.c_str();
 		return write_file_spec(i_planeData, name);
 	}
@@ -783,13 +820,9 @@ public:
 	{
 		char buffer[1024];
 
-		std::cout << "DDDDDD" << std::endl;
 		const char* filename_template = shackIOData->output_file_name.c_str();
-		std::cout << "EEEEEE" << std::endl;
 		sprintf(buffer, filename_template, i_name, shackTimestepControl->current_simulation_time*shackIOData->output_time_scale);
-		std::cout << "FFFFFF" << std::endl;
 		i_planeData.file_spectral_abs_saveData_ascii(buffer);
-		std::cout << "GGGGGG " << buffer << " " << filename_template << std::endl;
 		//i_planeData.file_spectral_saveData_ascii(buffer);
 		return buffer;
 	}
@@ -1095,16 +1128,16 @@ public:
 
 	bool instability_detected()
 	{
-		std::cout << "CHECKING STABILITY" << std::endl;
-		std::cout << dataAndOps_SP.prog_h_pert.toPhys().physical_reduce_boolean_all_finite() << std::endl;
-		std::cout << dataAndOps_SP.prog_u.toPhys().physical_reduce_boolean_all_finite() << std::endl;
-		std::cout << dataAndOps_SP.prog_v.toPhys().physical_reduce_boolean_all_finite() << std::endl;
-		std::cout << dataAndOps_SQ.prog_h_pert.toPhys().physical_reduce_boolean_all_finite() << std::endl;
-		std::cout << dataAndOps_SQ.prog_u.toPhys().physical_reduce_boolean_all_finite() << std::endl;
-		std::cout << dataAndOps_SQ.prog_v.toPhys().physical_reduce_boolean_all_finite() << std::endl;
-		std::cout << dataAndOps_FQ.prog_h_pert.toPhys().physical_reduce_boolean_all_finite() << std::endl;
-		std::cout << dataAndOps_FQ.prog_u.toPhys().physical_reduce_boolean_all_finite() << std::endl;
-		std::cout << dataAndOps_FQ.prog_v.toPhys().physical_reduce_boolean_all_finite() << std::endl;
+		/////std::cout << "CHECKING STABILITY" << std::endl;
+		/////std::cout << dataAndOps_SP.prog_h_pert.toPhys().physical_reduce_boolean_all_finite() << std::endl;
+		/////std::cout << dataAndOps_SP.prog_u.toPhys().physical_reduce_boolean_all_finite() << std::endl;
+		/////std::cout << dataAndOps_SP.prog_v.toPhys().physical_reduce_boolean_all_finite() << std::endl;
+		/////std::cout << dataAndOps_SQ.prog_h_pert.toPhys().physical_reduce_boolean_all_finite() << std::endl;
+		/////std::cout << dataAndOps_SQ.prog_u.toPhys().physical_reduce_boolean_all_finite() << std::endl;
+		/////std::cout << dataAndOps_SQ.prog_v.toPhys().physical_reduce_boolean_all_finite() << std::endl;
+		/////std::cout << dataAndOps_FQ.prog_h_pert.toPhys().physical_reduce_boolean_all_finite() << std::endl;
+		/////std::cout << dataAndOps_FQ.prog_u.toPhys().physical_reduce_boolean_all_finite() << std::endl;
+		/////std::cout << dataAndOps_FQ.prog_v.toPhys().physical_reduce_boolean_all_finite() << std::endl;
 		return !(	
 					dataAndOps_SP.prog_h_pert.toPhys().physical_reduce_boolean_all_finite() &&
 					dataAndOps_SP.prog_u.toPhys().physical_reduce_boolean_all_finite() &&
@@ -1114,7 +1147,13 @@ public:
 					dataAndOps_SQ.prog_v.toPhys().physical_reduce_boolean_all_finite() &&
 					dataAndOps_FQ.prog_h_pert.toPhys().physical_reduce_boolean_all_finite() &&
 					dataAndOps_FQ.prog_u.toPhys().physical_reduce_boolean_all_finite() &&
-					dataAndOps_FQ.prog_v.toPhys().physical_reduce_boolean_all_finite()
+					dataAndOps_FQ.prog_v.toPhys().physical_reduce_boolean_all_finite() &&
+					dataAndOps_S.prog_h_pert.toPhys().physical_reduce_boolean_all_finite() &&
+					dataAndOps_S.prog_u.toPhys().physical_reduce_boolean_all_finite() &&
+					dataAndOps_S.prog_v.toPhys().physical_reduce_boolean_all_finite() &&
+					dataAndOps_F.prog_h_pert.toPhys().physical_reduce_boolean_all_finite() &&
+					dataAndOps_F.prog_u.toPhys().physical_reduce_boolean_all_finite() &&
+					dataAndOps_F.prog_v.toPhys().physical_reduce_boolean_all_finite()
 				);
 	}
 

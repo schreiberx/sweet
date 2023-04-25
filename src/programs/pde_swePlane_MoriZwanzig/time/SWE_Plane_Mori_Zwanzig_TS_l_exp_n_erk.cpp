@@ -60,12 +60,6 @@ void SWE_Plane_Mori_Zwanzig_TS_l_exp_n_erk::runTimestep(
 					i_simulation_timestamp
 				);
 
-			// TODO: epsilon inside ts_l_exp
-			io_h_pert_SP = 1. / shackPDESWEPlane->epsilon * io_h_pert_SP;
-			io_u_SP = 1. / shackPDESWEPlane->epsilon * io_u_SP;
-			io_v_SP = 1. / shackPDESWEPlane->epsilon * io_v_SP;
-
-
 			this->ts_n_erk.runTimestep_P(
 					io_h_pert_SP, io_u_SP, io_v_SP,
 					i_dt,
@@ -83,11 +77,6 @@ void SWE_Plane_Mori_Zwanzig_TS_l_exp_n_erk::runTimestep(
 					i_simulation_timestamp
 				);
 
-			// TODO: epsilon inside ts_l_exp
-			io_h_pert_SP = 1. / shackPDESWEPlane->epsilon * io_h_pert_SP;
-			io_u_SP = 1. / shackPDESWEPlane->epsilon * io_u_SP;
-			io_v_SP = 1. / shackPDESWEPlane->epsilon * io_v_SP;
-
 			this->ts_n_erk.runTimestep_P(
 					io_h_pert_SP, io_u_SP, io_v_SP,
 					i_dt,
@@ -102,20 +91,15 @@ void SWE_Plane_Mori_Zwanzig_TS_l_exp_n_erk::runTimestep(
 					i_simulation_timestamp
 				);
 
-			// TODO: epsilon inside ts_l_exp
-			io_h_pert_SP = 1. / shackPDESWEPlane->epsilon * io_h_pert_SP;
-			io_u_SP = 1. / shackPDESWEPlane->epsilon * io_u_SP;
-			io_v_SP = 1. / shackPDESWEPlane->epsilon * io_v_SP;
-
 		}
 		else
 			SWEETError("SWE_Plane_TS_l_exp_n_erk: Explicit erk order not implemented for this scheme, please set --timestepping-order2 to 1 or 2.");
 	}
-	else
+	else if (equation == "Q")
 	{
-		//////////////////////////////////
-		// solve equation for SQ and FQ //
-		//////////////////////////////////
+		////////////////////////////////
+		// solve system for SQ and FQ //
+		////////////////////////////////
 		if (timestepping_order_nonlinear_Q == 1)
 		{
 
@@ -126,11 +110,6 @@ void SWE_Plane_Mori_Zwanzig_TS_l_exp_n_erk::runTimestep(
 					i_dt,
 					i_simulation_timestamp
 				);
-
-			// TODO: epsilon inside ts_l_exp
-			io_h_pert_SP = 1. / shackPDESWEPlane->epsilon * io_h_pert_FQ;
-			io_u_FQ = 1. / shackPDESWEPlane->epsilon * io_u_FQ;
-			io_v_FQ = 1. / shackPDESWEPlane->epsilon * io_v_FQ;
 
 			this->ts_n_erk.runTimestep_Q(
 					io_h_pert_SQ, io_u_SQ, io_v_SQ,
@@ -150,11 +129,6 @@ void SWE_Plane_Mori_Zwanzig_TS_l_exp_n_erk::runTimestep(
 					i_simulation_timestamp
 				);
 
-			// TODO: epsilon inside ts_l_exp
-			io_h_pert_SP = 1. / shackPDESWEPlane->epsilon * io_h_pert_FQ;
-			io_u_FQ = 1. / shackPDESWEPlane->epsilon * io_u_FQ;
-			io_v_FQ = 1. / shackPDESWEPlane->epsilon * io_v_FQ;
-
 			this->ts_n_erk.runTimestep_Q(
 					io_h_pert_SQ, io_u_SQ, io_v_SQ,
 					io_h_pert_FQ, io_u_FQ, io_v_FQ,
@@ -170,14 +144,65 @@ void SWE_Plane_Mori_Zwanzig_TS_l_exp_n_erk::runTimestep(
 					i_simulation_timestamp
 				);
 
-			// TODO: epsilon inside ts_l_exp
-			io_h_pert_SP = 1. / shackPDESWEPlane->epsilon * io_h_pert_FQ;
-			io_u_FQ = 1. / shackPDESWEPlane->epsilon * io_u_FQ;
-			io_v_FQ = 1. / shackPDESWEPlane->epsilon * io_v_FQ;
+		}
+		else
+			SWEETError("SWE_Plane_TS_l_exp_n_erk: Explicit erk order not implemented for this scheme, please set --timestepping-order2 to 1 or 2.");
+	}
+	else if (equation == "SF")
+	{
+		////////////////////////////////////////////
+		// solve system for S and F (full system) //
+		////////////////////////////////////////////
+		// Solutions : io_*_SP --> S
+		//             io_*_FQ --> F
+		if (timestepping_order_nonlinear_Q == 1)
+		{
+
+			ts_l_exp.runTimestep(
+					io_h_pert_SP, io_u_SP, io_v_SP,
+					dummy, dummy, dummy,
+					io_h_pert_FQ, io_u_FQ, io_v_FQ,
+					i_dt,
+					i_simulation_timestamp
+				);
+
+			this->ts_n_erk.runTimestep_SF(
+					io_h_pert_SP, io_u_SP, io_v_SP,
+					io_h_pert_FQ, io_u_FQ, io_v_FQ,
+					i_dt,
+					i_simulation_timestamp
+				);
+		}
+		else if (timestepping_order_nonlinear_Q == 2)
+		{
+
+			ts_l_exp.runTimestep(
+					io_h_pert_SP, io_u_SP, io_v_SP,
+					dummy, dummy, dummy,
+					io_h_pert_FQ, io_u_FQ, io_v_FQ,
+					i_dt * .5,
+					i_simulation_timestamp
+				);
+
+			this->ts_n_erk.runTimestep_SF(
+					io_h_pert_SP, io_u_SP, io_v_SP,
+					io_h_pert_FQ, io_u_FQ, io_v_FQ,
+					i_dt,
+					i_simulation_timestamp
+				);
+
+			ts_l_exp.runTimestep(
+					io_h_pert_SP, io_u_SP, io_v_SP,
+					dummy, dummy, dummy,
+					io_h_pert_FQ, io_u_FQ, io_v_FQ,
+					i_dt * .5,
+					i_simulation_timestamp
+				);
 
 		}
 		else
 			SWEETError("SWE_Plane_TS_l_exp_n_erk: Explicit erk order not implemented for this scheme, please set --timestepping-order2 to 1 or 2.");
+
 	}
 
 }
@@ -198,7 +223,7 @@ bool SWE_Plane_Mori_Zwanzig_TS_l_exp_n_erk::setup(
 	use_only_linear_divergence = shackPDESWEPlane->use_only_linear_divergence;
 
 	ts_l_exp.setup(io_ops, "phi0");
-	ts_n_erk.setup(io_ops, io_ops->planeDataConfig);
+	ts_n_erk.setup(io_ops, io_ops->planeDataConfig, equation);
 
 	timestepping_order_nonlinear_P = shackPDESWETimeDisc->timestepping_order_P;
 	timestepping_order_nonlinear_Q = shackPDESWETimeDisc->timestepping_order_Q;

@@ -18,7 +18,7 @@ bool SWE_Plane_Mori_Zwanzig_TS_l_direct::shackRegistration(
 )
 {
 
-	normal_modes.shackRegistration(*io_shackDict);
+	/////normal_modes.shackRegistration(*io_shackDict);
 	PDESWEPlaneMoriZwanzigTS_BaseInterface::shackRegistration(io_shackDict);
 
 	return true;
@@ -40,7 +40,16 @@ bool SWE_Plane_Mori_Zwanzig_TS_l_direct::setup(
 	expFunctions.setup(i_function_name);
 	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(expFunctions);
 
-	this->normal_modes.setup();
+	////this->normal_modes.setup();
+
+	this->normal_modes.setup(
+					shackPDESWEPlane->plane_rotating_f0,
+					shackPDESWEPlane->h0,
+					shackPDESWEPlane->gravitation,
+					shackPlaneDataOps->plane_domain_size[0],
+					shackPlaneDataOps->plane_domain_size[1]
+				);
+
 
 	return true;
 }
@@ -264,6 +273,7 @@ void SWE_Plane_Mori_Zwanzig_TS_l_direct::run_timestep_agrid_planedata(
 
 			complex eigenvalues[3];
 			complex eigenvectors[3][3];
+			complex eigenvectors_inv[3][3];
 
 			T k1;
 			if (ik1 < io_h_pert_SP.planeDataConfig->spectral_data_size[1]/2)
@@ -274,30 +284,30 @@ void SWE_Plane_Mori_Zwanzig_TS_l_direct::run_timestep_agrid_planedata(
 			T k0 = (T)ik0;
 
 
-			normal_modes.eigendecomposition(k0, k1, eigenvalues, eigenvectors);
+			normal_modes.eigendecomposition(k0, k1, eigenvalues, eigenvectors, eigenvectors_inv);
 
-			/*
-			 * Invert Eigenvalue matrix
-			 */
-			complex eigenvectors_inv[3][3];
+			//////*
+			///// * Invert Eigenvalue matrix
+			///// */
+			/////complex eigenvectors_inv[3][3];
 
-			eigenvectors_inv[0][0] =  (eigenvectors[1][1]*eigenvectors[2][2] - eigenvectors[1][2]*eigenvectors[2][1]);
-			eigenvectors_inv[0][1] = -(eigenvectors[0][1]*eigenvectors[2][2] - eigenvectors[0][2]*eigenvectors[2][1]);
-			eigenvectors_inv[0][2] =  (eigenvectors[0][1]*eigenvectors[1][2] - eigenvectors[0][2]*eigenvectors[1][1]);
+			/////eigenvectors_inv[0][0] =  (eigenvectors[1][1]*eigenvectors[2][2] - eigenvectors[1][2]*eigenvectors[2][1]);
+			/////eigenvectors_inv[0][1] = -(eigenvectors[0][1]*eigenvectors[2][2] - eigenvectors[0][2]*eigenvectors[2][1]);
+			/////eigenvectors_inv[0][2] =  (eigenvectors[0][1]*eigenvectors[1][2] - eigenvectors[0][2]*eigenvectors[1][1]);
 
-			eigenvectors_inv[1][0] = -(eigenvectors[1][0]*eigenvectors[2][2] - eigenvectors[1][2]*eigenvectors[2][0]);
-			eigenvectors_inv[1][1] =  (eigenvectors[0][0]*eigenvectors[2][2] - eigenvectors[0][2]*eigenvectors[2][0]);
-			eigenvectors_inv[1][2] = -(eigenvectors[0][0]*eigenvectors[1][2] - eigenvectors[0][2]*eigenvectors[1][0]);
+			/////eigenvectors_inv[1][0] = -(eigenvectors[1][0]*eigenvectors[2][2] - eigenvectors[1][2]*eigenvectors[2][0]);
+			/////eigenvectors_inv[1][1] =  (eigenvectors[0][0]*eigenvectors[2][2] - eigenvectors[0][2]*eigenvectors[2][0]);
+			/////eigenvectors_inv[1][2] = -(eigenvectors[0][0]*eigenvectors[1][2] - eigenvectors[0][2]*eigenvectors[1][0]);
 
-			eigenvectors_inv[2][0] =  (eigenvectors[1][0]*eigenvectors[2][1] - eigenvectors[1][1]*eigenvectors[2][0]);
-			eigenvectors_inv[2][1] = -(eigenvectors[0][0]*eigenvectors[2][1] - eigenvectors[0][1]*eigenvectors[2][0]);
-			eigenvectors_inv[2][2] =  (eigenvectors[0][0]*eigenvectors[1][1] - eigenvectors[0][1]*eigenvectors[1][0]);
+			/////eigenvectors_inv[2][0] =  (eigenvectors[1][0]*eigenvectors[2][1] - eigenvectors[1][1]*eigenvectors[2][0]);
+			/////eigenvectors_inv[2][1] = -(eigenvectors[0][0]*eigenvectors[2][1] - eigenvectors[0][1]*eigenvectors[2][0]);
+			/////eigenvectors_inv[2][2] =  (eigenvectors[0][0]*eigenvectors[1][1] - eigenvectors[0][1]*eigenvectors[1][0]);
 
-			complex s = eigenvectors[0][0]*eigenvectors_inv[0][0] + eigenvectors[0][1]*eigenvectors_inv[1][0] + eigenvectors[0][2]*eigenvectors_inv[2][0];
+			/////complex s = eigenvectors[0][0]*eigenvectors_inv[0][0] + eigenvectors[0][1]*eigenvectors_inv[1][0] + eigenvectors[0][2]*eigenvectors_inv[2][0];
 
-			for (int j = 0; j < 3; j++)
-				for (int i = 0; i < 3; i++)
-					eigenvectors_inv[j][i] /= s;
+			/////for (int j = 0; j < 3; j++)
+			/////	for (int i = 0; i < 3; i++)
+			/////		eigenvectors_inv[j][i] /= s;
 
 			// Compute Q * phin(Dt * Lambda)
 			complex v_lambda[3][3];

@@ -27,7 +27,9 @@
 #include <sweet/core/shacksShared/ShackPlaneDataOps.hpp>
 #include <sweet/core/shacksShared/ShackTimestepControl.hpp>
 #include <sweet/core/shacksShared/ShackIOData.hpp>
-#include "PDESWEPlaneMoriZwanzig_NormalModes.hpp"
+
+#include <sweet/core/plane/PlaneSWENormalModes.hpp>
+//#include "PDESWEPlaneMoriZwanzig_NormalModes.hpp"
 #include "ShackPDESWEPlaneMoriZwanzig.hpp"
 
 /**
@@ -48,7 +50,8 @@ public:
 
 	ShackPDESWEPlaneMoriZwanzig *shackPDESWEPlaneMZ;
 
-	PDESWEPlaneMoriZwanzigNormalModes normal_modes;
+	///PDESWEPlaneMoriZwanzigNormalModes normal_modes;
+	SWE_Plane_NormalModes normal_modes;
 
 
 	// min and max wavenumber modes for each wave type
@@ -74,7 +77,7 @@ public:
 		shackPDESWEPlaneMZ = io_dict.getAutoRegistration<ShackPDESWEPlaneMoriZwanzig>();
 		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(io_dict);
 
-		normal_modes.shackRegistration(io_dict);
+		////normal_modes.shackRegistration(io_dict);
 
 		return true;
 	}
@@ -82,7 +85,13 @@ public:
 
 	bool setup(sweet::PlaneData_Config* i_planeDataConfig)
 	{
-		this->normal_modes.setup();
+		this->normal_modes.setup(
+						shackPDESWEPlaneMZ->plane_rotating_f0,
+						shackPDESWEPlaneMZ->h0,
+						shackPDESWEPlaneMZ->gravitation,
+						shackPlaneDataOps->plane_domain_size[0],
+						shackPlaneDataOps->plane_domain_size[1]
+					);
 
 		// define SP, SQ, FQ
 		this->modes[0][0][0] = this->shackPDESWEPlaneMZ->S_geostrophic_min;
@@ -137,7 +146,7 @@ public:
 		{
 			// check if there is a min = zero
 			bool zero_ok = false;
-			for (int i = 0; i < 3; i++)
+			for (int i = 0; i < 2; i++)
 				if (this->modes[i][wave_type][0] == 0 && this->modes[i][wave_type][1] > 0)
 				{
 					zero_ok = true;
@@ -148,7 +157,7 @@ public:
 
 			// sum modes to check if they ara all taken into account
 			int sum = 0;
-			for (int i = 0; i < 3; i++)
+			for (int i = 0; i < 2; i++)
 			{
 				int min = this->modes[i][wave_type][0];
 				int max = this->modes[i][wave_type][1] - 1;
@@ -179,7 +188,7 @@ public:
 		else
 			SWEETError("Wrong projection type: " + projection_type );
 
-		complex eigenvalues[3];
+		///complex eigenvalues[3];
 		complex eigenvectors[3][3];
 
 
@@ -213,7 +222,7 @@ public:
 			for (int k2 = Kmin; k2 < Kmax; k2++)
 			{
 				complex U_proj[3] = {0., 0., 0.};
-				normal_modes.eigendecomposition(k1, k2, eigenvalues, eigenvectors);
+				normal_modes.eigendecomposition(k1, k2, eigenvectors);
 
 				for (int wave_type = wave_type_min; wave_type <= wave_type_max; wave_type++)
 				{

@@ -35,7 +35,8 @@ class SWE_Plane_Mori_Zwanzig_TS_l_direct	:
 
 	sweet::ExpFunctions<T> expFunctions;
 
-	PDESWEPlaneMoriZwanzigNormalModes normal_modes;
+	///PDESWEPlaneMoriZwanzigNormalModes normal_modes;
+	SWE_Plane_NormalModes normal_modes;
 
 	sweet::PlaneDataGridMapping planeDataGridMapping;
 
