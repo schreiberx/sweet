@@ -10,6 +10,7 @@
 #include <sweet/core/shacksShared/ShackTimestepControl.hpp>
 #include "ShackODEScalarTimeDiscretization.hpp"
 #include "../benchmarks/ShackODEScalarBenchmarks.hpp"
+#include "../ShackODEScalar.hpp"
 
 class ODEScalarTS_BaseInterface
 {
@@ -21,12 +22,14 @@ public:
 	 */
 	sweet::ShackDictionary *shackDict;
 	sweet::ShackTimestepControl *shackTimestepControl;
+	ShackODEScalar *shackODEScalar;
 	ShackODEScalarTimeDiscretization *shackODEScalarTimeDisc;
 	ShackODEScalarBenchmarks *shackODEScalarBenchmark;
 
 	ODEScalarTS_BaseInterface()	:
 		shackDict(nullptr),
 		shackTimestepControl(nullptr),
+		shackODEScalar(nullptr),
 		shackODEScalarTimeDisc(nullptr),
 		shackODEScalarBenchmark(nullptr)
 	{
@@ -40,6 +43,7 @@ public:
 		shackDict = io_shackDict;
 
 		shackTimestepControl = io_shackDict->getAutoRegistration<sweet::ShackTimestepControl>();
+		shackODEScalar = io_shackDict->getAutoRegistration<ShackODEScalar>();
 		shackODEScalarTimeDisc = io_shackDict->getAutoRegistration<ShackODEScalarTimeDiscretization>();
 		shackODEScalarBenchmark = io_shackDict->getAutoRegistration<ShackODEScalarBenchmarks>();
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*io_shackDict);

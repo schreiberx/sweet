@@ -11,6 +11,13 @@
 
 int main(int i_argc, char *i_argv[])
 {
+
+#if SWEET_MPI
+	MPI_Init(&i_argc, &i_argv);
+
+	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+#endif
+
 	ProgramODEScalar simulation(i_argc, i_argv);
 	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
 
@@ -21,13 +28,23 @@ int main(int i_argc, char *i_argv[])
 		simulation.shackTimestepControl->validateMaxSimulationTimeOrTimestepNr();
 		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(*(simulation.shackTimestepControl));
 
+		simulation.timestepHandleOutput();
+
 		while (!simulation.should_quit())
+		{
 			simulation.runTimestep();
+			simulation.timestepHandleOutput();
+		}
 	}
 
 	simulation.printSimulationErrors();
 	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
 
 	std::cout << "FIN" << std::endl;
+
+#if SWEET_MPI
+	MPI_Finalize();
+#endif
+
 	return 0;
 }

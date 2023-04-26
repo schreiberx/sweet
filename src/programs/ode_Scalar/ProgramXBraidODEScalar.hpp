@@ -2,8 +2,8 @@
  * 		Author: Joao STEINSTRAESSER <joao.steinstraesser@usp.br>
  */
 
-#ifndef SRC_PROGRAMS_XBRAID_ODE_SCALAR_PROGRAMODESCALAR_HPP_
-#define SRC_PROGRAMS_XBRAID_ODE_SCALAR_PROGRAMODESCALAR_HPP_
+#ifndef SRC_PROGRAMS_XBRAID_ODE_SCALAR_PROGRAMXBRAIDODESCALAR_HPP_
+#define SRC_PROGRAMS_XBRAID_ODE_SCALAR_PROGRAMXBRAIDODESCALAR_HPP_
 
 
 // This is just for the editor to show code as used within precompiler #if ... directives
@@ -18,15 +18,16 @@
 // Different shacks we need in this file
 #include <sweet/core/shacksShared/ShackIOData.hpp>
 
+#include <sweet/xbraid/ShackXBraid.hpp>
 #include <sweet/xbraid/XBraid_sweet_lib.hpp>
 
 // Benchmarks
-////#include "ODEScalarBenchmarksCombined.hpp"
+#include "ODEScalarBenchmarksCombined.hpp"
 
 // Time steppers
-////#include "ODEScalarTimeSteppers.hpp"
+#include "ODEScalarTimeSteppers.hpp"
 
-class ProgramiXBraidODEScalar
+class ProgramXBraidODEScalar
 {
 public:
 	sweet::ErrorBase error;
@@ -68,6 +69,7 @@ public:
 	sweet::ShackIOData *shackIOData;
 	sweet::ShackTimestepControl *shackTimestepControl;
 	ShackODEScalarTimeDiscretization *shackTimeDisc;
+	ShackXBraid *shackXBraid;
 
 	// XBraid
 	sweet_BraidApp* xbraid_app = nullptr;
@@ -104,6 +106,7 @@ public:
 		shackTimestepControl = shackProgArgDict.getAutoRegistration<sweet::ShackTimestepControl>();
 		shackIOData = shackProgArgDict.getAutoRegistration<sweet::ShackIOData>();
 		shackTimeDisc = shackProgArgDict.getAutoRegistration<ShackODEScalarTimeDiscretization>();
+		shackXBraid = shackProgArgDict.getAutoRegistration<ShackXBraid>();
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		/*
@@ -126,6 +129,7 @@ public:
 		shackTimestepControl = nullptr;
 		shackIOData = nullptr;
 		shackTimeDisc = nullptr;
+		shackXBraid = nullptr;
 
 		/////scalarBenchmarksCombined.clear();
 		/////timeSteppers.clear();

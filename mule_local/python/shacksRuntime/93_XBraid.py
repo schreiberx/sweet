@@ -1,4 +1,3 @@
-
 from mule.JobCompileOptions import *
 
 class XBraid:
@@ -125,7 +124,7 @@ class XBraid:
 
     def getRuntimeOptions(self):
         retRuntimeOptionsStr = ''
-        
+
         ## XBraid parameters
         if self.xbraid_enabled:
             retRuntimeOptionsStr += " --xbraid-enable=1"
@@ -164,5 +163,3 @@ class XBraid:
             retRuntimeOptionsStr += " --xbraid-spatial-coarsening="+str(self.xbraid_spatial_coarsening)
 
         return retRuntimeOptionsStr
-
-    
