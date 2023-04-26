@@ -419,5 +419,4 @@ public:
 };
 
 }
-
 #endif

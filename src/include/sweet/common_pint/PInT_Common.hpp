@@ -8,6 +8,9 @@
 
 #include <sweet/core/defaultPrecompilerValues.hpp>
 
+#include <sweet/core/ErrorBase.hpp>
+#include <sweet/core/shacksShared/ShackIOData.hpp>
+
 /*
  * Contains functions used by both Parareal and Xbraid (and possibly PFASST?) implementations in SWEET,
  * mostly error computation and file output functions.
@@ -16,14 +19,16 @@
 #ifndef SRC_INCLUDE_PINT_COMMON_HPP_
 #define SRC_INCLUDE_PINT_COMMON_HPP_
 
-#include <sweet/core/SimulationVariables.hpp>
+/////#include <sweet/core/SimulationVariables.hpp>
 #include <sweet/parareal/Parareal_GenericData.hpp>
 #if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
 	#include <sweet/parareal/Parareal_GenericData_Scalar.hpp>
 #elif SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
 	#include <sweet/parareal/Parareal_GenericData_PlaneData_Spectral.hpp>
+	#include <sweet/core/shacksShared/ShackPlaneDataOps.hpp>
 #elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
 	#include <sweet/parareal/Parareal_GenericData_SphereData_Spectral.hpp>
+	#include <sweet/core/shacksShared/ShackSphereDataOps.hpp>
 #endif
 
 #include <map>
@@ -32,7 +37,11 @@ class PInT_Common
 {
 
 protected:
-	SimulationVariables* simVars = nullptr;
+	///SimulationVariables* simVars = nullptr;
+
+	sweet::ErrorBase error;
+
+	sweet::ShackIOData* shackIOData;
 
 #if SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
 	// Grid Mapping (staggered grid)
@@ -43,10 +52,12 @@ protected:
 #if SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
 	std::vector<PlaneOperators*> op_plane;
 	std::vector<PlaneDataConfig*> planeDataConfig;
+	sweet::ShackPlaneDataOps* shackPlaneDataOps;
 #elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
 	std::vector<SphereOperators*> op_sphere;
 	std::vector<SphereOperators*> op_sphere_nodealiasing;
 	std::vector<SphereData_Config*> sphereDataConfig;
+	sweet::ShackSphereDataOps* shackSphereDataOps;
 #endif
 
 	// list of SL schemes
@@ -95,9 +106,24 @@ public:
 
 	void setup(
 			///SimulationVariables* i_simVars
+			sweet::ShackIOData* i_shackIOData
+#if SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
+			,
+			sweet::ShackPlaneDataOps* i_shackPlaneDataOps
+#elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
+			,
+			sweet::ShackSphereDataOps* i_shackSphereDataOps
+#endif
 	)
 	{
 		////this->simVars = i_simVars;
+
+		this->shackIOData = i_shackIOData;
+#if SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
+		this->shackPlaneDataOps = i_shackPlaneDataOps;
+#elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
+		this->shackSphereDataOps = i_shackSphereDataOps;
+#endif
 
 	#if SWEET_PARAREAL_PLANE_SWE || SWEET_XBRAID_PLANE_SWE
 		this->SL_tsm = { "l_cn_na_sl_nd_settls",
@@ -150,7 +176,7 @@ public:
 
 
 	void output_data_file(
-			Parareal_GenericData* i_data,
+			sweet::Parareal_GenericData* i_data,
 			int iteration_id,
 			int time_slice_id,
 			double t
@@ -161,7 +187,7 @@ public:
 		i_data->GenericData_Scalar_to_dataArrays(u_out);
 
 		// Dump  data in csv, if output filename is not empty
-		if (simVars->iodata.output_file_name.size() > 0)
+		if (this->shackIOData->output_file_name.size() > 0)
 		{
 			std::string output_filenames = "";
 			output_filenames = write_file_pint_scalar(u_out, "prog_u", iteration_id, t);
@@ -187,7 +213,7 @@ public:
 		PlaneData_Physical t_u(planeDataConfig[0]);
 		PlaneData_Physical t_v(planeDataConfig[0]);
 
-		if (simVars->disc.space_grid_use_c_staggering) // Remap in case of C-grid
+		if (this->shackPlaneDataOps->space_grid_use_c_staggering) // Remap in case of C-grid
 		{
 			gridMapping.mapCtoA_u(u_out_phys, t_u);
 			gridMapping.mapCtoA_v(v_out_phys, t_v);
@@ -199,7 +225,7 @@ public:
 		}
 
 		// Dump  data in csv, if output filename is not empty
-		if (simVars->iodata.output_file_name.size() > 0)
+		if (this->shackIOData->output_file_name.size() > 0)
 		{
 			std::string output_filenames = "";
 
@@ -703,8 +729,8 @@ public:
 	 * Compute and store parareal errors during simulation
 	 */
 	void store_pint_error(
-			Parareal_GenericData* i_data,
-			Parareal_GenericData* pint_data_ref,
+			sweet::Parareal_GenericData* i_data,
+			sweet::Parareal_GenericData* pint_data_ref,
 			int nvar,
 			int iteration_id,
 			int time_slice_id,
@@ -722,7 +748,7 @@ public:
 			// load ref file
 			char buffer[1024];
 			std::string i_name = "prog_u";
-			const char* filename_template = simVars->iodata.output_file_name.c_str();
+			const char* filename_template = this->shackIOData->output_file_name.c_str();
 			///sprintf(buffer, filename_template, i_name.c_str(), timeframe_end);
 			sprintf(buffer, filename_template, i_name.c_str(), t);
 			std::string buffer2 = path_ref + "/" + std::string(buffer);
@@ -1038,7 +1064,7 @@ public:
 			///const char* filename_template_out = "parareal_error_%s_%s_t%020.8f_iter%03d.csv";
 			std::string str = pint_type + "_error_%s_%s_t%020.8f_iter%03d.csv";
 			const char* filename_template_out = str.c_str();
-			sprintf(buffer_out, filename_template_out, base_solution.c_str(), i_name.c_str(), t * simVars->iodata.output_time_scale, iteration_id);
+			sprintf(buffer_out, filename_template_out, base_solution.c_str(), i_name.c_str(), t * this->shackIOData->output_time_scale, iteration_id);
 
 			std::ofstream file(buffer_out, std::ios_base::trunc);
 			file << std::setprecision(i_precision);
@@ -1047,7 +1073,7 @@ public:
 			file << "#VAR " << i_name << std::endl;
 			file << "#ITERATION " << iteration_id << std::endl;
 			file << "#TIMESLICE " << time_slice_id << std::endl;
-			file << "#TIMEFRAMEEND " << t  * simVars->iodata.output_time_scale << std::endl;
+			file << "#TIMEFRAMEEND " << t  * this->shackIOData->output_time_scale << std::endl;
 			file << "errL1 " << err_L1 << std::endl;
 			file << "errL2 " << err_L2 << std::endl;
 			file << "errLinf " << err_Linf << std::endl;

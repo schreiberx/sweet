@@ -69,21 +69,21 @@ public:
 	sweet::ShackIOData *shackIOData;
 	sweet::ShackTimestepControl *shackTimestepControl;
 	ShackODEScalarTimeDiscretization *shackTimeDisc;
-	ShackXBraid *shackXBraid;
+	sweet::ShackXBraid *shackXBraid;
 
 	// XBraid
 	sweet_BraidApp* xbraid_app = nullptr;
 	BraidCore* xbraid_core = nullptr;
 
 	// MPI
-	MPI_COMM mpi_comm;
+	MPI_Comm mpi_comm;
 	int mpi_rank;
 
 public:
 	ProgramXBraidODEScalar(
 			int i_argc,
 			char *const * const i_argv,
-			MPI_COMM i_mpi_comm,
+			MPI_Comm i_mpi_comm,
 			int i_mpi_rank
 	)	:
 		shackProgArgDict(i_argc, i_argv),
@@ -106,7 +106,7 @@ public:
 		shackTimestepControl = shackProgArgDict.getAutoRegistration<sweet::ShackTimestepControl>();
 		shackIOData = shackProgArgDict.getAutoRegistration<sweet::ShackIOData>();
 		shackTimeDisc = shackProgArgDict.getAutoRegistration<ShackODEScalarTimeDiscretization>();
-		shackXBraid = shackProgArgDict.getAutoRegistration<ShackXBraid>();
+		shackXBraid = shackProgArgDict.getAutoRegistration<sweet::ShackXBraid>();
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		/*
@@ -208,20 +208,20 @@ public:
 	{
 
 		// get the number of timesteps in the finest level
-		int nt = (int) (shackTimestepControl->max_simulation_time / shackToimestepContro->current_timestep_size);
-		if (nt * shackTimestepControl->current_timestep_size < shackTiemstepControl->max_simulation_time - 1e-10)
+		int nt = (int) (shackTimestepControl->max_simulation_time / shackTimestepControl->current_timestep_size);
+		if (nt * shackTimestepControl->current_timestep_size < shackTimestepControl->max_simulation_time - 1e-10)
 			nt++;
 
 		// XBraid app (user-defined)
-		this->xbraid_app = new sweet_BraidApp(this->mpi_comm, this->mpi_rank, 0., shackTimestepControl->max_simulation_time, nt, &shackDict);
+		this->xbraid_app = new sweet_BraidApp(this->mpi_comm, this->mpi_rank, 0., shackTimestepControl->max_simulation_time, nt, &shackProgArgDict);
 
 		// XBraid core
 		this->xbraid_core = new BraidCore(this->mpi_comm, this->xbraid_app);
 
-		app.setup(core);
+		this->xbraid_app->setup(*this->xbraid_core);
 	}
 
-	void clear4_xbraid()
+	void clear_4_xbraid()
 	{
 
 		if (this->xbraid_core)
@@ -294,7 +294,7 @@ public:
 		shackTimestepControl->timestepHelperStart();
 
 		// Run Simulation
-		this->xbraid_core.Drive();
+		this->xbraid_core->Drive();
 
 		shackTimestepControl->timestepHelperEnd();
 
