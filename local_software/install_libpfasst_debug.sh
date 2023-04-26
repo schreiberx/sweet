@@ -32,7 +32,8 @@ if [[ $? -eq 0 ]]; then
 	echo "$MULE_MPIF90 seems to support -fallow-argument-mismatch, using this per default"
 	echo "FFLAGS += -fallow-argument-mismatch" >> Makefile.local
 fi
-rm -rf "${TMPDIR}"
+# DO NOT UNCOMMENT THIS, since linux cluster reuses the TMPDIR for creating a temporary file
+#rm -rf "${TMPDIR}"
 
 
 # Disable LTO since this doesn't work on all platforms

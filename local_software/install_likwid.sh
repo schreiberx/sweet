@@ -13,7 +13,7 @@ config_package $@
 M_DST="${SWEET_LOCAL_SOFTWARE_DST_DIR}"
 M_DST=${M_DST//\//\\/}
 
-sed -i "s/^PREFIX =.*/PREFIX = "${M_DST}"/" config.mk
+sed -i "s/^PREFIX .*=.*/PREFIX = "${M_DST}"/" config.mk
 
 #sed -i "s/INSTALL_CHOWN = -g root -o root/INSTALL_CHOWN = /" config.mk
 
