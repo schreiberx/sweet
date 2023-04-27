@@ -69,6 +69,9 @@ public:
 	sweet::ShackIOData *shackIOData;
 	sweet::ShackTimestepControl *shackTimestepControl;
 	ShackODEScalarTimeDiscretization *shackTimeDisc;
+	sweet::ShackParallelization *shackParallelization;
+	ShackODEScalar *shackODEScalar;
+	ShackODEScalarBenchmarks *shackBenchmarks;
 	sweet::ShackXBraid *shackXBraid;
 
 	// XBraid
@@ -90,22 +93,27 @@ public:
 		shackIOData(nullptr),
 		shackTimestepControl(nullptr),
 		shackTimeDisc(nullptr),
+		shackParallelization(nullptr),
+		shackODEScalar(nullptr),
+		shackBenchmarks(nullptr),
+		shackXBraid(nullptr),
 		mpi_comm(i_mpi_comm),
 		mpi_rank(i_mpi_rank)
 	{
 		ERROR_CHECK_COND_RETURN(shackProgArgDict);
 	}
 
-
-
 	bool setup_1_shackRegistration()
 	{
 		/*
 		 * SHACK: Register classes which we require
 		 */
-		shackTimestepControl = shackProgArgDict.getAutoRegistration<sweet::ShackTimestepControl>();
 		shackIOData = shackProgArgDict.getAutoRegistration<sweet::ShackIOData>();
+		shackTimestepControl = shackProgArgDict.getAutoRegistration<sweet::ShackTimestepControl>();
 		shackTimeDisc = shackProgArgDict.getAutoRegistration<ShackODEScalarTimeDiscretization>();
+		shackParallelization = shackProgArgDict.getAutoRegistration<sweet::ShackParallelization>();
+		shackODEScalar = shackProgArgDict.getAutoRegistration<ShackODEScalar>();
+		shackBenchmarks = shackProgArgDict.getAutoRegistration<ShackODEScalarBenchmarks>();
 		shackXBraid = shackProgArgDict.getAutoRegistration<sweet::ShackXBraid>();
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
@@ -126,9 +134,12 @@ public:
 
 	void clear_1_shackRegistration()
 	{
-		shackTimestepControl = nullptr;
 		shackIOData = nullptr;
+		shackTimestepControl = nullptr;
 		shackTimeDisc = nullptr;
+		shackParallelization = nullptr;
+		shackODEScalar = nullptr;
+		shackBenchmarks = nullptr;
 		shackXBraid = nullptr;
 
 		/////scalarBenchmarksCombined.clear();
@@ -180,6 +191,25 @@ public:
 
 		//////////////data.prog_u_t0 = data.prog_u;
 
+		//////////////////
+		// SETUP XBRAID //
+		//////////////////
+
+		// get the number of timesteps in the finest level
+		int nt = (int) (shackTimestepControl->max_simulation_time / shackTimestepControl->current_timestep_size);
+		if (nt * shackTimestepControl->current_timestep_size < shackTimestepControl->max_simulation_time - 1e-10)
+			nt++;
+
+		// XBraid app (user-defined)
+		this->xbraid_app = new sweet_BraidApp(this->mpi_comm, this->mpi_rank, 0., shackTimestepControl->max_simulation_time, nt);//, &shackProgArgDict);
+		this->xbraid_app->shackRegistration(shackProgArgDict);
+
+		// XBraid core
+		this->xbraid_core = new BraidCore(this->mpi_comm, this->xbraid_app);
+
+		this->xbraid_app->setup(*this->xbraid_core);
+
+
 		/*
 		 * Finish registration & getting class interfaces so that nobody can do some
 		 * strange things with this anymore
@@ -201,29 +231,6 @@ public:
 
 		/////////timeSteppers.clear();
 
-		data.clear();
-	}
-
-	bool setup_4_xbraid()
-	{
-
-		// get the number of timesteps in the finest level
-		int nt = (int) (shackTimestepControl->max_simulation_time / shackTimestepControl->current_timestep_size);
-		if (nt * shackTimestepControl->current_timestep_size < shackTimestepControl->max_simulation_time - 1e-10)
-			nt++;
-
-		// XBraid app (user-defined)
-		this->xbraid_app = new sweet_BraidApp(this->mpi_comm, this->mpi_rank, 0., shackTimestepControl->max_simulation_time, nt, &shackProgArgDict);
-
-		// XBraid core
-		this->xbraid_core = new BraidCore(this->mpi_comm, this->xbraid_app);
-
-		this->xbraid_app->setup(*this->xbraid_core);
-	}
-
-	void clear_4_xbraid()
-	{
-
 		if (this->xbraid_core)
 		{
 			delete this->xbraid_core;
@@ -236,6 +243,7 @@ public:
 			this->xbraid_app = nullptr;
 		}
 
+		data.clear();
 	}
 
 	bool setup()
@@ -249,15 +257,11 @@ public:
 		if (!setup_3_data())
 			return false;
 
-		if (!setup_4_xbraid())
-			return false;
-
 		std::cout << "SETUP FINISHED" << std::endl;
 		return true;
 	}
 	void clear()
 	{
-		clear_4_xbraid();
 		clear_3_data();
 		clear_2_process_arguments();
 		clear_1_shackRegistration();

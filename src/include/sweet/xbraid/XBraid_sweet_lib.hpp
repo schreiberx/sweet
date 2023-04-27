@@ -29,7 +29,7 @@
 	#include "src/programs/ode_Scalar/time/ShackODEScalarTimeDiscretization.hpp"
 	typedef ODEScalarTimeSteppers t_tsmType;
 	typedef ShackODEScalar t_ShackModel;
-	typedef ShackODEScalarTimeDiscretization t_ShackTimeDisc;
+	typedef ShackODEScalarTimeDiscretization t_ShackTimeDiscretization;
 	typedef ShackODEScalarBenchmarks t_ShackBenchmarks;
 	#define N 1
 #elif SWEET_XBRAID_PLANE
@@ -37,13 +37,13 @@
 	#if SWEET_XBRAID_PLANE_BURGERS
 		typedef BurgersPlaneTimeSteppers t_tsmType;
 		typedef ShackPDEBurgersPlane t_ShackModel;
-		typedef ShackPDEBurgersPlaneTimeDiscretization t_ShackTimeDisc;
+		typedef ShackPDEBurgersPlaneTimeDiscretization t_ShackTimeDiscretization;
 		typedef ShackPDEBurgersPlaneBenchmarks t_Benchmarks;
 		#define N 2
 	#elif SWEET_XBRAID_PLANE_SWE
 		typedef SWEPlaneTimeSteppers t_tsmType;
 		typedef ShackPDESWEPlane t_ShackModel;
-		typedef ShackPDESWEPlaneTimeDiscretization t_ShackTimeDisc;
+		typedef ShackPDESWEPlaneTimeDiscretization t_ShackTimeDiscretization;
 		typedef ShackPDESWEPlaneBenchmarks t_Benchmarks;
 		#define N 3
 	#endif
@@ -51,7 +51,7 @@
 	#include <sweet/parareal/Parareal_GenericData_SphereData_Spectral.hpp>
 	typedef SWESphereTimeSteppers t_tsmType;
 	typedef ShackPDESWESphere t_ShackModel;
-	typedef ShackPDESWESphereTimeDiscretization t_ShackTimeDisc;
+	typedef ShackPDESWESphereTimeDiscretization t_ShackTimeDiscretization;
 	typedef ShackPDESWESphereBenchmarks t_Benchmarks;
 	#define N 3
 #endif
@@ -230,6 +230,7 @@ class sweet_BraidApp
 public:
 
 	///SimulationVariables*		simVars;
+	sweet::ShackDictionary*			shackDict;
 	sweet::ShackXBraid*			shackXBraid;
 	sweet::ShackParallelization*		shackParallelization;
 	sweet::ShackTimestepControl*		shackTimestepControl;
@@ -237,9 +238,9 @@ public:
 
 	// Shacks corresponding to each level
 	std::vector<t_ShackModel*>			shacksModel_levels;
-	std::vector<t_ShackTimeDisc*>			shacksTimeDisc_levels;
-	///std::vector<t_ShackBenchmarks*>			shacksBenchmarks_levels;
-	std::vector<sweet::ShackProgArgDictionary*>	shacksProgArgDict_levels;
+	std::vector<t_ShackTimeDiscretization*>		shacksTimeDisc_levels;
+	///std::vector<t_ShackBenchmarks*>		shacksBenchmarks_levels;
+	std::vector<sweet::ShackDictionary*>		shacksDict_levels;
 	std::vector<sweet::ShackTimestepControl*>	shacksTimestepControl_levels;
 
 	double				dt;
@@ -293,20 +294,13 @@ public:
 			int			i_rank,
 			double			i_tstart,
 			double			i_tstop,
-			int 			i_ntime,
-			sweet::ShackProgArgDictionary*	i_shackDict
-			//sweet::ShackXBraid*		i_shackXBraid
-			////SimulationVariables*	i_simVars
+			int 			i_ntime
 #if SWEET_XBRAID_PLANE
 			,
-			//PlaneDataConfig* i_planeDataConfig,
-			//PlaneOperators* i_op_plane
 			std::vector<PlaneDataConfig*> i_planeDataConfig,
 			std::vector<PlaneOperators*> i_op_plane
 #elif SWEET_XBRAID_SPHERE
 			,
-			///SphereData_Config* i_sphereDataConfig,
-			///SphereOperators* i_op_sphere
 			std::vector<SphereData_Config*> i_sphereDataConfig,
 			std::vector<SphereOperators*> i_op_sphere
 #endif
@@ -315,9 +309,6 @@ public:
 			BraidApp(i_comm_t, i_tstart, i_tstop, i_ntime),
 			rank(i_rank)
 	{
-			///this->simVars = i_simVars;
-			///this->shackXBraid = shackXBraid;
-			this->shackXBraid = i_shackDict->getAutoRegistration<sweet::ShackXBraid>();
 
 #if SWEET_XBRAID_PLANE
 			this->planeDataConfig = i_planeDataConfig;
@@ -383,18 +374,6 @@ public:
 					*it2 = nullptr;
 				}
 
-		///for (std::vector<SimulationVariables*>::iterator it = this->simVars_levels.begin();
-		///							it != this->simVars_levels.end();
-		///							it++)
-		////for (std::vector<ShackXBraidLevel*>::iterator it = this->shacks_levels.begin();
-		////							it != this->shacks_levels.end();
-		////							it++)
-		////	if (*it)
-		////	{
-		////		delete *it;
-		////		*it = nullptr;
-		////	}
-
 #if SWEET_GUI
 		for (std::vector<SimulationGuiCallbacks*>::iterator it = this->levels_simulations.begin();
 									it != this->levels_simulations.end();
@@ -412,34 +391,61 @@ public:
 			sweet::ShackDictionary &io_shackDict
 	)
 	{
+		std::cout << "GLOBAL REGISTRATION" << std::endl;
+		this->shackDict = &io_shackDict;
 		this->shackIOData = io_shackDict.getAutoRegistration<sweet::ShackIOData>();
 		this->shackTimestepControl = io_shackDict.getAutoRegistration<sweet::ShackTimestepControl>();
 		this->shackBenchmarks = io_shackDict.getAutoRegistration<t_ShackBenchmarks>();
+		this->shackXBraid = io_shackDict.getAutoRegistration<sweet::ShackXBraid>();
 #if SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
 		this->shackPlaneDataOps = io_shackDict.getAutoRegistration<sweet::shackPlaneDataOps>();
 #elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
 		this->shackSphereDataOps = io_shackDict.getAutoRegistration<sweet::shackSphereDataOps>();
 #endif
 
+		this->shackRegistrationLevels(&io_shackDict);
+
 		ERROR_FORWARD_ALWAYS_RETURN_BOOLEAN(io_shackDict);
+
+		return true;
+	}
+
+public:
+	bool shackRegistrationLevels(
+			sweet::ShackDictionary *io_shackDict
+	)
+	{
+
+		std::cout << "LOCAL REGISTRATION" << std::endl;
+		for (int level = 0; level < this->shackXBraid->xbraid_max_levels; level++)
+		{
+			std::cout << " --> REGISTRATION LEVEL " << level << std::endl;
+			sweet::ShackDictionary* shackDict_level = new sweet::ShackDictionary;
+			*shackDict_level = *io_shackDict;
+
+			sweet::ShackTimestepControl* shackTimestepControl_level = nullptr;
+			t_ShackTimeDiscretization* shackTimeDisc_level = nullptr;
+			t_ShackBenchmarks* shackBenchmark_level = nullptr;
+			t_ShackModel* shackModel_level = nullptr;
+
+			shackTimestepControl_level = shackDict_level->getAutoRegistration<sweet::ShackTimestepControl>();
+			shackTimeDisc_level = shackDict_level->getAutoRegistration<t_ShackTimeDiscretization>();
+			shackBenchmark_level = shackDict_level->getAutoRegistration<t_ShackBenchmarks>();
+			shackModel_level = shackDict_level->getAutoRegistration<t_ShackModel>();
+
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*shackDict_level);
+
+			this->shacksDict_levels.push_back(shackDict_level);
+			this->shacksTimestepControl_levels.push_back(shackTimestepControl_level);
+			this->shacksTimeDisc_levels.push_back(shackTimeDisc_level);
+		}
+
 		return true;
 	}
 
 
 public:
-	void setup(
-			BraidCore& i_core
-///			sweet::ShackIOData* i_shackIOData,
-///			sweet::ShackTimestepControl* i_shackTimestepControl,
-///			t_ShackBenchmarks* i_shackBenchmarks
-///#if SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
-///			,
-///			sweet::ShackPlaneDataOps* i_shackPlaneDataOps
-///#elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
-///			,
-///			sweet::ShackSphereDataOps* i_shackSphereDataOps
-///#endif
-		)
+	void setup(BraidCore& i_core)
 	{
 
 		/////////////////////////////////////////////////
@@ -500,17 +506,13 @@ public:
 		////this->shackBenchmarks = i_shackBenchmarks;
 
 		///this->setup_timesteppers();
-		this->setup(
-////				i_shackIOData
-////#if SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
-////				,
-////				i_shackPlaneDataOps
-////#elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
-////				,
-////				i_shackSphereDataOps
-////#endif
-		);
+		this->setup();
 	}
+
+
+
+
+
 
 public:
 	/*
@@ -534,16 +536,17 @@ public:
 		for (int level = 0; level < this->shackXBraid->xbraid_max_levels; level++)
 		{
 
-			// Set tsm and tso to instance of simVars
+
+			// Set tsm and tso to instance of shackTimeDiscretization
 			this->shacksTimeDisc_levels[level]->timestepping_method = this->tsms[level];
 			this->shacksTimeDisc_levels[level]->timestepping_order = this->tsos[level];
 			this->shacksTimeDisc_levels[level]->timestepping_order2 = this->tsos2[level];
 
 			// Configure timesteppers with the correct timestep for this level
-			//////double dt = this->simVars->timecontrol.current_timestep_size;
-			//////this->simVars->timecontrol.current_timestep_size *= std::pow(this->shackXBraid->xbraid_cfactor, level);
+			this->shacksTimestepControl_levels[level]->printShack();
 			this->shacksTimestepControl_levels[level]->current_timestep_size = this->shacksTimestepControl_levels[level]->current_timestep_size *
 												std::pow(this->shackXBraid->xbraid_cfactor, level);
+			this->shacksTimestepControl_levels[level]->printShack();
 
 			if (rank == 0)
 				std::cout << "Timestep size at level " << level << " : " << this->shacksTimestepControl_levels[level]->current_timestep_size << std::endl;
@@ -551,11 +554,12 @@ public:
 #if SWEET_XBRAID_SCALAR
 			ODEScalarTimeSteppers* tsm = new ODEScalarTimeSteppers;
 
-			tsm->shackRegistration(*this->shacksProgArgDict_levels[level]);
+			tsm->shackRegistration(*this->shacksDict_levels[level]);
 			ERROR_FORWARD(*tsm);
 
+			tsm->shackTimeDisc = this->shacksTimeDisc_levels[level];
 			tsm->setup(
-					*this->shacksProgArgDict_levels[level]
+					*this->shacksDict_levels[level]
 				);
 
 			////tsm->setup(
@@ -615,16 +619,7 @@ public:
 	}
 
 public:
-	void setup(
-/////			sweet::ShackIOData* i_shackIOData
-/////#if SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
-/////			,
-/////			sweet::ShackPlaneDataOps* i_shackPlaneDataOps
-/////#elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
-/////			,
-/////			sweet::ShackSphereDataOps* i_shackSphereDataOps
-/////#endif
-		)
+	void setup()
 	{
 
 		PInT_Common::setup(

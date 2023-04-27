@@ -63,7 +63,13 @@ public:
 		sprintf(buffer, filename_template, i_name, shackTimestepControl->current_simulation_time*shackIOData->output_time_scale);
 
 		std::ofstream file(buffer, std::ios_base::trunc);
+
+		file << "#SWEET" << std::endl;
+		file << "#FORMAT ASCII" << std::endl;
+		file << "#PRIMITIVE SCALAR" << std::endl;
+
 		file << u;
+
 		file.close();
 
 		return buffer;
@@ -85,7 +91,7 @@ public:
 		{
 			std::string output_filename;
 
-			output_filename = write_file_csv(u, "u");
+			output_filename = write_file_csv(u, "prog_u");
 			output_reference_filenames += ";"+output_filename;
 		}
 		else if (shackIOData->output_file_mode == "bin")

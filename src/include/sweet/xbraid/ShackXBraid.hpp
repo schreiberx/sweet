@@ -335,7 +335,7 @@ public:
 	bool processProgramArguments(ProgramArguments &i_pa)
 	{
 
-		i_pa.getArgumentValueByKey("--xbraid-enabled", xbraid_enabled);
+		i_pa.getArgumentValueByKey("--xbraid-enable", xbraid_enabled);
 		i_pa.getArgumentValueByKey("--xbraid-max-levels", xbraid_max_levels);
 		i_pa.getArgumentValueByKey("--xbraid-skip", xbraid_skip);
 		i_pa.getArgumentValueByKey("--xbraid-min-coarse", xbraid_min_coarse);
