@@ -5,7 +5,7 @@ class ODEScalar:
     def __init__(self):
 
         ## ODE Scalar parameters
-        self.u0 = 0
+        self.u0 = None
         self.param_a = None
         self.param_b = None
 
@@ -31,8 +31,11 @@ class ODEScalar:
     def getRuntimeOptions(self):
         retRuntimeOptionsStr = ''
 
-        retRuntimeOptionsStr += " --u0="+str(self.u0)
-        retRuntimeOptionsStr += " --param-a="+str(self.param_a)
-        retRuntimeOptionsStr += " --param-b="+str(self.param_b)
+        if self.u0 != None:
+            retRuntimeOptionsStr += " --u0="+str(self.u0)
+        if self.param_a != None:
+            retRuntimeOptionsStr += " --param-a="+str(self.param_a)
+        if self.param_b != None:
+            retRuntimeOptionsStr += " --param-b="+str(self.param_b)
 
         return retRuntimeOptionsStr

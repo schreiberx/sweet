@@ -2,8 +2,8 @@
  * 		Author: Joao STEINSTRAESSER <joao.steinstraesser@usp.br>
  */
 
-#ifndef SRC_PROGRAMS_XBRAID_ODE_SCALAR_PROGRAMXBRAIDODESCALAR_HPP_
-#define SRC_PROGRAMS_XBRAID_ODE_SCALAR_PROGRAMXBRAIDODESCALAR_HPP_
+#ifndef SRC_PROGRAMS_XBRAID_PDE_SWEPLANE_PROGRAMXBRAIDPDESWEPLANE_HPP_
+#define SRC_PROGRAMS_XBRAID_PDE_SWEPLANE_PROGRAMXBRAIDPDESWEPLANE_HPP_
 
 
 // This is just for the editor to show code as used within precompiler #if ... directives
@@ -15,19 +15,29 @@
 // Our shack directory to store different objects and get them back later on
 #include <sweet/core/shacks/ShackProgArgDictionary.hpp>
 
+// Include everything we need for simulations on the plane
+#include <sweet/core/plane/Plane.hpp>
+#include <sweet/core/plane/PlaneData_Config.hpp>
+
 // Different shacks we need in this file
+#include <sweet/core/shacksShared/ShackPlaneDataOps.hpp>
 #include <sweet/core/shacksShared/ShackIOData.hpp>
+#include <sweet/core/plane/PlaneDataGridMapping.hpp>
+#include "ShackPDESWEPlane_Diagnostics.hpp"
+#include "benchmarks/ShackPDESWEPlaneBenchmarks.hpp"
 
 #include <sweet/xbraid/ShackXBraid.hpp>
 #include <sweet/xbraid/XBraid_sweet_lib.hpp>
 
 // Benchmarks
-#include "ODEScalarBenchmarksCombined.hpp"
+#include "PDESWEPlane_BenchmarksCombined.hpp"
 
 // Time steppers
-#include "ODEScalarTimeSteppers.hpp"
+#include "PDESWEPlane_TimeSteppers.hpp"
 
-class ProgramXBraidODEScalar
+#include<vector>
+
+class ProgramXBraidPDESWEPlane
 {
 public:
 	sweet::ErrorBase error;
@@ -40,32 +50,82 @@ public:
 	public:
 		sweet::ErrorBase error;
 
-		double prog_u;
-		double prog_u_t0;
+		sweet::PlaneData_Config planeDataConfig;
+		sweet::PlaneOperators ops;
 
-		bool setup()
+		sweet::PlaneData_Spectral prog_h_pert;
+		sweet::PlaneData_Spectral prog_u;
+		sweet::PlaneData_Spectral prog_v;
+
+		// TODO: Get rid of me right here
+		// Initial values for comparison with analytical solution
+		sweet::PlaneData_Spectral t0_prog_h_pert;
+		sweet::PlaneData_Spectral t0_prog_u;
+		sweet::PlaneData_Spectral t0_prog_v;
+
+		// Mapping between grids
+		sweet::PlaneDataGridMapping gridMapping;
+		
+		// Diagnostics measures
+		int last_timestep_nr_update_diagnostics = -1;
+			
+		bool setup(sweet::ShackPlaneDataOps *i_shackPlaneDataOps)
 		{
+			/*
+			 * Setup Plane Data Config & Operators
+			 */
+			planeDataConfig.setupAuto(*i_shackPlaneDataOps);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(planeDataConfig);
+
+			ops.setup(planeDataConfig, *i_shackPlaneDataOps);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(ops);
+
+			prog_h_pert.setup(planeDataConfig);
+			prog_u.setup(planeDataConfig);
+			prog_v.setup(planeDataConfig);
+
+			t0_prog_h_pert.setup(planeDataConfig);
+			t0_prog_u.setup(planeDataConfig);
+			t0_prog_v.setup(planeDataConfig);
+
+			last_timestep_nr_update_diagnostics = -1;
+			
+			if (i_shackPlaneDataOps->space_grid_use_c_staggering)
+				gridMapping.setup(i_shackPlaneDataOps, &planeDataConfig);
+
 			return true;
 		}
 
 		void clear()
 		{
+			prog_h_pert.clear();
+			prog_u.clear();
+			prog_v.clear();
+			
+			t0_prog_h_pert.clear();
+			t0_prog_u.clear();
+			t0_prog_v.clear();
+
+			ops.clear();
+			planeDataConfig.clear();
 		}
+
 	};
 
 	// Simulation data
-	Data data;
+	Data dataAndOps;
 
 	/*
 	 * Shack directory and shacks to work with
 	 */
 	sweet::ShackProgArgDictionary shackProgArgDict;
+	sweet::ShackPlaneDataOps *shackPlaneDataOps;
 	sweet::ShackIOData *shackIOData;
 	sweet::ShackTimestepControl *shackTimestepControl;
-	ShackODEScalarTimeDiscretization *shackTimeDisc;
+	ShackPDESWEPlaneTimeDiscretization *shackTimeDisc;
 	sweet::ShackParallelization *shackParallelization;
-	ShackODEScalar *shackODEScalar;
-	ShackODEScalarBenchmarks *shackBenchmarks;
+	ShackPDESWEPlane *shackPDESWEPlane;
+	ShackPDESWEPlaneBenchmarks *shackBenchmarks;
 	sweet::ShackXBraid *shackXBraid;
 
 	// XBraid
@@ -76,19 +136,24 @@ public:
 	MPI_Comm mpi_comm;
 	int mpi_rank;
 
+	//DataConfig and Ops for each level
+	std::vector<sweet::PlaneData_Config*> planeDataConfigs = {};
+	std::vector<sweet::PlaneOperators*> ops = {};
+
 public:
-	ProgramXBraidODEScalar(
+	ProgramXBraidPDESWEPlane(
 			int i_argc,
 			char *const * const i_argv,
 			MPI_Comm i_mpi_comm,
 			int i_mpi_rank
 	)	:
 		shackProgArgDict(i_argc, i_argv),
+		shackPlaneDataOps(nullptr),
 		shackIOData(nullptr),
 		shackTimestepControl(nullptr),
 		shackTimeDisc(nullptr),
 		shackParallelization(nullptr),
-		shackODEScalar(nullptr),
+		shackPDESWEPlane(nullptr),
 		shackBenchmarks(nullptr),
 		shackXBraid(nullptr),
 		mpi_comm(i_mpi_comm),
@@ -102,12 +167,13 @@ public:
 		/*
 		 * SHACK: Register classes which we require
 		 */
+		shackPlaneDataOps = shackProgArgDict.getAutoRegistration<sweet::ShackPlaneDataOps>();
 		shackIOData = shackProgArgDict.getAutoRegistration<sweet::ShackIOData>();
 		shackTimestepControl = shackProgArgDict.getAutoRegistration<sweet::ShackTimestepControl>();
-		shackTimeDisc = shackProgArgDict.getAutoRegistration<ShackODEScalarTimeDiscretization>();
+		shackTimeDisc = shackProgArgDict.getAutoRegistration<ShackPDESWEPlaneTimeDiscretization>();
 		shackParallelization = shackProgArgDict.getAutoRegistration<sweet::ShackParallelization>();
-		shackODEScalar = shackProgArgDict.getAutoRegistration<ShackODEScalar>();
-		shackBenchmarks = shackProgArgDict.getAutoRegistration<ShackODEScalarBenchmarks>();
+		shackPDESWEPlane = shackProgArgDict.getAutoRegistration<ShackPDESWEPlane>();
+		shackBenchmarks = shackProgArgDict.getAutoRegistration<ShackPDESWEPlaneBenchmarks>();
 		shackXBraid = shackProgArgDict.getAutoRegistration<sweet::ShackXBraid>();
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
@@ -119,14 +185,17 @@ public:
 
 	void clear_1_shackRegistration()
 	{
+		shackPlaneDataOps = nullptr;
 		shackIOData = nullptr;
 		shackTimestepControl = nullptr;
 		shackTimeDisc = nullptr;
 		shackParallelization = nullptr;
-		shackODEScalar = nullptr;
+		shackPDESWEPlane = nullptr;
 		shackBenchmarks = nullptr;
 		shackXBraid = nullptr;
 
+		/////scalarBenchmarksCombined.clear();
+		/////timeSteppers.clear();
 		shackProgArgDict.clear();
 	}
 
@@ -160,9 +229,54 @@ public:
 		std::cout << "Printing shack information:" << std::endl;
 		shackProgArgDict.printShackData();
 
+		/*
+		 * Setup Plane Data Config & Operators
+		 */
+		dataAndOps.setup(shackPlaneDataOps);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(dataAndOps);
+
 		//////////////////
 		// SETUP XBRAID //
 		//////////////////
+
+		// Set planeDataConfig and planeOperators for each level
+		///sweet::PlaneOperators op(dataAndOps.planeDataConfig, this->shackPlaneDataOps->plane_domain_size, this->shackPlaneDataOps->space_use_spectral_basis_diffs);
+		for (int i = 0; i < this->shackXBraid->xbraid_max_levels; i++)
+		{
+			if (this->shackXBraid->xbraid_spatial_coarsening)
+			{
+				int N_physical[2] = {-1, -1};
+				int N_spectral[2];
+				for (int j = 0; j < 2; j++)
+				{
+					// proportional to time step
+					if (this->shackXBraid->xbraid_spatial_coarsening == 1)
+						N_spectral[j] = std::max(4, int(this->shackPlaneDataOps->space_res_spectral[j] / std::pow(this->shackXBraid->xbraid_cfactor, i)));
+					else if (this->shackXBraid->xbraid_spatial_coarsening > 1)
+					{
+						if (i == 0)
+							N_spectral[j] = std::max(4, this->shackPlaneDataOps->space_res_spectral[j]);
+						else
+							N_spectral[j] = std::max(4, this->shackXBraid->xbraid_spatial_coarsening);
+					}
+					else
+						SWEETError("Invalid parameter xbraid_spatial_coarsening");
+				}
+				planeDataConfigs.push_back(new sweet::PlaneData_Config);
+				planeDataConfigs.back()->setupAuto(N_physical, N_spectral, this->shackPlaneDataOps->reuse_spectral_transformation_plans);
+
+				//PlaneOperators op_level(planeDataConfigs.back(), simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
+				ops.push_back(new sweet::PlaneOperators(planeDataConfigs.back(), this->shackPlaneDataOps->plane_domain_size, this->shackPlaneDataOps->space_use_spectral_basis_diffs));
+
+				std::cout << "Spectral resolution at level " << i << " : " << N_spectral[0] << " " << N_spectral[1] << std::endl;
+			}
+			else
+			{
+				planeDataConfigs.push_back(&dataAndOps.planeDataConfig);
+				ops.push_back(&dataAndOps.ops);
+			}
+		}
+
 
 		// get the number of timesteps in the finest level
 		int nt = (int) (shackTimestepControl->max_simulation_time / shackTimestepControl->current_timestep_size);
@@ -170,7 +284,7 @@ public:
 			nt++;
 
 		// XBraid app (user-defined)
-		this->xbraid_app = new sweet_BraidApp(this->mpi_comm, this->mpi_rank, 0., shackTimestepControl->max_simulation_time, nt);//, &shackProgArgDict);
+		this->xbraid_app = new sweet_BraidApp(this->mpi_comm, this->mpi_rank, 0., shackTimestepControl->max_simulation_time, nt, planeDataConfigs, ops);//, &shackProgArgDict);
 		this->xbraid_app->shackRegistration(shackProgArgDict);
 
 		// XBraid core
@@ -201,7 +315,14 @@ public:
 	void clear_3_data()
 	{
 
-		/////////timeSteppers.clear();
+		if (this->shackXBraid->xbraid_spatial_coarsening)
+			for (int i = 0; i < this->shackXBraid->xbraid_max_levels; i++)
+			{
+				delete planeDataConfigs[i];
+				delete ops[i];
+				planeDataConfigs[i] = nullptr;
+				ops[i] = nullptr;
+			}
 
 		if (this->xbraid_core)
 		{
@@ -215,7 +336,7 @@ public:
 			this->xbraid_app = nullptr;
 		}
 
-		data.clear();
+		dataAndOps.clear();
 	}
 
 	bool setup()
@@ -252,13 +373,13 @@ public:
 		return !error.exists();
 	}
 
-	void printSimulationErrors()
-	{
-		std::cout << "Error compared to initial condition" << std::endl;
-		std::cout << "Error: " << std::abs(data.prog_u_t0-data.prog_u) << std::endl;
-	}
+	////void printSimulationErrors()
+	////{
+	////	std::cout << "Error compared to initial condition" << std::endl;
+	////	std::cout << "Error: " << std::abs(data.prog_u_t0-data.prog_u) << std::endl;
+	////}
 
-	~ProgramXBraidODEScalar()
+	~ProgramXBraidPDESWEPlane()
 	{
 		clear();
 	}

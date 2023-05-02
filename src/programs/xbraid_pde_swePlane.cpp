@@ -1,13 +1,13 @@
 /*
  * Author: Joao STEINSTRAESSER <joao.steinstraesser@usp.br>
  *
- * MULE_COMPILE_FILES_AND_DIRS: src/programs/ode_Scalar/
- * MULE_COMPILE_FILES_AND_DIRS: src/programs/ode_Scalar/time/
- * MULE_COMPILE_FILES_AND_DIRS: src/programs/ode_Scalar/benchmarks/
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/pde_swePlane/
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/pde_swePlane/time/
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/pde_swePlane/benchmarks/
  *
  */
 
-#include "ode_Scalar/ProgramXBraidODEScalar.hpp"
+#include "pde_swePlane/ProgramXBraidPDESWEPlane.hpp"
 
 int main(int i_argc, char *i_argv[])
 {
@@ -18,7 +18,7 @@ int main(int i_argc, char *i_argv[])
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 #endif
 
-	ProgramXBraidODEScalar simulation(
+	ProgramXBraidPDESWEPlane simulation(
 						i_argc, i_argv
 #if SWEET_MPI
 						,

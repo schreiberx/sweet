@@ -19,10 +19,10 @@ namespace sweet
 
 template <int N>
 class Parareal_GenericData_SphereData_Spectral :
-		public Parareal_GenericData
+		public sweet::Parareal_GenericData
 {
 	class DataContainer_SphereData_Spectral :
-			public Parareal_GenericData::DataContainer<SphereData_Spectral*>
+			public sweet::Parareal_GenericData::DataContainer<sweet::SphereData_Spectral*>
 	{
 
 	public:
@@ -89,7 +89,7 @@ public:
 public:
 
 	Parareal_GenericData_SphereData_Spectral():
-		Parareal_GenericData()
+		sweet::Parareal_GenericData()
 	{
 		///allocate_data();
 	}
