@@ -235,47 +235,51 @@ public:
 		dataAndOps.setup(shackPlaneDataOps);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(dataAndOps);
 
-		//////////////////
-		// SETUP XBRAID //
-		//////////////////
+		/////////////////////////////
+		///////////// SETUP XBRAID //
+		/////////////////////////////
 
-		// Set planeDataConfig and planeOperators for each level
-		///sweet::PlaneOperators op(dataAndOps.planeDataConfig, this->shackPlaneDataOps->plane_domain_size, this->shackPlaneDataOps->space_use_spectral_basis_diffs);
-		for (int i = 0; i < this->shackXBraid->xbraid_max_levels; i++)
-		{
-			if (this->shackXBraid->xbraid_spatial_coarsening)
-			{
-				int N_physical[2] = {-1, -1};
-				int N_spectral[2];
-				for (int j = 0; j < 2; j++)
-				{
-					// proportional to time step
-					if (this->shackXBraid->xbraid_spatial_coarsening == 1)
-						N_spectral[j] = std::max(4, int(this->shackPlaneDataOps->space_res_spectral[j] / std::pow(this->shackXBraid->xbraid_cfactor, i)));
-					else if (this->shackXBraid->xbraid_spatial_coarsening > 1)
-					{
-						if (i == 0)
-							N_spectral[j] = std::max(4, this->shackPlaneDataOps->space_res_spectral[j]);
-						else
-							N_spectral[j] = std::max(4, this->shackXBraid->xbraid_spatial_coarsening);
-					}
-					else
-						SWEETError("Invalid parameter xbraid_spatial_coarsening");
-				}
-				planeDataConfigs.push_back(new sweet::PlaneData_Config);
-				planeDataConfigs.back()->setupAuto(N_physical, N_spectral, this->shackPlaneDataOps->reuse_spectral_transformation_plans);
+		///////////// Set planeDataConfig and planeOperators for each level
+		//////////////sweet::PlaneOperators op(dataAndOps.planeDataConfig, this->shackPlaneDataOps->plane_domain_size, this->shackPlaneDataOps->space_use_spectral_basis_diffs);
+		///////////for (int i = 0; i < this->shackXBraid->xbraid_max_levels; i++)
+		///////////{
+		///////////	if (this->shackXBraid->xbraid_spatial_coarsening)
+		///////////	{
+		///////////		int N_physical[2] = {-1, -1};
+		///////////		int N_spectral[2];
+		///////////		for (int j = 0; j < 2; j++)
+		///////////		{
+		///////////			// proportional to time step
+		///////////			if (this->shackXBraid->xbraid_spatial_coarsening == 1)
+		///////////				N_spectral[j] = std::max(4, int(this->shackPlaneDataOps->space_res_spectral[j] / std::pow(this->shackXBraid->xbraid_cfactor, i)));
+		///////////			else if (this->shackXBraid->xbraid_spatial_coarsening > 1)
+		///////////			{
+		///////////				if (i == 0)
+		///////////					N_spectral[j] = std::max(4, this->shackPlaneDataOps->space_res_spectral[j]);
+		///////////				else
+		///////////					N_spectral[j] = std::max(4, this->shackXBraid->xbraid_spatial_coarsening);
+		///////////			}
+		///////////			else
+		///////////				SWEETError("Invalid parameter xbraid_spatial_coarsening");
+		///////////		}
+		///////////		planeDataConfigs.push_back(new sweet::PlaneData_Config);
+		///////////		planeDataConfigs.back()->setupAuto(N_physical, N_spectral, this->shackPlaneDataOps->reuse_spectral_transformation_plans);
 
-				//PlaneOperators op_level(planeDataConfigs.back(), simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
-				ops.push_back(new sweet::PlaneOperators(planeDataConfigs.back(), this->shackPlaneDataOps->plane_domain_size, this->shackPlaneDataOps->space_use_spectral_basis_diffs));
+		///////////		//PlaneOperators op_level(planeDataConfigs.back(), simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
+		///////////		///ops.push_back(new sweet::PlaneOperators(planeDataConfigs.back(), this->shackPlaneDataOps->plane_domain_size, this->shackPlaneDataOps->space_use_spectral_basis_diffs));
+		///////////		ops.push_back(new sweet::PlaneOperators(planeDataConfigs.back(), this->shacksPlaneDataOps_levels[i]));
 
-				std::cout << "Spectral resolution at level " << i << " : " << N_spectral[0] << " " << N_spectral[1] << std::endl;
-			}
-			else
-			{
-				planeDataConfigs.push_back(&dataAndOps.planeDataConfig);
-				ops.push_back(&dataAndOps.ops);
-			}
-		}
+		////////////////////PlaneData_Config *i_planeDataConfig,		///< data config setup for spectral transformations
+		////////////////////ShackPlaneDataOps *i_planeDataOps
+
+		///////////		std::cout << "Spectral resolution at level " << i << " : " << N_spectral[0] << " " << N_spectral[1] << std::endl;
+		///////////	}
+		///////////	else
+		///////////	{
+		///////////		planeDataConfigs.push_back(&dataAndOps.planeDataConfig);
+		///////////		ops.push_back(&dataAndOps.ops);
+		///////////	}
+		///////////}
 
 
 		// get the number of timesteps in the finest level
@@ -284,7 +288,8 @@ public:
 			nt++;
 
 		// XBraid app (user-defined)
-		this->xbraid_app = new sweet_BraidApp(this->mpi_comm, this->mpi_rank, 0., shackTimestepControl->max_simulation_time, nt, planeDataConfigs, ops);//, &shackProgArgDict);
+		///this->xbraid_app = new sweet_BraidApp(this->mpi_comm, this->mpi_rank, 0., shackTimestepControl->max_simulation_time, nt);/////, planeDataConfigs, ops);//, &shackProgArgDict);
+		this->xbraid_app = new sweet_BraidApp(this->mpi_comm, this->mpi_rank, 0., shackTimestepControl->max_simulation_time, nt, &dataAndOps.planeDataConfig, &dataAndOps.ops);
 		this->xbraid_app->shackRegistration(shackProgArgDict);
 
 		// XBraid core

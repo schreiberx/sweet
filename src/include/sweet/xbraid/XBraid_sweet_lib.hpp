@@ -317,12 +317,12 @@ public:
 			int 			i_ntime
 #if SWEET_XBRAID_PLANE
 			,
-			std::vector<sweet::PlaneData_Config*> i_planeDataConfig,
-			std::vector<sweet::PlaneOperators*> i_op_plane
+			sweet::PlaneData_Config* i_planeDataConfig,
+			sweet::PlaneOperators* i_op_plane
 #elif SWEET_XBRAID_SPHERE
 			,
-			std::vector<sweet::SphereData_Config*> i_sphereDataConfig,
-			std::vector<sweet::SphereOperators*> i_op_sphere
+			sweet::SphereData_Config* i_sphereDataConfig,
+			sweet::SphereOperators* i_op_sphere
 #endif
 			)
 		:
@@ -331,8 +331,8 @@ public:
 	{
 
 #if SWEET_XBRAID_PLANE
-			this->planeDataConfig = i_planeDataConfig;
-			this->op_plane = i_op_plane;
+			this->base_planeDataConfig = i_planeDataConfig;
+			this->base_op_plane = i_op_plane;
 
 			// get min_spectral size
 			for (std::size_t i = 0; i < this->planeDataConfig.size(); i++)
@@ -341,8 +341,8 @@ public:
 								);
 
 #elif SWEET_XBRAID_SPHERE
-			this->sphereDataConfig = i_sphereDataConfig;
-			this->op_sphere = i_op_sphere;
+			this->base_sphereDataConfig = i_sphereDataConfig;
+			this->base_op_sphere = i_op_sphere;
 
 			// get min_spectral size
 			for (std::size_t i = 0; i < this->sphereDataConfig.size(); i++)
@@ -447,17 +447,33 @@ public:
 			t_ShackTimeDiscretization* shackTimeDisc_level = nullptr;
 			t_ShackBenchmarks* shackBenchmark_level = nullptr;
 			t_ShackModel* shackModel_level = nullptr;
+#if SWEET_XBRAID_PLANE
+			sweet::ShackPlaneDataOps* shackPlaneDataOps_level = nullptr;
+#elif SWEET_XBRAID_SPHERE
+			sweet::ShackSphereDataOps* shackSphereDataOps_level = nullptr;
+#endif
 
 			shackTimestepControl_level = shackDict_level->getAutoRegistration<sweet::ShackTimestepControl>();
 			shackTimeDisc_level = shackDict_level->getAutoRegistration<t_ShackTimeDiscretization>();
 			shackBenchmark_level = shackDict_level->getAutoRegistration<t_ShackBenchmarks>();
 			shackModel_level = shackDict_level->getAutoRegistration<t_ShackModel>();
+#if SWEET_XBRAID_PLANE
+			shackPlaneDataOps_level = shackDict_level->getAutoRegistration<sweet::ShackPlaneDataOps>();
+#elif SWEET_XBRAID_SPHERE
+			shackSphereDataOps_level = shackDict_level->getAutoRegistration<sweet::ShackSphereDataOps>();
+#endif
+
 
 			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*shackDict_level);
 
 			this->shacksDict_levels.push_back(shackDict_level);
 			this->shacksTimestepControl_levels.push_back(shackTimestepControl_level);
 			this->shacksTimeDisc_levels.push_back(shackTimeDisc_level);
+#if SWEET_XBRAID_PLANE
+			this->shacksPlaneDataOps_levels.push_back(shackPlaneDataOps_level);
+#elif SWEET_XBRAID_SPHERE
+			this->shacksSphereDataOps_levels.push_back(shackSphereDataOps_level);
+#endif
 		}
 
 		return true;
@@ -702,6 +718,89 @@ public:
 			t += dt2;
 			////std::cout << "TIME STEP " << dt2 << std::endl;
 		}
+
+
+#if SWEET_XBRAID_PLANE || SWEET_XBRAID_SPHERE
+		// set spectral resolution and Plane/Sphere ops for each level
+		for (int level = 0; level < this->shackXBraid->xbraid_max_levels; level++)
+		{
+			if (this->shackXBraid->xbraid_spatial_coarsening)
+			{
+				int N_physical[2] = {-1, -1};
+				int N_spectral[2];
+				for (int j = 0; j < 2; j++)
+				{
+					// proportional to time step
+					if (this->shackXBraid->xbraid_spatial_coarsening == 1)
+	#if SWEET_XBRAID_PLANE
+						N_spectral[j] = std::max(4, int(this->shackPlaneDataOps->space_res_spectral[j] / std::pow(this->shackXBraid->xbraid_cfactor, level)));
+	#else
+						N_spectral[j] = std::max(4, int(this->shackSphereDataOps->space_res_spectral[j] / std::pow(this->shackXBraid->xbraid_cfactor, level)));
+	#endif
+					else if (this->shackXBraid->xbraid_spatial_coarsening > 1)
+					{
+						if (level == 0)
+	#if SWEET_XBRAID_PLANE
+							N_spectral[j] = std::max(4, this->shackPlaneDataOps->space_res_spectral[j]);
+	#else
+							N_spectral[j] = std::max(4, this->shackSphereDataOps->space_res_spectral[j]);
+	#endif
+						else
+							N_spectral[j] = std::max(4, this->shackXBraid->xbraid_spatial_coarsening);
+					}
+					else
+						SWEETError("Invalid parameter xbraid_spatial_coarsening");
+				}
+	#if SWEET_XBRAID_PLANE
+				this->planeDataConfig.push_back(new sweet::PlaneData_Config);
+				this->planeDataConfig.back()->setupAuto(N_physical, N_spectral, this->shackPlaneDataOps->reuse_spectral_transformation_plans);
+				this->op_plane.push_back(new sweet::PlaneOperators(planeDataConfig.back(), this->shacksPlaneDataOps_levels[level]));
+	#else
+				this->sphereDataConfig.push_back(new sweet::SphereData_Config);
+				this->sphereDataConfig.back()->setupAuto(N_physical, N_spectral, this->shackSphereDataOps->reuse_spectral_transformation_plans);
+				this->op_sphere.push_back(new sweet::SphereOperators(sphereDataConfig.back(), this->shacksSphereDataOps_levels[level]));
+	#endif
+
+				//////PlaneOperators op_level(planeDataConfigs.back(), simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
+				///////ops.push_back(new sweet::PlaneOperators(planeDataConfigs.back(), this->shackPlaneDataOps->plane_domain_size, this->shackPlaneDataOps->space_use_spectral_basis_diffs));
+				////this->ops.push_back(new sweet::PlaneOperators(planeDataConfigs.back(), this->shacksPlaneDataOps_levels[level]));
+
+				std::cout << "Spectral resolution at level " << level << " : " << N_spectral[0] << " " << N_spectral[1] << std::endl;
+			}
+			else
+			{
+	#if SWEET_XBRAID_PLANE
+				this->planeDataConfig.push_back(this->base_planeDataConfig);
+				this->op_plane.push_back(this->base_op_plane);
+	#else
+				this->sphereDataConfig.push_back(this->base_sphereDataConfig);
+				this->op_sphere.push_back(this->base_op_sphere);
+	#endif
+			}
+		}
+#endif
+
+
+#if SWEET_XBRAID_PLANE
+			// get min_spectral size
+			for (std::size_t i = 0; i < this->planeDataConfig.size(); i++)
+				this->min_spectral_size = std::min(	this->min_spectral_size,
+									std::min((int)this->planeDataConfig[i]->spectral_data_size[0], (int)this->planeDataConfig[i]->spectral_data_size[1])
+								);
+
+#elif SWEET_XBRAID_SPHERE
+			// get min_spectral size
+			for (std::size_t i = 0; i < this->sphereDataConfig.size(); i++)
+				this->min_spectral_size = std::min(	this->min_spectral_size,
+									std::min(this->sphereDataConfig[i]->spectral_modes_m_max, this->sphereDataConfig[i]->spectral_modes_n_max)
+								);
+#endif
+
+
+
+
+
+
 
 		// create SimulationVariables instance for each level
 		for (int i = 0; i < this->shackXBraid->xbraid_max_levels; i++)

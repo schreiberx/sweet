@@ -52,10 +52,15 @@ protected:
 
 	// Operators and DataConfig
 #if SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
+	sweet::PlaneOperators* base_op_plane;
+	sweet::PlaneData_Config* base_planeDataConfig;
 	std::vector<sweet::PlaneOperators*> op_plane;
 	std::vector<sweet::PlaneData_Config*> planeDataConfig;
 	sweet::ShackPlaneDataOps* shackPlaneDataOps;
 #elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
+	sweet::SphereOperators* base_op_sphere;
+	sweet::SphereOperators* base_op_sphere_nodealiasing;
+	sweet::SphereData_Config* base_sphereDataConfig;
 	std::vector<sweet::SphereOperators*> op_sphere;
 	std::vector<sweet::SphereOperators*> op_sphere_nodealiasing;
 	std::vector<sweet::SphereData_Config*> sphereDataConfig;
