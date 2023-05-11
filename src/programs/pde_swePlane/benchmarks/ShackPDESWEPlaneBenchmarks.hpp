@@ -65,10 +65,12 @@ public:
 
 	bool processProgramArguments(sweet::ProgramArguments &i_pa)
 	{
+		std::cout << "BBBBBBBB" << std::endl;
 		i_pa.getArgumentValueByKey("--random-seed", random_seed);
 		i_pa.getArgumentValueBy2Keys("--initial-coord-x", "-x", object_coord_x);
 		i_pa.getArgumentValueBy2Keys("--initial-coord-y", "-y", object_coord_y);
 		i_pa.getArgumentValueByKey("--benchmark-name", benchmark_name);
+		std::cout << "BBBBBBBB " << benchmark_name << std::endl;
 
 		i_pa.getArgumentValueByKey("--benchmark-normal-modes-case", benchmark_normal_modes_case);
 		i_pa.getArgumentValueByKey("-r", object_scale);
