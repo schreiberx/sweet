@@ -2,8 +2,8 @@
  * 		Author: Joao STEINSTRAESSER <joao.steinstraesser@usp.br>
  */
 
-#ifndef SRC_PROGRAMS_XBRAID_PDE_SWEPLANE_PROGRAMXBRAIDPDESWEPLANE_HPP_
-#define SRC_PROGRAMS_XBRAID_PDE_SWEPLANE_PROGRAMXBRAIDPDESWEPLANE_HPP_
+#ifndef SRC_PROGRAMS_XBRAID_PDE_SWESPHERE_PROGRAMXBRAIDPDESWESPHERE_HPP_
+#define SRC_PROGRAMS_XBRAID_PDE_SWESPHERE_PROGRAMXBRAIDPDESWESPHERE_HPP_
 
 
 // This is just for the editor to show code as used within precompiler #if ... directives
@@ -16,28 +16,26 @@
 #include <sweet/core/shacks/ShackProgArgDictionary.hpp>
 
 // Include everything we need for simulations on the plane
-#include <sweet/core/plane/Plane.hpp>
-#include <sweet/core/plane/PlaneData_Config.hpp>
+#include <sweet/core/sphere/Sphere.hpp>
+#include <sweet/core/sphere/SphereData_Config.hpp>
 
 // Different shacks we need in this file
-#include <sweet/core/shacksShared/ShackPlaneDataOps.hpp>
+#include <sweet/core/shacksShared/ShackSphereDataOps.hpp>
 #include <sweet/core/shacksShared/ShackIOData.hpp>
-#include <sweet/core/plane/PlaneDataGridMapping.hpp>
-#include "ShackPDESWEPlane_Diagnostics.hpp"
-#include "benchmarks/ShackPDESWEPlaneBenchmarks.hpp"
+#include "benchmarks/ShackPDESWESphereBenchmarks.hpp"
 
 #include <sweet/xbraid/ShackXBraid.hpp>
 #include <sweet/xbraid/XBraid_sweet_lib.hpp>
 
 // Benchmarks
-#include "PDESWEPlane_BenchmarksCombined.hpp"
+#include "PDESWESphere_BenchmarksCombined.hpp"
 
 // Time steppers
-#include "PDESWEPlane_TimeSteppers.hpp"
+#include "PDESWESphere_TimeSteppers.hpp"
 
 #include<vector>
 
-class ProgramXBraidPDESWEPlane
+class ProgramXBraidPDESWESphere
 {
 public:
 	sweet::ErrorBase error;
@@ -45,87 +43,79 @@ public:
 	/*
 	 * Just a class to store simulation data all together
 	 */
-	class Data
+	class DataConfigOps
 	{
 	public:
 		sweet::ErrorBase error;
 
-		sweet::PlaneData_Config planeDataConfig;
-		sweet::PlaneOperators ops;
+		sweet::SphereData_Config sphereDataConfig;
+		sweet::SphereOperators ops;
 
-		sweet::PlaneData_Spectral prog_h_pert;
-		sweet::PlaneData_Spectral prog_u;
-		sweet::PlaneData_Spectral prog_v;
+		sweet::SphereData_Spectral prog_phi_pert;
+		sweet::SphereData_Spectral prog_div;
+		sweet::SphereData_Spectral prog_vrt;
 
-		// TODO: Get rid of me right here
-		// Initial values for comparison with analytical solution
-		sweet::PlaneData_Spectral t0_prog_h_pert;
-		sweet::PlaneData_Spectral t0_prog_u;
-		sweet::PlaneData_Spectral t0_prog_v;
 
-		// Mapping between grids
-		sweet::PlaneDataGridMapping gridMapping;
-		
-		// Diagnostics measures
-		int last_timestep_nr_update_diagnostics = -1;
-			
-		bool setup(sweet::ShackPlaneDataOps *i_shackPlaneDataOps)
+		sweet::SphereData_Spectral t0_prog_phi_pert;
+		sweet::SphereData_Spectral t0_prog_div;
+		sweet::SphereData_Spectral t0_prog_vrt;
+
+		bool setup(
+				sweet::ShackSphereDataOps *i_shackSphereDataOps,
+				bool i_setup_spectral_transforms = true		// for reset()
+		)
 		{
 			/*
-			 * Setup Plane Data Config & Operators
+			 * Setup Sphere Data Config & Operators
 			 */
-			planeDataConfig.setupAuto(*i_shackPlaneDataOps);
-			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(planeDataConfig);
+			if (i_setup_spectral_transforms)
+			{
+				sphereDataConfig.setupAuto(i_shackSphereDataOps);
+				ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(sphereDataConfig);
+			}
 
-			ops.setup(planeDataConfig, *i_shackPlaneDataOps);
+			ops.setup(&sphereDataConfig, i_shackSphereDataOps);
 			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(ops);
 
-			prog_h_pert.setup(planeDataConfig);
-			prog_u.setup(planeDataConfig);
-			prog_v.setup(planeDataConfig);
-
-			t0_prog_h_pert.setup(planeDataConfig);
-			t0_prog_u.setup(planeDataConfig);
-			t0_prog_v.setup(planeDataConfig);
-
-			last_timestep_nr_update_diagnostics = -1;
-			
-			if (i_shackPlaneDataOps->space_grid_use_c_staggering)
-				gridMapping.setup(i_shackPlaneDataOps, &planeDataConfig);
+			prog_phi_pert.setup(sphereDataConfig);
+			prog_div.setup(sphereDataConfig);
+			prog_vrt.setup(sphereDataConfig);
 
 			return true;
 		}
 
-		void clear()
+		void clear(bool i_clear_spectral_transforms = true)
 		{
-			prog_h_pert.clear();
-			prog_u.clear();
-			prog_v.clear();
-			
-			t0_prog_h_pert.clear();
-			t0_prog_u.clear();
-			t0_prog_v.clear();
+			prog_phi_pert.clear();
+			prog_div.clear();
+			prog_vrt.clear();
+
+			t0_prog_phi_pert.clear();
+			t0_prog_div.clear();
+			t0_prog_vrt.clear();
 
 			ops.clear();
-			planeDataConfig.clear();
-		}
 
+			if (i_clear_spectral_transforms)
+				sphereDataConfig.clear();
+		}
 	};
 
+
 	// Simulation data
-	Data dataAndOps;
+	DataConfigOps dataConfigOps;
 
 	/*
 	 * Shack directory and shacks to work with
 	 */
 	sweet::ShackProgArgDictionary shackProgArgDict;
-	sweet::ShackPlaneDataOps *shackPlaneDataOps;
+	sweet::ShackSphereDataOps *shackSphereDataOps;
 	sweet::ShackIOData *shackIOData;
 	sweet::ShackTimestepControl *shackTimestepControl;
-	ShackPDESWEPlaneTimeDiscretization *shackTimeDisc;
+	ShackPDESWESphereTimeDiscretization *shackTimeDisc;
 	sweet::ShackParallelization *shackParallelization;
-	ShackPDESWEPlane *shackPDESWEPlane;
-	ShackPDESWEPlaneBenchmarks *shackBenchmarks;
+	ShackPDESWESphere *shackPDESWESphere;
+	ShackPDESWESphereBenchmarks *shackBenchmarks;
 	sweet::ShackXBraid *shackXBraid;
 
 	// XBraid
@@ -137,19 +127,19 @@ public:
 	int mpi_rank;
 
 public:
-	ProgramXBraidPDESWEPlane(
+	ProgramXBraidPDESWESphere(
 			int i_argc,
 			char *const * const i_argv,
 			MPI_Comm i_mpi_comm,
 			int i_mpi_rank
 	)	:
 		shackProgArgDict(i_argc, i_argv),
-		shackPlaneDataOps(nullptr),
+		shackSphereDataOps(nullptr),
 		shackIOData(nullptr),
 		shackTimestepControl(nullptr),
 		shackTimeDisc(nullptr),
 		shackParallelization(nullptr),
-		shackPDESWEPlane(nullptr),
+		shackPDESWESphere(nullptr),
 		shackBenchmarks(nullptr),
 		shackXBraid(nullptr),
 		mpi_comm(i_mpi_comm),
@@ -163,13 +153,13 @@ public:
 		/*
 		 * SHACK: Register classes which we require
 		 */
-		shackPlaneDataOps = shackProgArgDict.getAutoRegistration<sweet::ShackPlaneDataOps>();
+		shackSphereDataOps = shackProgArgDict.getAutoRegistration<sweet::ShackSphereDataOps>();
 		shackIOData = shackProgArgDict.getAutoRegistration<sweet::ShackIOData>();
 		shackTimestepControl = shackProgArgDict.getAutoRegistration<sweet::ShackTimestepControl>();
-		shackTimeDisc = shackProgArgDict.getAutoRegistration<ShackPDESWEPlaneTimeDiscretization>();
+		shackTimeDisc = shackProgArgDict.getAutoRegistration<ShackPDESWESphereTimeDiscretization>();
 		shackParallelization = shackProgArgDict.getAutoRegistration<sweet::ShackParallelization>();
-		shackPDESWEPlane = shackProgArgDict.getAutoRegistration<ShackPDESWEPlane>();
-		shackBenchmarks = shackProgArgDict.getAutoRegistration<ShackPDESWEPlaneBenchmarks>();
+		shackPDESWESphere = shackProgArgDict.getAutoRegistration<ShackPDESWESphere>();
+		shackBenchmarks = shackProgArgDict.getAutoRegistration<ShackPDESWESphereBenchmarks>();
 		shackXBraid = shackProgArgDict.getAutoRegistration<sweet::ShackXBraid>();
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
@@ -181,12 +171,12 @@ public:
 
 	void clear_1_shackRegistration()
 	{
-		shackPlaneDataOps = nullptr;
+		shackSphereDataOps = nullptr;
 		shackIOData = nullptr;
 		shackTimestepControl = nullptr;
 		shackTimeDisc = nullptr;
 		shackParallelization = nullptr;
-		shackPDESWEPlane = nullptr;
+		shackPDESWESphere = nullptr;
 		shackBenchmarks = nullptr;
 		shackXBraid = nullptr;
 
@@ -226,10 +216,10 @@ public:
 		shackProgArgDict.printShackData();
 
 		/*
-		 * Setup Plane Data Config & Operators
+		 * Setup Sphere Data Config & Operators
 		 */
-		dataAndOps.setup(shackPlaneDataOps);
-		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(dataAndOps);
+		dataConfigOps.setup(shackSphereDataOps);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(dataConfigOps);
 
 		// get the number of timesteps in the finest level
 		int nt = (int) (shackTimestepControl->max_simulation_time / shackTimestepControl->current_timestep_size);
@@ -238,7 +228,7 @@ public:
 
 		// XBraid app (user-defined)
 		///this->xbraid_app = new sweet_BraidApp(this->mpi_comm, this->mpi_rank, 0., shackTimestepControl->max_simulation_time, nt);/////, planeDataConfigs, ops);//, &shackProgArgDict);
-		this->xbraid_app = new sweet_BraidApp(this->mpi_comm, this->mpi_rank, 0., shackTimestepControl->max_simulation_time, nt, &dataAndOps.planeDataConfig, &dataAndOps.ops);
+		this->xbraid_app = new sweet_BraidApp(this->mpi_comm, this->mpi_rank, 0., shackTimestepControl->max_simulation_time, nt, &dataConfigOps.sphereDataConfig, &dataConfigOps.ops);
 		this->xbraid_app->shackRegistration(shackProgArgDict);
 
 		// XBraid core
@@ -281,7 +271,7 @@ public:
 			this->xbraid_app = nullptr;
 		}
 
-		dataAndOps.clear();
+		dataConfigOps.clear();
 	}
 
 	bool setup()
@@ -324,7 +314,7 @@ public:
 	////	std::cout << "Error: " << std::abs(data.prog_u_t0-data.prog_u) << std::endl;
 	////}
 
-	~ProgramXBraidPDESWEPlane()
+	~ProgramXBraidPDESWESphere()
 	{
 		clear();
 	}

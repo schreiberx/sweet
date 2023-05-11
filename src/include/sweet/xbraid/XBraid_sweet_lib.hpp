@@ -63,7 +63,7 @@
 	#include "src/programs/pde_sweSphere/PDESWESphere_BenchmarksCombined.hpp"
 	#include "src/programs/pde_sweSphere/ShackPDESWESphere.hpp"
 	#include "src/programs/pde_sweSphere/time/ShackPDESWESphereTimeDiscretization.hpp"
-	typedef PDESWESphereTimeSteppers t_tsmType;
+	typedef PDESWESphere_TimeSteppers t_tsmType;
 	typedef ShackPDESWESphere t_ShackModel;
 	typedef ShackPDESWESphereTimeDiscretization t_ShackTimeDiscretization;
 	typedef ShackPDESWESphereBenchmarks t_ShackBenchmarks;
@@ -96,7 +96,7 @@ public:
 #if SWEET_XBRAID_PLANE
 	sweet::PlaneData_Config* planeDataConfig;
 #elif SWEET_XBRAID_SPHERE
-	SphereData_Config* sphereDataConfig;
+	sweet::SphereData_Config* sphereDataConfig;
 #endif
 
 	int level;
@@ -106,7 +106,7 @@ public:
 #if SWEET_XBRAID_PLANE
 				sweet::PlaneData_Config* i_planeDataConfig,
 #elif SWEET_XBRAID_SPHERE
-				SphereData_Config* i_sphereDataConfig,
+				sweet::SphereData_Config* i_sphereDataConfig,
 #endif
 				int i_level
 	)
@@ -421,6 +421,7 @@ public:
 		this->shackPlaneDataOps = io_shackDict.getAutoRegistration<sweet::ShackPlaneDataOps>();
 #elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
 		this->shackSphereDataOps = io_shackDict.getAutoRegistration<sweet::ShackSphereDataOps>();
+		this->shackPDESWESphere = io_shackDict.getAutoRegistration<ShackPDESWESphere>();
 #endif
 
 		this->shackRegistrationLevels(&io_shackDict);
@@ -632,18 +633,21 @@ public:
 	#endif
 #elif SWEET_XBRAID_SPHERE
 
-			PDESWESphereTimeSteppers* tsm = new PDESWESphereTimeSteppers;
+			PDESWESphere_TimeSteppers* tsm = new PDESWESphere_TimeSteppers;
 
-			tsm->shackRegistration(*this->shacksDict_levels[level]);
+			tsm->setup_1_registerAllTimesteppers();
+
+			tsm->setup_2_shackRegistration(this->shacksDict_levels[level]);
 			ERROR_FORWARD(*tsm);
 
-			tsm->setup(
-						///tsms[level],
-						///*this->op_sphere[level],
-						///*this->simVars_levels[level]
-						this->op_sphere[level],
-						this->shacksDict_levels[level]
-					);
+			tsm->setup_3_timestepper(
+							///tsms[level],
+							///*this->op_sphere[level],
+							///*this->simVars_levels[level]
+							this->tsms[level],
+							this->shacksDict_levels[level],
+							this->op_sphere[level]
+						);
 
 #endif
 
@@ -754,7 +758,8 @@ public:
 				this->op_plane.push_back(new sweet::PlaneOperators(planeDataConfig.back(), this->shacksPlaneDataOps_levels[level]));
 	#else
 				this->sphereDataConfig.push_back(new sweet::SphereData_Config);
-				this->sphereDataConfig.back()->setupAuto(N_physical, N_spectral, this->shackSphereDataOps->reuse_spectral_transformation_plans);
+				///this->sphereDataConfig.back()->setupAuto(N_physical, N_spectral, this->shackSphereDataOps->reuse_spectral_transformation_plans);
+				this->sphereDataConfig.back()->setupAuto(this->shacksSphereDataOps_levels[level]);
 				this->op_sphere.push_back(new sweet::SphereOperators(sphereDataConfig.back(), this->shacksSphereDataOps_levels[level]));
 	#endif
 
@@ -986,6 +991,7 @@ public:
 			)
 	{
 
+		std::cout << "BBBBBBBBBBB" << std::endl;
 		// First call of this function: create timesteppers
 		// Benchmark::setup_initial_conditions has already been called
 		if (this->timeSteppers.size() == 0)
@@ -1002,7 +1008,6 @@ public:
 
 			io_status.GetNLevels(&this->nlevels);
 		}
-
 
 
 		// Vector defined in the finest level
@@ -1085,7 +1090,7 @@ public:
 				*field = this->op_sphere[level]->implicit_hyperdiffusion(	*field,
 												(tstop - tstart) * this->viscosity_coefficients[level],
 												this->viscosity_orders[level],
-												this->simVars->sim.sphere_radius);
+												this->shackSphereDataOps->sphere_radius);
 			}
 	#endif
 		}
@@ -1257,38 +1262,65 @@ public:
 			t0_prog_v.loadPlaneDataPhysical(t0_prog_v_phys);
 		#endif
 
-
-	////////		U->data->dataArrays_to_GenericData_PlaneData_Spectral(
-	////////	#if SWEET_XBRAID_PLANE_SWE
-	////////									t0_prog_h_pert,
-	////////	#endif
-	////////									t0_prog_u,
-	////////									t0_prog_v);
-
 	#elif SWEET_XBRAID_SPHERE
-			////SphereData_Spectral t0_prog_phi_pert(sphereDataConfig[0]);
-			////SphereData_Spectral t0_prog_vrt(sphereDataConfig[0]);
-			////SphereData_Spectral t0_prog_div(sphereDataConfig[0]);
+			PDESWESphere_BenchmarksCombined sphereBenchmarks;
 
-			PDESWESphereBenchmarksCombined sphereBenchmarks;
-			sphereBenchmarks.shackRegistration(this->shacksDict_levels[0]);
+			sphereBenchmarks.setup_1_registerAllBenchmark();
 			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(sphereBenchmarks);
-			sphereBenchmarks.setup(*simVars_levels[0], *op_sphere[0]);
-			sphereBenchmarks.master->get_initial_state(t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
+
+			sphereBenchmarks.setup_2_shackRegistration(this->shacksDict_levels[0]);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(sphereBenchmarks);
+			////sphereBenchmarks.setup(*simVars_levels[0], *op_sphere[0]);
+
+			sphereBenchmarks.setup_3_benchmarkDetection();
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(sphereBenchmarks);
+
+			sphereBenchmarks.setup_4_benchmarkSetup_1_withoutOps();
+			sphereBenchmarks.setup_5_benchmarkSetup_2_withOps(this->op_sphere[0]);
+
+			sphereBenchmarks.benchmark->getInitialState(t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
+
+
+			/////*
+			//// * Setup benchmark itself
+			//// */
+
+			/////*
+			//// * Setup the data fields
+			//// */
+			////dataConfigOps.setup(shackSphereDataOps, i_setup_spectral_transforms);
+			////ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(dataConfigOps);
+
+			/////*
+			//// * Setup benchmark itself
+			//// */
+			////sphereBenchmarks.setup_5_benchmarkSetup_2_withOps(&dataConfigOps.ops);
+
 
 			// Dummy initialization in coarse levels
 			// The only purpose is to call Operators setup from benchmark (sim parameters may change!)
 			for (size_t level = 1; level < op_sphere.size(); level++)
 			{
-				SphereData_Spectral dummy1(sphereDataConfig[level]);
-				SphereData_Spectral dummy2(sphereDataConfig[level]);
-				SphereData_Spectral dummy3(sphereDataConfig[level]);
+				sweet::SphereData_Spectral dummy1(sphereDataConfig[level]);
+				sweet::SphereData_Spectral dummy2(sphereDataConfig[level]);
+				sweet::SphereData_Spectral dummy3(sphereDataConfig[level]);
 
-				PDESWESphereBenchmarksCombined sphereBenchmarks_dummy;
-				sphereBenchmarks_dummy.shackRegistration(this->shacksDict_levels[level]);
+				PDESWESphere_BenchmarksCombined sphereBenchmarks_dummy;
+
+				sphereBenchmarks_dummy.setup_1_registerAllBenchmark();
 				ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(sphereBenchmarks_dummy);
-				sphereBenchmarks_dummy.setup(*simVars_levels[level], *op_sphere[level]);
-				sphereBenchmarks_dummy.master->get_initial_state(dummy1, dummy2, dummy3);
+
+				sphereBenchmarks_dummy.setup_2_shackRegistration(this->shacksDict_levels[level]);
+				ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(sphereBenchmarks_dummy);
+				///sphereBenchmarks_dummy.setup(*simVars_levels[level], *op_sphere[level]);
+
+				sphereBenchmarks_dummy.setup_3_benchmarkDetection();
+				ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(sphereBenchmarks_dummy);
+
+				sphereBenchmarks_dummy.setup_4_benchmarkSetup_1_withoutOps();
+				sphereBenchmarks_dummy.setup_5_benchmarkSetup_2_withOps(this->op_sphere[level]);
+
+				sphereBenchmarks_dummy.benchmark->getInitialState(dummy1, dummy2, dummy3);
 			}
 
 
@@ -1343,19 +1375,7 @@ public:
 			t0_prog_u.loadPlaneDataPhysical(t0_prog_u_phys);
 			t0_prog_v.loadPlaneDataPhysical(t0_prog_v_phys);
 
-	/////		U->data->dataArrays_to_GenericData_PlaneData_Spectral(
-	/////	#if SWEET_XBRAID_PLANE_SWE
-	/////									t0_prog_h_pert,
-	/////	#endif
-	/////									t0_prog_u,
-	/////									t0_prog_v);
-
-
 	#elif SWEET_XBRAID_SPHERE
-			////SphereData_Spectral t0_prog_phi_pert(sphereDataConfig[0]);
-			////SphereData_Spectral t0_prog_vrt(sphereDataConfig[0]);
-			////SphereData_Spectral t0_prog_div(sphereDataConfig[0]);
-
 			sweet::SphereData_Physical t0_prog_phi_pert_phys(sphereDataConfig[0]);
 			sweet::SphereData_Physical t0_prog_vrt_phys(sphereDataConfig[0]);
 			sweet::SphereData_Physical t0_prog_div_phys(sphereDataConfig[0]);
@@ -1363,7 +1383,7 @@ public:
 			t0_prog_phi_pert_phys.physical_update_lambda_array(
 						[&](int i, int j, double &io_data)
 				{
-					io_data = this->simVars->sim.h0 + ((double)braid_Rand())/braid_RAND_MAX;
+					io_data = this->shackPDESWESphere->h0 + ((double)braid_Rand())/braid_RAND_MAX;
 				}
 			);
 			t0_prog_vrt_phys.physical_update_lambda_array(
@@ -1382,46 +1402,23 @@ public:
 			t0_prog_phi_pert.loadSphereDataPhysical(t0_prog_phi_pert_phys);
 			t0_prog_vrt.loadSphereDataPhysical(t0_prog_vrt_phys);
 			t0_prog_div.loadSphereDataPhysical(t0_prog_div_phys);
-
-			////U->data->dataArrays_to_GenericData_SphereData_Spectral(t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
 	#endif
 		}
 		else
 		{
-			///std::cout << "Setting zero solution " << std::endl;
 			/* Sets U as an all zero vector*/
 	#if SWEET_XBRAID_SCALAR
 			u0 = 0;
-			////U->data->dataArrays_to_GenericData_Scalar(u0);
 	#elif SWEET_XBRAID_PLANE
 		#if SWEET_XBRAID_PLANE_SWE
-			///PlaneData_Spectral t0_prog_h_pert(planeDataConfig[0]);
 			t0_prog_h_pert.spectral_set_zero();
 		#endif
-	
-			////PlaneData_Spectral t0_prog_u(planeDataConfig[0]);
 			t0_prog_u.spectral_set_zero();
-	
-			////PlaneData_Spectral t0_prog_v(planeDataConfig[0]);
 			t0_prog_v.spectral_set_zero();
-
-	////		U->data->dataArrays_to_GenericData_PlaneData_Spectral(
-	////	#if SWEET_XBRAID_PLANE_SWE
-	////									t0_prog_h_pert,
-	////	#endif
-	////									t0_prog_u,
-	////									t0_prog_v);
-	
 	#elif SWEET_XBRAID_SPHERE
-			////SphereData_Spectral t0_prog_phi_pert(sphereDataConfig[0]);
-			////SphereData_Spectral t0_prog_vrt(sphereDataConfig[0]);
-			////SphereData_Spectral t0_prog_div(sphereDataConfig[0]);
-
 			t0_prog_phi_pert.spectral_set_zero();
 			t0_prog_vrt.spectral_set_zero();
 			t0_prog_div.spectral_set_zero();
-
-			////U->data->dataArrays_to_GenericData_SphereData_Spectral(t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
 	#endif
 		}
 
@@ -1440,10 +1437,6 @@ public:
 	#endif
 
 		*o_U = (braid_Vector) U;
-
-		// ensure correct output of Phi (phi0 may have been modified)
-		// TODO!!!!!!!
-		/////*this->simVars = *this->simVars_levels[0];
 
 		return 0;
 	}

@@ -14,9 +14,6 @@
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
 
 
-namespace sweet
-{
-
 template <int N>
 class Parareal_GenericData_SphereData_Spectral :
 		public sweet::Parareal_GenericData
@@ -27,20 +24,20 @@ class Parareal_GenericData_SphereData_Spectral :
 
 	public:
 
-		DataContainer_SphereData_Spectral(SphereData_Config* i_sphereDataConfig)
+		DataContainer_SphereData_Spectral(sweet::SphereData_Config* i_sphereDataConfig)
 		{
 			nb_fields = N;
-			simfields = new SphereData_Spectral*[N];
+			simfields = new sweet::SphereData_Spectral*[N];
 			for (int i = 0; i < N; i++)
-				simfields[i] = new SphereData_Spectral(i_sphereDataConfig);
+				simfields[i] = new sweet::SphereData_Spectral(i_sphereDataConfig);
 		};
 
 		DataContainer_SphereData_Spectral(
-				SphereData_Spectral* i_simfields[N]
+				sweet::SphereData_Spectral* i_simfields[N]
 		)
 		{
 			nb_fields = N;
-			simfields = new SphereData_Spectral*[N];
+			simfields = new sweet::SphereData_Spectral*[N];
 			for (int i = 0; i < N; i++)
 				*(simfields[i]) = *(i_simfields[i]);
 		};
@@ -49,7 +46,7 @@ class Parareal_GenericData_SphereData_Spectral :
 		{
 			nb_fields = N;
 			level = i_data.level;
-			simfields = new SphereData_Spectral*[N];
+			simfields = new sweet::SphereData_Spectral*[N];
 			for (int i = 0; i < N; i++)
 				*(simfields[i]) = *(i_data.simfields[i]);
 		};
@@ -77,10 +74,10 @@ class Parareal_GenericData_SphereData_Spectral :
 
 public:
 
-	DataContainer<SphereData_Spectral*>* data = nullptr;
+	DataContainer<sweet::SphereData_Spectral*>* data = nullptr;
 
 public:
-	DataContainer<SphereData_Spectral*>* get_pointer_to_data_SphereData_Spectral() const override
+	DataContainer<sweet::SphereData_Spectral*>* get_pointer_to_data_SphereData_Spectral() const override
 	{
 		return data;
 	};
@@ -324,9 +321,9 @@ public:
 	}
 
 	void dataArrays_to_GenericData_SphereData_Spectral(
-								SphereData_Spectral &phi,
-								SphereData_Spectral &vrt,
-								SphereData_Spectral &div
+								sweet::SphereData_Spectral &phi,
+								sweet::SphereData_Spectral &vrt,
+								sweet::SphereData_Spectral &div
 							) override
 	{
 		*(data->simfields[0]) = phi;
@@ -335,9 +332,9 @@ public:
 	}
 
 	void GenericData_SphereData_Spectral_to_dataArrays(
-								SphereData_Spectral &phi,
-								SphereData_Spectral &vrt,
-								SphereData_Spectral &div
+								sweet::SphereData_Spectral &phi,
+								sweet::SphereData_Spectral &vrt,
+								sweet::SphereData_Spectral &div
 							) override
 	{
 		phi = *(data->simfields[0]);
@@ -361,7 +358,5 @@ public:
 
 
 };
-
-}
 
 #endif
