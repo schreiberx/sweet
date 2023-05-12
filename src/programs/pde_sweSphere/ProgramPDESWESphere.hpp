@@ -837,7 +837,7 @@ public:
 		};
 
 		int days = ((int)(shackTimestepControl->current_simulation_time/(60.0*60.0*24.0)));
-		int hours = ((int)(shackTimestepControl->current_simulation_time/(60.0*60.0)))%60;
+		int hours = ((int)(shackTimestepControl->current_simulation_time/(60.0*60.0)))%24;
 		int minutes = ((int)(shackTimestepControl->current_simulation_time/(60.0)))%60;
 		int seconds = ((int)shackTimestepControl->current_simulation_time) % 60;
 
