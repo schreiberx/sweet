@@ -19,53 +19,26 @@ from mule.SWEETRuntimeParametersScenarios import *
 from mule.JobParallelization import *
 from mule.JobParallelizationDimOptions import *
 
-tsm_fine = "dummy";
-tsm_coarse = "dummy";
+tsm_fine = "ln_erk";
+tsm_coarse = "ln_erk";
 
 #Create main compile/run options
 jg = JobGeneration()
-
-#Get Earth parameters (if necessary)
-earth = EarthMKSDimensions()
-
-#
-# Run simulation on plane or sphere
-#
-#Basic plane options
-jg.compile.program = "parareal_ode"
-jg.compile.mode = "debug"
-jg.compile.sweet_mpi = "enable"
 
 jg.runtime.output_file_mode = "csv"
 
 # Verbosity mode
 jg.runtime.verbosity = 3
 
-jg.compile.sphere_spectral_space = "enable";
-jg.compile.sphere_spectral_dealiasing = "enable";
-
 #
 # Benchmark ID
-# 14: Steady diagonal benchmark
 #
-#jg.runtime.bench_id = 1
-jg.runtime.benchmark_name = "unstablejet"
+jg.runtime.benchmark_name = "default"
+jg.runtime.u0 = 1.
+jg.runtime.param_a = 1.
+jg.runtime.param_b = 2.
 
-# Enable/Disbale GUI
-#jg = EnableGUI(jg)
 jg = DisableGUI(jg)
-
-#
-# REXI method
-jg.runtime.rexi_method = 'direct'
-#jg.runtime.rexi_use_direct_solution = 1
-
-# Parameters for SL-REXI paper
-#-----------------------------
-jg = RuntimeSWEPlaneEarthParam(jg)
-#jg = RuntimeSWENonDimParam(jg)
-
-jg.runtime.viscosity = 0.0
 
 # Deactivate threading
 jg.compile.threading = 'off'
@@ -79,7 +52,6 @@ jg.runtime.output_timestep_size = .1
 timestep_size_reference = 0.001
 timestep_size_fine = 0.005
 jg.runtime.timestep_size = timestep_size_fine
-jg.runtime.space_res_spectral = 32
 cfactors = [2, 4, 8];
 nbs_levels = [2, 4];
 nb_pts = [1];
@@ -88,11 +60,20 @@ nb_pts = [1];
 ## Reference job
 jg.reference_job = True
 
+jg.compile.program = "programs/ode_Scalar"
+jg.compile.mode = "debug"
+jg.compile.sweet_mpi = "disable"
+
 jg.compile.xbraid = "none";
 jg.runtime.xbraid_enabled = 0;
 
 jg.compile.parareal = "none";
 jg.runtime.parareal_enabled = 0;
+
+jg.runtime.timestepping_method = tsm_fine
+jg.runtime.timestepping_order = 2
+jg.runtime.timestepping_order2 = 2
+
 jg.gen_jobscript_directory();
 
 
@@ -101,6 +82,13 @@ jg.gen_jobscript_directory();
 jg.reference_job = False
 jg.reference_job_unique_id = jg.job_unique_id
 ref_path = jg.p_job_dirpath
+print("REF PATH ", ref_path)
+
+
+jg.compile.program = "programs/xbraid_ode_Scalar"
+jg.compile.mode = "debug"
+jg.compile.sweet_mpi = "enable"
+jg.compile.xbraid_scalar = "enable"
 
 jg.compile.xbraid = "mpi";
 jg.runtime.xbraid_enabled = 1;
@@ -142,7 +130,6 @@ jg.runtime.xbraid_access_level = 2;
 
 cfactors = [2, 4, 8];
 nbs_levels = [2, 4];
-#####nb_pts = [1, 2, 3, 4];
 nb_pts = [1];
 
 
@@ -157,7 +144,6 @@ for tsm_fine in tsms_fine:
                             jg.runtime.xbraid_store_iterations = 0;
                             jg.runtime.xbraid_load_fine_csv_files = 1;
                             jg.runtime.xbraid_path_fine_csv_files = ref_path;
-                            print("REF:", ref_path )
                         else:
                             jg.runtime.xbraid_store_iterations = 1;
                             jg.runtime.xbraid_load_fine_csv_files = 0;

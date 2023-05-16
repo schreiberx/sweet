@@ -68,6 +68,7 @@ public:
 		file << "#FORMAT ASCII" << std::endl;
 		file << "#PRIMITIVE SCALAR" << std::endl;
 
+		file << std::setprecision(16);
 		file << u;
 
 		file.close();

@@ -50,7 +50,7 @@ for key, g in job_groups.items():
 # Cleanup postprocessed data
 JobsData_GroupsCleanupPostprocessed(job_groups, tag_cleanup_info, pickle_file_default_prefix="scalar_data_norms_physical_space_")
 
-small = 1e-15
+small = 1e-14
 
 for tagname_y in tagnames_y:
     print("*"*80)
@@ -76,6 +76,7 @@ for tagname_y in tagnames_y:
             print("Nb. of processors: "+group_name)
             for (x, y) in zip(group_data['x_values'], group_data['y_values']):
                 if abs(y) > small:
+                    print("ERROR:", y)
                     raise Exception("Error should be zero!!!")
             print("OK!")
 

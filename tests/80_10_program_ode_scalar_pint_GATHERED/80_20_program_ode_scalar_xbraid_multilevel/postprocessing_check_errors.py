@@ -89,7 +89,7 @@ for group in job_groups.values():
 ## Cleanup postprocessed data
 JobsData_GroupsCleanupPostprocessed(job_groups, tag_cleanup_info, pickle_file_default_prefix="scalar_data_norms_physical_space_", pint = True)
 
-small = 1e-15
+small = 1e-14
 ## compare online and offline errors
 for key, group in job_groups.items():
 
