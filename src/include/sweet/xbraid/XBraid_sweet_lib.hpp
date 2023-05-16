@@ -991,7 +991,6 @@ public:
 			)
 	{
 
-		std::cout << "BBBBBBBBBBB" << std::endl;
 		// First call of this function: create timesteppers
 		// Benchmark::setup_initial_conditions has already been called
 		if (this->timeSteppers.size() == 0)

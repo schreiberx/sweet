@@ -73,8 +73,6 @@ public:
 	{
 		ops = io_ops;
 
-		std::cout << "BBBBBBBBBBB " << std::endl;
-
 		helperGeostropicBalance.setup(ops);
 	}
 
