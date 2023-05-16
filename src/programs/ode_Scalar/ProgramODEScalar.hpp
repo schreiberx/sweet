@@ -270,7 +270,7 @@ public:
 	{
 		shackTimestepControl->timestepHelperStart();
 
-		timeSteppers.master->runTimestep(
+		timeSteppers.timestepper->runTimestep(
 				data.prog_u,
 				shackTimestepControl->current_timestep_size,
 				shackTimestepControl->current_simulation_time

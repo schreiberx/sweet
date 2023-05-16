@@ -190,7 +190,7 @@ public:
 	{
 #if SWEET_XBRAID_SCALAR
 		{
-			data = new sweet::Parareal_GenericData_Scalar<N>;
+			data = new sweet::Parareal_GenericData_Scalar<N_vec>;
 			data->allocate_data();
 		}
 

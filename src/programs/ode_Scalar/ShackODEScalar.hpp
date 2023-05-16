@@ -80,6 +80,10 @@ public:
 		i_pa.getArgumentValueByKey("--compute-diagnostics", compute_diagnostics);
 		i_pa.getArgumentValueByKey("--instability-checks", instability_checks);
 
+		// Dummy
+		std::string dummy;
+		i_pa.getArgumentValueByKey("--reuse-plans", dummy);
+
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(i_pa);
 		return true;
 	}
