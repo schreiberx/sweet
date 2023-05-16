@@ -84,6 +84,7 @@ def JobsData_GroupsCleanupPostprocessed(
         job_groups,         # from JobsDataConsolidate.create_groups()
         tag_cleanup_info,
         pickle_file_default_prefix,
+        pint = False
 ):
     """
     tag_cleanup_info: List of dictionary
@@ -121,9 +122,15 @@ def JobsData_GroupsCleanupPostprocessed(
                         jindex = f"{pickle_basename}.{tag_src}"
 
                         value = job_data[jindex]
+
+                        if pint:
+                            idx = jindex.find("_iter")
+                            niter = jindex[idx:idx + 8]
+                            tag_dst += niter
+
                         job_data[tag_dst] = value
 
-                        print(f"{tag_dst}: value")
+                        print(f"{tag_dst}: {value}")
 
 
 
