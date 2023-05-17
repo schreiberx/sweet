@@ -48,9 +48,10 @@ public:
 
 
 public:
-	ShackDictionary()
+	ShackDictionary()	:
+		_registerationOfClassInstanceFinished(false),
+		_getFinished(false)
 	{
-		clear();
 	}
 
 
@@ -58,11 +59,9 @@ public:
 	void clear()
 	{
 		for (auto i = _list.begin(); i != _list.end(); i++)
-		{
 			delete *i;
-		}
-		_list.clear();
 
+		_list.clear();
 		error.reset();
 
 		_registerationOfClassInstanceFinished = false;

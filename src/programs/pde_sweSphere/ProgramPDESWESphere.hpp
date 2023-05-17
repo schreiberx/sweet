@@ -77,7 +77,6 @@ public:
 		sweet::SphereData_Spectral prog_div;
 		sweet::SphereData_Spectral prog_vrt;
 
-
 		sweet::SphereData_Spectral t0_prog_phi_pert;
 		sweet::SphereData_Spectral t0_prog_div;
 		sweet::SphereData_Spectral t0_prog_vrt;

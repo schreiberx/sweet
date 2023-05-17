@@ -418,7 +418,7 @@ public:
 		}
 		catch (const std::exception &e)
 		{
-			error.set("Exception caught during conversion of value '"+pa->value+"' to double: "+e.what());
+			error.set("Exception caught during conversion of value '"+pa->value+"' to integer: "+e.what());
 			return false;
 		}
 
@@ -525,7 +525,7 @@ public:
 
 	friend
 	std::ostream&
-	operator<<(std::ostream &io_os, const ProgramArguments i_pa)
+	operator<<(std::ostream &io_os, const ProgramArguments &i_pa)
 	{
 		for (std::size_t i = 0; i < i_pa._arguments.size(); i++)
 		{

@@ -44,6 +44,11 @@ public:
 
 		virtual void vis_shutdown() = 0;
 
+		virtual bool vis_mouse_motion(int i_x, int i_y) = 0;
+		virtual bool vis_mouse_button_down(int i_button) = 0;
+		virtual bool vis_mouse_button_up(int i_button) = 0;
+		virtual bool vis_mouse_wheel(int i_x, int i_y) = 0;
+
 		virtual ~ProgramCallbacks()
 		{
 		}
@@ -257,6 +262,8 @@ public:
 				int i_y
 		)
 		{
+			programCallbacks->vis_mouse_motion(i_x, i_y);
+
 			engineState->inputStateMouse.update((float)i_x*2.0/(float)renderWindow->window_width-1.0, (float)i_y*2.0/(float)renderWindow->window_height-1.0);
 
 			if (old_mouse_x != -1)
@@ -290,12 +297,16 @@ public:
 
 		void callback_mouse_button_down(int i_button_nr)
 		{
+			programCallbacks->vis_mouse_button_down(i_button_nr);
+
 			if (i_button_nr <= 3)
 				engineState->inputStateMouse.mouse_buttons[i_button_nr] = true;
 		}
 
 		void callback_mouse_button_up(int i_button_nr)
 		{
+			programCallbacks->vis_mouse_button_up(i_button_nr);
+
 			if (i_button_nr <= 3)
 				engineState->inputStateMouse.mouse_buttons[i_button_nr] = false;
 
@@ -304,6 +315,8 @@ public:
 
 		void callback_mouse_wheel(int x, int y)
 		{
+			programCallbacks->vis_mouse_wheel(x, y);
+
 			engineState->perspective_zoom += (float)y*(-0.1);
 		}
 	};
@@ -377,7 +390,8 @@ public:
 			 */
 			renderWindow->eventLoop();
 
-			glClearColor(0,0,0,0);
+			//glClearColor(0,0,0,0);
+			glClearColor(1.0,1.0,1.0,0);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			glEnable(GL_CULL_FACE);

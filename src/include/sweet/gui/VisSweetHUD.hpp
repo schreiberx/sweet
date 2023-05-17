@@ -47,6 +47,7 @@
  *
  * the variable c is created to make the the class of type TMainClass accessible
  */
+#if 0
 #define CGUICONFIG_CALLBACK_START(TMainClass)				\
 	class CConfigCallback								\
 	{													\
@@ -62,7 +63,6 @@
 		}												\
 	};
 
-
 /*
  * precompiler directive to handler
  */
@@ -72,6 +72,7 @@
 #define CGUICONFIG_CALLBACK_INSTALL(config_variable)		\
 	cGuiConfig.setCallbackHandler(&config_variable, CGUICONFIG_CALLBACK_HANDLER, this);
 
+#endif
 
 
 /**
@@ -129,7 +130,6 @@ public:
 	bool visualization_enabled;
 	int dofs_visualization_method;
 	int boundary_visualization_method;
-	int visualization_render_cluster_borders;
 	int visualization_render_wireframe;
 	int visualization_simulation_steps_per_frame;
 
@@ -211,29 +211,38 @@ public:
 		GlHudConfig::COption o;
 
 		// main window
-		windowMain.setPosition(GLSL::ivec2(3, 3));
-		windowMain.setSize(GLSL::ivec2(530, 594));
+		//windowMain.setPosition(GLSL::ivec2(3, 3));
+		//windowMain.setSize(GLSL::ivec2(530, 594));
+		windowMain.setPosition(GLSL::ivec2(3, 400));
+		windowMain.setSize(GLSL::ivec2(530, 100));
 		windowMain.setBackgroundColor(GLSL::vec4(74.0/256.0, 96.0/256.0, 150.0/256.0, 0.7));
 
+#if 1
+
+#if 0
 		cGlHudConfigMainLeft.insert(o.setupText("|--- MAIN CONTROL ---|"));
 		cGlHudConfigMainLeft.insert(o.setupBoolean("Run simulation", &run_simulation_timesteps));
 		cGlHudConfigMainLeft.insert(o.setupBoolean("Reset visualization", &reset));		reset = false;
 		cGlHudConfigMainLeft.insert(o.setupBoolean("Quit program", &quit));				quit = false;
-
+#endif
 		cGlHudConfigMainLeft.insert(o.setupLinebreak());
 		cGlHudConfigMainLeft.insert(o.setupText("|--- BOGUS STUFF ---|"));
+#if 0
 		cGlHudConfigMainLeft.insert(o.setupBoolean("Output FPS and parameters", &output_fps_and_parameters));	output_fps_and_parameters = true;
 		cGlHudConfigMainLeft.insert(o.setupBoolean("Output world position at mouse cursor",						&output_world_position_at_mouse_cursor));				output_world_position_at_mouse_cursor = false;
 		cGlHudConfigMainLeft.insert(o.setupBoolean("Screenshot (screenshot.bmp)", &take_screenshot));			take_screenshot = false;
+#endif
 		cGlHudConfigMainLeft.insert(o.setupBoolean("Screenshot series", &take_screenshot_series));				take_screenshot_series = false;
-		cGlHudConfigMainLeft.insert(o.setupText("(screenshots/screenshot_#####.bmp)"));
-
+		cGlHudConfigMainLeft.insert(o.setupText("(screenshots/screenshot_########.bmp)"));
+#if 0
 		cGlHudConfigMainLeft.insert(o.setupLinebreak());
 		cGlHudConfigMainLeft.insert(o.setupText("Press [SPACE] to show/hide HUDs!"));
+#endif
 
 		/************************************
 		 * VISUALIZATION
 		 ************************************/
+#if 0
 		cGlHudConfigMainLeft.insert(o.setupText("|--- Visualization ---|"));
 		cGlHudConfigMainLeft.insert(o.setupBoolean("Enabled", &visualization_enabled));
 		visualization_enabled = true;
@@ -242,15 +251,14 @@ public:
 		cGlHudConfigMainLeft.insert(o.setupInt("Bathymetry Visualization Method", &boundary_visualization_method, 1, std::numeric_limits<int>::min(), std::numeric_limits<int>::max()));
 		boundary_visualization_method = 0;
 		cGlHudConfigMainLeft.insert(o.setupInt("Render wireframe", &visualization_render_wireframe, 1, 0, 2));
-#if SIMULATION_TSUNAMI_1D
-		visualization_render_wireframe = 1;
-#else
+
 		visualization_render_wireframe = 0;
-#endif
-		cGlHudConfigMainLeft.insert(o.setupInt("Cluster Borders", &visualization_render_cluster_borders, 1, 0, 2));
-		visualization_render_cluster_borders = 0;
-		cGlHudConfigMainLeft.insert(o.setupInt("Simulationsteps per frame", &visualization_simulation_steps_per_frame, 1, 1, std::numeric_limits<int>::max()));
+
+		cGlHudConfigMainLeft.insert(o.setupInt("Simulation steps per frame", &visualization_simulation_steps_per_frame, 1, 1, std::numeric_limits<int>::max()));
 		visualization_simulation_steps_per_frame = 1;
+#endif
+
+#endif
 
 #if 0
 		/************************
@@ -384,17 +392,8 @@ public:
 	/**
 	 * finally assemble GUI
 	 */
-	void assembleGui(
-			GlFreeType &i_cGlFreeType,
-			GlRenderOStream &i_cGlRenderOStream
-	)
+	void assembleGui()
 	{
-#if 0
-
-		cGlFreeType = &i_cGlFreeType;
-
-#else
-
 		free();
 
 		cGlFreeType = new GlFreeType();
@@ -406,18 +405,19 @@ public:
 		}
 
 		glRenderOStream = new GlRenderOStream(*cGlFreeType);
-#endif
 
 		int sx, sy;
-#if 0
+#if 1
 		sx = 10;
 		sy = windowMain.size[1]-10;
-		cGlHudConfigMainLeft.setup(*cGlFreeType, i_cGlRenderOStream, sx, sy);
-		cGlHudConfigMainRight.setup(*cGlFreeType, i_cGlRenderOStream, sx + cGlHudConfigMainLeft.area_width-20, sy);
+		cGlHudConfigMainLeft.setup(*cGlFreeType, *glRenderOStream, sx, sy);
+		//cGlHudConfigMainRight.setup(*cGlFreeType, glRenderOStream, sx + cGlHudConfigMainLeft.area_width-20, sy);
+#endif
 
+#if 0
 		sx = 10;
 		sy = windowLights.size[1]-10;
-		cGlHudConfigVisualization.setup(*cGlFreeType, i_cGlRenderOStream, sx, sy);
+		cGlHudConfigVisualization.setup(*cGlFreeType, glRenderOStream, sx, sy);
 #endif
 
 		sx = 10;
@@ -435,7 +435,7 @@ public:
 			void *user_ptr
 		)
 	{
-//		cGlHudConfigMainLeft.set_callback(value_ptr, callback_handler, user_ptr);
+		cGlHudConfigMainLeft.set_callback(value_ptr, callback_handler, user_ptr);
 //		cGlHudConfigMainRight.set_callback(value_ptr, callback_handler, user_ptr);
 
 //		cGlHudConfigVisualization.set_callback(value_ptr, callback_handler, user_ptr);
@@ -456,18 +456,26 @@ public:
 			windowLights.startRendering();
 			cGlHudConfigVisualization.renderConfigContent();
 			windowLights.finishRendering();
+#endif
 
+			/*
+			 * Render main left & right
+			 */
+#if 1
 			cGlFreeType->viewportChanged(windowMain.size.data);
 			windowMain.startRendering();
 			cGlHudConfigMainLeft.renderConfigContent();
-			cGlHudConfigMainRight.renderConfigContent();
+			//cGlHudConfigMainRight.renderConfigContent();
 			windowMain.finishRendering();
 #endif
-
+			/*
+			 * Render info window
+			 */
 			cGlFreeType->viewportChanged(windowInfo.size.data);
 			windowInfo.startRendering();
 			cGlHudConfigInfo.renderConfigContent();
 			windowInfo.finishRendering();
+
 		}
 	}
 
@@ -480,11 +488,10 @@ public:
 				cGlHudConfigInfo.mouse_wheel(x, y);
 				return true;
 			}
-#if 0
 			else if (windowMain.inWindow(mouse_x, mouse_y))
 			{
 				cGlHudConfigMainLeft.mouse_wheel(x, y);
-				cGlHudConfigMainRight.mouse_wheel(x, y);
+				//cGlHudConfigMainRight.mouse_wheel(x, y);
 				return true;
 			}
 			else if (windowLights.inWindow(mouse_x, mouse_y))
@@ -492,7 +499,6 @@ public:
 				cGlHudConfigVisualization.mouse_wheel(x, y);
 				return true;
 			}
-#endif
 		}
 
 		return false;
@@ -516,12 +522,15 @@ public:
 			else if (windowMain.inWindow(mouse_x, mouse_y))
 			{
 				cGlHudConfigMainLeft.mouse_button_down(button);
-				cGlHudConfigMainRight.mouse_button_down(button);
+				//cGlHudConfigMainRight.mouse_button_down(button);
 
-				if (cGlHudConfigMainLeft.active_option == nullptr && cGlHudConfigMainRight.active_option == nullptr)
+				if (cGlHudConfigMainLeft.active_option == nullptr)
 				{
-					if (button == RenderWindow::MOUSE_BUTTON_LEFT)
-						main_drag_n_drop_active = true;
+					if (cGlHudConfigMainRight.active_option == nullptr)
+					{
+						if (button == RenderWindow::MOUSE_BUTTON_LEFT)
+							main_drag_n_drop_active = true;
+					}
 				}
 				return true;
 			}
@@ -546,7 +555,7 @@ public:
 		if (hud_visible)
 		{
 			cGlHudConfigMainLeft.mouse_button_up(button);
-			cGlHudConfigMainRight.mouse_button_up(button);
+			//cGlHudConfigMainRight.mouse_button_up(button);
 
 			cGlHudConfigVisualization.mouse_button_up(button);
 			cGlHudConfigInfo.mouse_button_up(button);
@@ -583,7 +592,7 @@ public:
 			cGlHudConfigInfo.mouse_motion(mouse_x-windowInfo.pos[0], mouse_y-windowInfo.pos[1]);
 
 			cGlHudConfigMainLeft.mouse_motion(mouse_x-windowMain.pos[0], mouse_y-windowMain.pos[1]);
-			cGlHudConfigMainRight.mouse_motion(mouse_x-windowMain.pos[0], mouse_y-windowMain.pos[1]);
+			//cGlHudConfigMainRight.mouse_motion(mouse_x-windowMain.pos[0], mouse_y-windowMain.pos[1]);
 
 			cGlHudConfigVisualization.mouse_motion(mouse_x-windowLights.pos[0], mouse_y-windowLights.pos[1]);
 		}

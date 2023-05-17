@@ -42,8 +42,30 @@ public:
 	{
 	}
 
+public:
+	ShackProgArgDictionary()	:
+		ShackDictionary(),
+		_argc(-1),
+		_argv(nullptr)
+	{
+	}
+
+public:
 	void setup()
 	{
+		_programArguments.setup(_argc, _argv);
+		ERROR_FORWARD(_programArguments);
+	}
+
+public:
+	void setup(
+		int i_argc,
+		char *const *i_argv
+	)
+	{
+		_argc = i_argc;
+		_argv = i_argv;
+
 		_programArguments.setup(_argc, _argv);
 		ERROR_FORWARD(_programArguments);
 	}

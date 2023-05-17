@@ -10,6 +10,8 @@
 #include <limits>
 #include <string>
 #include <cmath>
+#include <iomanip>
+#include <iostream>
 #include <sweet/gui/VisSweetHUD.hpp>
 #include "../libgl/draw/GlDrawCube.hpp"
 #include "../libgl/shaders/shader_blinn/CShaderBlinn.hpp"
@@ -99,8 +101,6 @@ class VisSweet	:
 
 	bool hud_visible = true;
 	VisSweetHUD *visSweetHUD;
-	GlFreeType *glFreeType;
-	GlRenderOStream *glRenderOStream;
 
 	int sim_runs_per_frame = 1;
 
@@ -113,6 +113,8 @@ class VisSweet	:
 
 	double font_size = -1;
 
+	int screenshot_number = 0;
+
 	void vis_setup(VisualizationEngine *i_visualizationEngine)
 	{
 		visualizationEngine = i_visualizationEngine;
@@ -122,17 +124,14 @@ class VisSweet	:
 		glDrawSphereSph = nullptr;
 #endif
 
-		glFreeType = new GlFreeType;
-
 		update_font();
-
-		glRenderOStream = new GlRenderOStream(*glFreeType);
 
 		visSweetHUD = new VisSweetHUD;
 		visSweetHUD->setup();
-		visSweetHUD->assembleGui(*glFreeType, *glRenderOStream);
+		visSweetHUD->assembleGui();
 		visSweetHUD->setHudVisibility(hud_visible);
 
+		screenshot_number = 0;
 	}
 
 
@@ -188,9 +187,7 @@ class VisSweet	:
 			texture_data = new unsigned char[visData.planeDataConfig->physical_array_data_number_of_elements];
 		}
 
-
 		double real_delta = vis_max-vis_min;
-
 		double inv_delta = 1.0/real_delta;
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR
@@ -259,22 +256,29 @@ class VisSweet	:
 
 		if (hud_visible)
 		{
-			glFreeType->viewportChanged(visualizationEngine->renderWindow->window_width, visualizationEngine->renderWindow->window_height);
+			//glFreeType->viewportChanged(visualizationEngine->renderWindow->window_width, visualizationEngine->renderWindow->window_height);
 
 			bool o_replace_comma_with_linebreaks = true;
 			std::string status_string = simCallbacks->vis_getStatusString(o_replace_comma_with_linebreaks);
 			if (o_replace_comma_with_linebreaks)
 				std::replace(status_string.begin(), status_string.end(), ',', '\n');
 
-			glFreeType->setPosition(10, visualizationEngine->renderWindow->window_height-font_size-10);
-			glFreeType->renderString(status_string.c_str());
+			//glFreeType->setPosition(10, visualizationEngine->renderWindow->window_height-font_size-10);
+			//glFreeType->renderString(status_string.c_str());
 
 			visSweetHUD->render();
 		}
 
-
 		// execute simulation time step
 		simCallbacks->vis_post_frame_processing(sim_runs_per_frame);
+
+		if (visSweetHUD->take_screenshot_series && visSweetHUD->run_simulation_timesteps)
+		{
+			std::ostringstream oss;
+			oss << "output_screenshot_" << std::setw(8) << std::setfill('0') << screenshot_number << ".bmp";
+			visualizationEngine->renderWindow->saveScreenshot(oss.str());
+			screenshot_number++;
+		}
 	}
 
 
@@ -301,13 +305,6 @@ class VisSweet	:
 		float ddpi;
 		SDL_GetDisplayDPI(0, &ddpi, nullptr, nullptr);
 		font_size *= ddpi/100.0;
-
-		glFreeType->loadFont(font_size, false);
-		if (!glFreeType->valid)
-		{
-			SWEETError("Loading font failed");
-			exit(-1);
-		}
 	}
 
 
@@ -318,7 +315,6 @@ class VisSweet	:
 
 		update_font();
 	}
-
 
 
 	void vis_keypress(char i_key)
@@ -333,10 +329,12 @@ class VisSweet	:
 		{
 		case 'r':
 			simCallbacks->reset();
+			screenshot_number = 0;
 			break;
 
 		case ' ':
 			simCallbacks->vis_pause();
+			visSweetHUD->run_simulation_timesteps = !visSweetHUD->run_simulation_timesteps;
 			break;
 
 		case SDLK_BACKSPACE:
@@ -355,11 +353,43 @@ class VisSweet	:
 	}
 
 
+	bool vis_mouse_motion(
+			int i_x,
+			int i_y
+	)
+	{
+		visSweetHUD->mouse_motion(i_x, viewport_height-i_y);
+		return false;
+	}
+
+	bool vis_mouse_button_up(
+			int i_button
+	)
+	{
+		visSweetHUD->mouse_button_up(i_button);
+		return false;
+	}
+
+	bool vis_mouse_button_down(
+			int i_button
+	)
+	{
+		visSweetHUD->mouse_button_down(i_button);
+		return false;
+	}
+
+	bool vis_mouse_wheel(
+			int i_x,
+			int i_y
+	)
+	{
+		visSweetHUD->mouse_wheel(i_x, viewport_height-i_y);
+		return false;
+	}
+
 	void vis_shutdown()
 	{
 		delete visSweetHUD;
-		delete glRenderOStream;
-		delete glFreeType;
 
 		delete [] texture_data;
 		delete glTexture;
@@ -379,9 +409,7 @@ public:
 		glDrawSphereSph(nullptr),
 #endif
 
-		visSweetHUD(nullptr),
-		glFreeType(0),
-		glRenderOStream(nullptr)
+		visSweetHUD(nullptr)
 	{
 		simCallbacks = &i_simCallbacks;
 
