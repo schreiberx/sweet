@@ -59,8 +59,8 @@ echo "LDFLAGS += -I$INCDIR -I$INCDIR_LIBPFASST" >> Makefile.local
 
 # Set to true to get Debug version
 if true; then
-	TMPFILE=$(mktemp)
-	cp Makefile.local "${TMPFILE}"
+	TMPFILE=$(mktemp) || exit 1
+	cp Makefile.local "${TMPFILE}" || exit 1
 	echo "DEBUG = TRUE" > Makefile.local
 	echo "" >> Makefile.local
 	cat "${TMPFILE}" >> Makefile.local
