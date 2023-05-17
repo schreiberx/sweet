@@ -19,8 +19,8 @@ from mule.SWEETRuntimeParametersScenarios import *
 from mule.JobParallelization import *
 from mule.JobParallelizationDimOptions import *
 
-tsm_fine = "dummy";
-tsm_coarse = "dummy";
+tsm_fine = "ln_erk";
+tsm_coarse = "ln_erk";
 
 #Create main compile/run options
 jg = JobGeneration()
@@ -131,27 +131,26 @@ jg.runtime.xbraid_store_iterations = 0;
 jg.runtime.xbraid_max_levels = 1
 jg.runtime.xbraid_store_iterations = 1;
 
-for nb_pt in range(1,4):
+for nb_pt in range(1,5):
     jg.runtime.xbraid_pt = nb_pt;
-    if nb_pt > 1:
-        params_pspace_num_cores_per_rank = [jg.platform_resources.num_cores_per_socket]
-        params_pspace_num_threads_per_rank = [jg.platform_resources.num_cores_per_socket]
-        params_ptime_num_cores_per_rank = [1]
 
-        # Update TIME parallelization
-        ptime = JobParallelizationDimOptions('time')
-        ptime.num_cores_per_rank = 1
-        ptime.num_threads_per_rank = 1 #pspace.num_cores_per_rank
-        ptime.num_ranks = nb_pt
+    params_pspace_num_cores_per_rank = [jg.platform_resources.num_cores_per_socket]
+    params_pspace_num_threads_per_rank = [jg.platform_resources.num_cores_per_socket]
+    params_ptime_num_cores_per_rank = [1]
 
-        pspace = JobParallelizationDimOptions('space')
-        pspace.num_cores_per_rank = 1
-        pspace.num_threads_per_rank = params_pspace_num_cores_per_rank[-1]
-        pspace.num_ranks = 1
+    # Update TIME parallelization
+    ptime = JobParallelizationDimOptions('time')
+    ptime.num_cores_per_rank = 1
+    ptime.num_threads_per_rank = 1 #pspace.num_cores_per_rank
+    ptime.num_ranks = nb_pt
 
-        # Setup parallelization
-        jg.setup_parallelization([pspace, ptime], override_insufficient_resources=True)
+    pspace = JobParallelizationDimOptions('space')
+    pspace.num_cores_per_rank = 1
+    pspace.num_threads_per_rank = params_pspace_num_cores_per_rank[-1]
+    pspace.num_ranks = 1
 
+    # Setup parallelization
+    jg.setup_parallelization([pspace, ptime], override_insufficient_resources=True)
 
     jg.gen_jobscript_directory();
 

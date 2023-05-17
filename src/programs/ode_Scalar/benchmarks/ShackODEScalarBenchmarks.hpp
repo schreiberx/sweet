@@ -37,7 +37,7 @@ public:
 	bool validateNonStationaryODE()
 	{
 		if (ode_parameters[0] == 0 && ode_parameters[1] == 0)
-			return error.set("Both ODE parameters are 0, use --advection-velocity=...");
+			return error.set("Both ODE parameters are 0, use --param-a=... and --param-b=...");
 
 		return true;
 	}

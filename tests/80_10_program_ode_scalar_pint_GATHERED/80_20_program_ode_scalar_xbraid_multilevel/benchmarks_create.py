@@ -130,7 +130,7 @@ jg.runtime.xbraid_access_level = 2;
 
 cfactors = [2, 4, 8];
 nbs_levels = [2, 4];
-nb_pts = [1];
+nb_pts = [1, 2, 4];
 
 
 for tsm_fine in tsms_fine:
@@ -152,24 +152,23 @@ for tsm_fine in tsms_fine:
                         jg.runtime.xbraid_max_levels = nb_levels;
                         jg.runtime.xbraid_pt = pt;
 
-                        if pt > 1:
-                            params_pspace_num_cores_per_rank = [jg.platform_resources.num_cores_per_socket]
-                            params_pspace_num_threads_per_rank = [jg.platform_resources.num_cores_per_socket]
-                            params_ptime_num_cores_per_rank = [1]
+                        params_pspace_num_cores_per_rank = [jg.platform_resources.num_cores_per_socket]
+                        params_pspace_num_threads_per_rank = [jg.platform_resources.num_cores_per_socket]
+                        params_ptime_num_cores_per_rank = [1]
 
-                            # Update TIME parallelization
-                            ptime = JobParallelizationDimOptions('time')
-                            ptime.num_cores_per_rank = 1
-                            ptime.num_threads_per_rank = 1 #pspace.num_cores_per_rank
-                            ptime.num_ranks = pt
+                        # Update TIME parallelization
+                        ptime = JobParallelizationDimOptions('time')
+                        ptime.num_cores_per_rank = 1
+                        ptime.num_threads_per_rank = 1 #pspace.num_cores_per_rank
+                        ptime.num_ranks = pt
 
-                            pspace = JobParallelizationDimOptions('space')
-                            pspace.num_cores_per_rank = 1
-                            pspace.num_threads_per_rank = params_pspace_num_cores_per_rank[-1]
-                            pspace.num_ranks = 1
+                        pspace = JobParallelizationDimOptions('space')
+                        pspace.num_cores_per_rank = 1
+                        pspace.num_threads_per_rank = params_pspace_num_cores_per_rank[-1]
+                        pspace.num_ranks = 1
 
-                            # Setup parallelization
-                            jg.setup_parallelization([pspace, ptime], override_insufficient_resources=True)
+                        # Setup parallelization
+                        jg.setup_parallelization([pspace, ptime], override_insufficient_resources=True)
 
 
                         jg.gen_jobscript_directory();
