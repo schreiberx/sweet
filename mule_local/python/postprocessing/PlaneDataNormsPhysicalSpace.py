@@ -11,8 +11,6 @@ class PlaneDataNormsPhysicalSpace:
 
     def __init__(self, filename_a = None, filename_b = None, i_output_file = None):
 
-        sys.exit("TODO")
-
         if filename_b != None:
             self.compute_diff(filename_a, filename_b)
 
@@ -26,8 +24,9 @@ class PlaneDataNormsPhysicalSpace:
             filename_a,
             filename_b,
         ):
-        file_a = SphereData(filename_a, setup_physical=True)
-        file_b = SphereData(filename_b, setup_physical=True)
+
+        file_a = PlaneData(filename_a, setup_physical=False)
+        file_b = PlaneData(filename_b, setup_physical=False)
 
         self.norm_l1_value = 0.0
         self.norm_l2_value = 0.0
@@ -41,7 +40,6 @@ class PlaneDataNormsPhysicalSpace:
 
         multiplier_j = (size_ref_j+1)/(size_cmp_j+1)
         multiplier_i = (size_ref_i+1)/(size_cmp_i+1)
-
 
         print ("Dimensions of reference solution: ", size_ref_i, size_ref_j)
         print ("Dimensions of method under analysis: ", size_cmp_i, size_cmp_j)

@@ -17,7 +17,7 @@ mule.benchmark.jobs_run_directly job_benchref* || exit 1
 ## run all jobs
 mule.benchmark.jobs_run_directly job_bench_* || exit 1
 
-mule.postprocessing.pickle.alljobs.scalar_data_norms_physical_space_pint
+mule.postprocessing.pickle.alljobs.plane_data_norms_physical_space_pint
 
 ./postprocessing_check_errors.py
 

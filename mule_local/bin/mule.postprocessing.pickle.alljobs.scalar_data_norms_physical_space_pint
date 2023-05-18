@@ -73,7 +73,6 @@ def _process_job(job_id, job_data):
         print("*"*80)
         raise Exception("Reference files not found!")
 
-    print(ref_output_files)
     for ref_output_file in ref_output_files:
 
         if ref_output_file.startswith("residual"):

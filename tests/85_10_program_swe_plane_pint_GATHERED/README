@@ -1,9 +1,9 @@
 UNIT TESTS - ODE SCALAR PINT
 
---> _80_10_program_ode_scalar_parareal
+--> _85_10_program_swe_plane_parareal
     :: TODO
 
---> _80_20_program_ode_scalar_xbraid_parareal_vs_mgrit
+--> _85_20_program_swe_plane_xbraid_parareal_vs_mgrit
     :: Compare Parareal and two-level MGRIT with nrelax = 0
     :: Results should be equal
     :: TODO
@@ -13,22 +13,22 @@ UNIT TESTS - ODE SCALAR PINT
 -- In the last test, we also compare offline and online computed errors
 --//--
 
---> 80_20_program_ode_scalar_xbraid_wrapped_functions
+--> 85_20_program_swe_plane_xbraid_wrapped_functions
     :: Test user-defined XBraid wrapped functions
 
---> 80_20_program_ode_scalar_xbraid_one_level
+--> 85_20_program_swe_plane_xbraid_one_level
     :: One-level MGRIT wit N processors;
     :: Solution should be identical to the serial one
 
---> 80_20_program_ode_scalar_xbraid_residuals
+--> 85_20_program_swe_plane_xbraid_residuals
     :: Two-level MGRIT with tol = 0., max_iter = 3, use_seqsoln = 1, N processors
     :: Residuals should be zero at each iteration
 
---> 80_20_program_ode_scalar_xbraid_residuals2
+--> 85_20_program_swe_plane_xbraid_residuals2
     :: print_level = 3 to check residual norms at each C-point
     :: Residuals should be zero for two C-points per iteration
 
---> 80_20_program_ode_scalar_xbraid_multilevel
+--> 85_20_program_swe_plane_xbraid_multilevel
     :: Multilevel MGRIT tests with N processors
     :: Verify if XBraid solution is within tol w.r.t. serial solution
 

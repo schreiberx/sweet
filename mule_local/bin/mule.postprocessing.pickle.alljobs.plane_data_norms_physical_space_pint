@@ -6,7 +6,7 @@ import glob
 
 from mule.postprocessing.JobData import *
 from mule.postprocessing.JobsData import *
-from mule.postprocessing.SphereDataNormsPhysicalSpace import *
+from mule.postprocessing.PlaneDataNormsPhysicalSpace import *
 from mule.parhelper import *
 import mule.utils
 import mule.postprocessing.utils
@@ -69,13 +69,19 @@ def _process_job(job_id, job_data):
     for ref_output_file in ref_output_files:
         print(f"  + diff for: {ref_output_file}")
 
+        if "_spec" in ref_output_file and ".csv" in ref_output_file:
+            continue
+
+        if "residual" in ref_output_file:
+            continue
+
         assert "_iter" in ref_output_file
         idx = ref_output_file.find("_iter")
         ref_output_file_ref = ref_output_file[:idx] + ref_output_file[idx + 8:]
 
         s = None
         try:
-            s = SphereDataNormsPhysicalSpace(
+            s = PlaneDataNormsPhysicalSpace(
                     ref_job_data['jobgeneration.job_dirpath']+'/'+ref_output_file_ref,
                     job_data['jobgeneration.job_dirpath']+'/'+ref_output_file
             )
@@ -88,7 +94,7 @@ def _process_job(job_id, job_data):
         s.print("   + ")
 
         basename = mule.utils.remove_file_ending(ref_output_file)
-        pickle_filename = 'sphere_data_norms_physical_space_'+basename+'.pickle'
+        pickle_filename = 'plane_data_norms_physical_space_'+basename+'.pickle'
 
         print(f"  + writing file {pickle_filename}")
         s.write_file(job_data['jobgeneration.job_dirpath']+'/'+pickle_filename, verbosity=1)
