@@ -1,11 +1,14 @@
 #! /usr/bin/env python3
 
 import sys
+import os
 import numpy as np
 
 from mule.utils import exec_program
 exec_program('mule.benchmark.cleanup_all', catch_output=False)
 
+#Dummy email for tests on the linux cluster platform
+os.environ['MULE_USER_EMAIL']='dummy_email@linuxcluster.com'
 
 from mule.SWEETFileDict import *
 

@@ -5,14 +5,13 @@
 
 
 # Load more recent compiler
-module unload gcc
-module load gcc/8.4.0
+
+module load gcc
 
 #
 # Don't touch intel stuff, otherwise the mpicxx is not available
 #
-#module unload intel
-#module load intel/19.1.0
+module load intel
 
 
 #
@@ -42,12 +41,14 @@ export MULE_MPICXX=mpicxx
 export MULE_MPIF90=mpif90
 
 
-export MULE_MPILINK=mpicxx
+export MULE_MPILINK=mpif90
 # If we link with mpif90, we have to add stdc++ for C++
-#export MULE_MPILIBS=stdc++
-export MULE_MPILIBS=gfortran
+export MULE_MPILIBS=stdc++
+#export MULE_MPILIBS=gfortran
 
 
 export MULE_CC_COMPILER=intel
 export MULE_CXX_COMPILER=intel
 export MULE_F90_COMPILER=intel
+
+export MULE_USER_EMAIL=

@@ -1,11 +1,15 @@
 #! /usr/bin/env python3
 
 import sys
+import os
 from itertools import product
 
 from mule.JobMule import *
 from mule.utils import exec_program
 from mule.InfoError import *
+
+#Dummy email for tests on the linux cluster platform
+os.environ['MULE_USER_EMAIL']='dummy_email@linuxcluster.com'
 
 jg = JobGeneration()
 
