@@ -2,6 +2,12 @@
  * TimeStepperBase.hpp
  */
 
+/*
+ * Make sure that we always try to include these classes to due
+ * forward declarations
+ */
+#include "DESolver_TimeStepping_Assemblation.hpp"
+
 #ifndef SRC_PROGRAMS_SIMDATA_TIMESTEPPER_BASE_HPP_
 #define SRC_PROGRAMS_SIMDATA_TIMESTEPPER_BASE_HPP_
 
@@ -9,33 +15,33 @@
 #include <string>
 #include <sweet/core/ErrorBase.hpp>
 #include <sweet/core/shacks/ShackDictionary.hpp>
-#include "PDESolver_DataContainer_Base.hpp"
-#include "PDESolver_TimeStepping_Tree.hpp"
+#include "DESolver_DataContainer_Base.hpp"
+#include "DESolver_TimeStepping_Tree.hpp"
 
 
 /*
  * WARNING: Do not include it here. It's included at the end due to circular dependency
- * #include "PDESolver_TimeStepping_Assemblation.hpp"
+ * #include "DESolver_TimeStepping_Assemblation.hpp"
  */
 namespace sweet {
-	class PDESolver_TimeStepping_Assemblation;
+	class DESolver_TimeStepping_Assemblation;
 }
 
 
 namespace sweet
 {
 
-class PDESolver_TimeStepper_Base
+class DESolver_TimeStepper_Base
 {
 public:
 	sweet::ErrorBase error;
 
-	PDESolver_TimeStepper_Base()
+	DESolver_TimeStepper_Base()
 	{
 	}
 
 	virtual
-	~PDESolver_TimeStepper_Base()
+	~DESolver_TimeStepper_Base()
 	{
 	}
 
@@ -52,7 +58,7 @@ public:
 	getImplementedTimeSteppers() = 0;
 
 	virtual
-	std::shared_ptr<PDESolver_TimeStepper_Base> getNewInstance() = 0;
+	std::shared_ptr<DESolver_TimeStepper_Base> getNewInstance() = 0;
 
 
 	/*
@@ -65,11 +71,12 @@ public:
 
 	virtual
 	bool setupFunction(
-			std::shared_ptr<sweet::PDESolver_TimeStepping_Tree::Function> &i_function,
-			sweet::PDESolver_TimeStepping_Assemblation &i_tsAssemblation
+			std::shared_ptr<sweet::DESolver_TimeStepping_Tree::Function> &i_function,
+			sweet::DESolver_TimeStepping_Assemblation &i_tsAssemblation
 	) = 0;
 
 
+#if 0
 	/*
 	 * Setup operators and potential internal data structures,
 	 * e.g., storage space for RK stages
@@ -77,7 +84,18 @@ public:
 	virtual
 	bool setupOpsAndDataContainers(
 		const sweet::SphereOperators *io_ops,
-		const sweet::PDESolver_DataContainer_Base &i_U
+		const sweet::DESolver_DataContainer_Base &i_U
+	) = 0;
+#endif
+
+
+	/*
+	 * Setup operators and potential internal data structures,
+	 * e.g., storage space for RK stages
+	 */
+	virtual
+	bool setupConfig(
+		const sweet::DESolver_Config_Base &i_deTermConfig
 	) = 0;
 
 	/*
@@ -92,7 +110,7 @@ public:
 	 * This is required, e.g., to setup certain data structures for an implicit time steppers
 	 */
 	virtual
-	void setTimestepSize(double i_dt) = 0;
+	void setTimeStepSize(double i_dt) = 0;
 
 
 	/*
@@ -100,15 +118,12 @@ public:
 	 */
 	virtual
 	void eval_timeIntegration(
-			const PDESolver_DataContainer_Base &i_U,
-			PDESolver_DataContainer_Base &o_U,
+			const DESolver_DataContainer_Base &i_U,
+			DESolver_DataContainer_Base &o_U,
 			double i_simulation_time
 		) = 0;
 };
 
 }
-
-// Put at the end here to include it
-#include "PDESolver_TimeStepping_Assemblation.hpp"
 
 #endif

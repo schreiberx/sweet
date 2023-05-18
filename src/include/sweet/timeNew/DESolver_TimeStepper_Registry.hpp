@@ -7,27 +7,27 @@
 
 #include <map>
 #include <sweet/core/ErrorBase.hpp>
-#include "PDESolver_TimeStepper_Base.hpp"
+#include "DESolver_TimeStepper_Base.hpp"
 
 
 namespace sweet
 {
 
-class PDESolver_TimeStepper_Registry
+class DESolver_TimeStepper_Registry
 {
 public:
 	sweet::ErrorBase error;
 
 private:
-	std::map<std::string, std::shared_ptr<PDESolver_TimeStepper_Base>> registry;
+	std::map<std::string, std::shared_ptr<DESolver_TimeStepper_Base>> registry;
 
 public:
-	PDESolver_TimeStepper_Registry()
+	DESolver_TimeStepper_Registry()
 	{
 	}
 
 public:
-	~PDESolver_TimeStepper_Registry()
+	~DESolver_TimeStepper_Registry()
 	{
 		clear();
 	}
@@ -36,7 +36,7 @@ public:
 	template <typename T>
 	bool registerTimeStepper()
 	{
-		std::shared_ptr<PDESolver_TimeStepper_Base> b = std::make_shared<T>();
+		std::shared_ptr<DESolver_TimeStepper_Base> b = std::make_shared<T>();
 
 		// get names of all time steppers
 		const std::vector<std::string> ts = b->getImplementedTimeSteppers();
@@ -60,7 +60,7 @@ public:
 	 */
 	bool getTimeStepperNewInstance(
 			const std::string &i_ts_string,
-			std::shared_ptr<PDESolver_TimeStepper_Base> &o_timestepper_instance
+			std::shared_ptr<DESolver_TimeStepper_Base> &o_timestepper_instance
 	)
 	{
 		auto iter = registry.find(i_ts_string);

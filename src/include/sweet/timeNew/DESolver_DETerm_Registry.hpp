@@ -7,27 +7,27 @@
 
 #include <map>
 #include <sweet/core/ErrorBase.hpp>
-#include "PDESolver_PDETerm_Base.hpp"
+#include "DESolver_DETerm_Base.hpp"
 
 
 namespace sweet
 {
 
-class PDESolver_PDETerm_Registry
+class DESolver_DETerm_Registry
 {
 public:
 	sweet::ErrorBase error;
 
 private:
-	std::map<std::string, PDESolver_PDETerm_Base*> registry;
+	std::map<std::string, DESolver_DETerm_Base*> registry;
 
 public:
-	PDESolver_PDETerm_Registry()
+	DESolver_DETerm_Registry()
 	{
 	}
 
 public:
-	~PDESolver_PDETerm_Registry()
+	~DESolver_DETerm_Registry()
 	{
 		clear();
 	}
@@ -37,7 +37,7 @@ public:
 	bool registerPDETerm()
 	{
 		T *t = new T;
-		PDESolver_PDETerm_Base *b = t;
+		DESolver_DETerm_Base *b = t;
 
 		// get names of all PDE terms
 		std::string ts = b->getImplementedPDETerm();
@@ -56,7 +56,7 @@ public:
 	 */
 	bool getPDETermInstance(
 			const std::string &i_pdeTermString,
-			std::shared_ptr<PDESolver_PDETerm_Base> &o_pde_term_instance
+			std::shared_ptr<DESolver_DETerm_Base> &o_pde_term_instance
 	)
 	{
 		auto iter = registry.find(i_pdeTermString);

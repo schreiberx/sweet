@@ -5,14 +5,14 @@
 namespace sweet
 {
 
-class PDESolver_TimeStepping_Tree
+class DESolver_TimeStepping_Tree
 {
 public:
-	PDESolver_TimeStepping_Tree()
+	DESolver_TimeStepping_Tree()
 	{
 	}
 
-	~PDESolver_TimeStepping_Tree()
+	~DESolver_TimeStepping_Tree()
 	{
 		clear();
 	}
@@ -24,7 +24,7 @@ public:
 
 
 public:
-	std::shared_ptr<PDESolver_TimeStepping_Tree::Function> mainFunction;
+	std::shared_ptr<DESolver_TimeStepping_Tree::Function> mainFunction;
 
 
 	void clear()

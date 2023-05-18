@@ -6,7 +6,7 @@
 #include <ostream>
 #include <memory>
 
-#include "PDESolver_TimeStepping_Tree.hpp"
+#include "DESolver_TimeStepping_Tree.hpp"
 #include <sweet/core/ErrorBase.hpp>
 
 namespace sweet
@@ -18,7 +18,7 @@ namespace sweet
  *
  * where [arguments] should be parsed by ParserArguments
  */
-class PDESolver_TimeSteppingStringParser
+class DESolver_TimeSteppingStringParser
 {
 public:
 	ErrorBase error;
@@ -181,7 +181,7 @@ public:
 
 
 public:
-	PDESolver_TimeSteppingStringParser(
+	DESolver_TimeSteppingStringParser(
 			bool i_errorForDoubleParsing = true,	///< Trigger an error if an argument is parsed twice
 			bool i_errorForDuplicateKeysInParsing = true		///< Trigger an error if there are duplicate keys
 	)	:
@@ -199,7 +199,7 @@ public:
 
 	bool genTimeSteppingTree(
 			const std::string &i_timeSteppingString,
-			PDESolver_TimeStepping_Tree &o_timeSteppingTree
+			DESolver_TimeStepping_Tree &o_timeSteppingTree
 	)
 	{
 		std::string tmp;
@@ -212,7 +212,7 @@ public:
 		std::string debug_message = stringParser.getErrorInfo("Location or error");
 
 		o_timeSteppingTree.clear();
-		o_timeSteppingTree.mainFunction = std::make_shared<PDESolver_TimeStepping_Tree::Function>(tmp);
+		o_timeSteppingTree.mainFunction = std::make_shared<DESolver_TimeStepping_Tree::Function>(tmp);
 
 		// store potential debugging information in time stepping string to use it later
 		o_timeSteppingTree.mainFunction->setDebugMessage(debug_message);
@@ -240,7 +240,7 @@ public:
 	 * The closing one will be parsed from the caller
 	 */
 	bool _setup_functionArguments(
-			std::shared_ptr<PDESolver_TimeStepping_Tree::Function> io_function
+			std::shared_ptr<DESolver_TimeStepping_Tree::Function> io_function
 	)
 	{
 		while (true)
@@ -264,7 +264,7 @@ public:
 			 */
 
 			// Prepare argument
-			std::shared_ptr<PDESolver_TimeStepping_Tree::Argument> arg = std::make_shared<PDESolver_TimeStepping_Tree::Argument>();
+			std::shared_ptr<DESolver_TimeStepping_Tree::Argument> arg = std::make_shared<DESolver_TimeStepping_Tree::Argument>();
 			io_function->arguments.push_back(arg);
 
 			// store potential debugging information in time stepping string to use it later
@@ -285,9 +285,9 @@ public:
 				if (stringParser.parse_particularCharacter('('))
 				{
 					// key-function
-					arg->argType = PDESolver_TimeStepping_Tree::Argument::ARG_TYPE_KEY_FUNCTION;
+					arg->argType = DESolver_TimeStepping_Tree::Argument::ARG_TYPE_KEY_FUNCTION;
 					arg->key = key;
-					arg->function = std::make_shared<PDESolver_TimeStepping_Tree::Function>(value);
+					arg->function = std::make_shared<DESolver_TimeStepping_Tree::Function>(value);
 
 					// store potential debugging information in time stepping string to use it later
 					arg->function->setDebugMessage(debug_message);
@@ -301,7 +301,7 @@ public:
 				else
 				{
 					// key-value
-					arg->argType = PDESolver_TimeStepping_Tree::Argument::ARG_TYPE_KEY_VALUE;
+					arg->argType = DESolver_TimeStepping_Tree::Argument::ARG_TYPE_KEY_VALUE;
 					arg->key = key;
 					arg->value = value;
 				}
@@ -309,8 +309,8 @@ public:
 			else if (stringParser.parse_particularCharacter('('))
 			{
 				// key-function
-				arg->argType = PDESolver_TimeStepping_Tree::Argument::ARG_TYPE_FUNCTION;
-				arg->function = std::make_shared<PDESolver_TimeStepping_Tree::Function>(identifier);
+				arg->argType = DESolver_TimeStepping_Tree::Argument::ARG_TYPE_FUNCTION;
+				arg->function = std::make_shared<DESolver_TimeStepping_Tree::Function>(identifier);
 
 				// store potential debugging information in time stepping string to use it later
 				arg->function->setDebugMessage(debug_message);
@@ -326,7 +326,7 @@ public:
 				// No parenthesis => value
 
 				// value
-				arg->argType = PDESolver_TimeStepping_Tree::Argument::ARG_TYPE_VALUE;
+				arg->argType = DESolver_TimeStepping_Tree::Argument::ARG_TYPE_VALUE;
 				arg->value = identifier;
 			}
 
@@ -341,7 +341,7 @@ public:
 #if 0
 	friend
 	std::ostream&
-	operator<<(std::ostream &io_os, const PDESolver_TimeSteppingStringParser &i_pa)
+	operator<<(std::ostream &io_os, const DESolver_TimeSteppingStringParser &i_pa)
 	{
 		for (std::size_t i = 0; i < i_pa._arguments.size(); i++)
 		{

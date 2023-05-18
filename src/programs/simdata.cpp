@@ -16,17 +16,17 @@
 
 #include "simdata/MyDataContainer.hpp"
 
-#include "simdata/PDESolver_PDETerm_Registry.hpp"
+#include <sweet/timeNew/PDESolver_PDETerm_Registry.hpp>
 #include "simdata/MyPDETerm_lg.hpp"
 #include "simdata/MyPDETerm_lc.hpp"
 
-#include "simdata/PDESolver_TimeStepper_Base.hpp"
-#include "simdata/PDESolver_TimeStepper_Registry.hpp"
-#include "simdata/MyTimeStepper_ExplicitRungeKutta.hpp"
+#include <sweet/timeNew/PDESolver_TimeStepper_Base.hpp>
+#include <sweet/timeNew/PDESolver_TimeStepper_Registry.hpp>
+#include <sweet/timeNew/PDESolver_TimeStepper_ExplicitRungeKutta.hpp>
 
-#include "simdata/PDESolver_TimeStepping_StringParser.hpp"
-#include "simdata/PDESolver_TimeStepping_Tree.hpp"
-#include "simdata/PDESolver_TimeStepping_Assemblation.hpp"
+#include <sweet/timeNew/PDESolver_TimeStepping_StringParser.hpp>
+#include <sweet/timeNew/PDESolver_TimeStepping_Tree.hpp>
+#include <sweet/timeNew/PDESolver_TimeStepping_Assemblation.hpp>
 
 
 class ShackTimeSteppingMethod :
@@ -155,7 +155,7 @@ public:
 		 * Register time steppers
 		 */
 		sweet::PDESolver_TimeStepper_Registry timeStepper_registry;
-		timeStepper_registry.registerTimeStepper<MyTimeStepper_ExplicitRungeKutta>();
+		timeStepper_registry.registerTimeStepper<PDESolver_TimeStepper_ExplicitRungeKutta>();
 
 		/*
 		 * Ready to assemble time stepper
@@ -193,10 +193,10 @@ public:
 			pde_term_lg->shackRegistration(&shackProgArgDict);
 			pde_term_lg->setup(&ops, U);
 
-			timeStepper = std::make_shared<MyTimeStepper_ExplicitRungeKutta>();
+			timeStepper = std::make_shared<PDESolver_TimeStepper_ExplicitRungeKutta>();
 			timeStepper->shackRegistration(&shackProgArgDict);
 
-			MyTimeStepper_ExplicitRungeKutta *_ERK = static_cast<MyTimeStepper_ExplicitRungeKutta*>(timeStepper.get());
+			PDESolver_TimeStepper_ExplicitRungeKutta *_ERK = static_cast<PDESolver_TimeStepper_ExplicitRungeKutta*>(timeStepper.get());
 			_ERK->setupWithArguments(pde_term_lg, rk_order);
 			timeStepper->setTimestepSize(0.1);
 			timeStepper->setupDataContainers(U);

@@ -1,3 +1,9 @@
+
+
+/*
+ * Always include these classes due to forward delaration stuff
+ */
+
 #ifndef SRC_INCLUDE_SWEET_PDESOLVER_TIMESTEPPINGSTRING_ASSEMBLATION_HPP_
 #define SRC_INCLUDE_SWEET_PDESOLVER_TIMESTEPPINGSTRING_ASSEMBLATION_HPP_
 
@@ -5,16 +11,16 @@
 #include <vector>
 #include <ostream>
 #include <memory>
-
 #include <sweet/core/ErrorBase.hpp>
-#include "PDESolver_TimeStepping_Tree.hpp"
-#include "PDESolver_TimeStepper_Registry.hpp"
+#include "DESolver_TimeStepping_Tree.hpp"
+#include "DESolver_TimeStepper_Registry.hpp"
+#include "DESolver_DETerm_Registry.hpp"
 
 
 // Forward declaration of Base
 // It's included at the end of this file
 namespace sweet {
-	class PDESolver_TimeStepper_Base;
+	class DESolver_TimeStepper_Base;
 }
 
 namespace sweet
@@ -23,18 +29,18 @@ namespace sweet
 /*
  * Assembles a time stepper from a time stepping string
  */
-class PDESolver_TimeStepping_Assemblation
+class DESolver_TimeStepping_Assemblation
 {
 public:
 	ErrorBase error;
 
 private:
-	PDESolver_PDETerm_Registry *pdeTermsRegistry;
+	DESolver_DETerm_Registry *pdeTermsRegistry;
 
-	PDESolver_TimeStepper_Registry *timeSteppersRegistry;
+	DESolver_TimeStepper_Registry *timeSteppersRegistry;
 
 public:
-	PDESolver_TimeStepping_Assemblation()	:
+	DESolver_TimeStepping_Assemblation()	:
 		pdeTermsRegistry(nullptr),
 		timeSteppersRegistry(nullptr)
 	{
@@ -47,8 +53,8 @@ public:
 
 
 	bool setup(
-		PDESolver_PDETerm_Registry &i_pdeTerms,
-		PDESolver_TimeStepper_Registry &i_timeSteppers
+		DESolver_DETerm_Registry &i_pdeTerms,
+		DESolver_TimeStepper_Registry &i_timeSteppers
 	)
 	{
 		pdeTermsRegistry = &i_pdeTerms;
@@ -63,8 +69,8 @@ public:
 	 * Setup the full time stepping tree
 	 */
 	bool assembleTimeStepperByTree(
-			PDESolver_TimeStepping_Tree &i_tree,
-			std::shared_ptr<PDESolver_TimeStepper_Base> &o_timestepper
+			DESolver_TimeStepping_Tree &i_tree,
+			std::shared_ptr<DESolver_TimeStepper_Base> &o_timestepper
 	)
 	{
 		if (pdeTermsRegistry == nullptr || timeSteppersRegistry == nullptr)
@@ -82,8 +88,8 @@ public:
 	 * Setup the time stepper for a given function and return it
 	 */
 	bool assembleTimeStepperByFunction(
-		std::shared_ptr<PDESolver_TimeStepping_Tree::Function> &i_function,
-		std::shared_ptr<PDESolver_TimeStepper_Base> &o_timestepper
+		std::shared_ptr<DESolver_TimeStepping_Tree::Function> &i_function,
+		std::shared_ptr<DESolver_TimeStepper_Base> &o_timestepper
 	)
 	{
 		/*
@@ -109,7 +115,7 @@ public:
 
 	bool assemblePDETermByString(
 			const std::string i_pde_string,
-			std::shared_ptr<PDESolver_PDETerm_Base> &o_pdeTerm
+			std::shared_ptr<DESolver_DETerm_Base> &o_pdeTerm
 	)
 	{
 		pdeTermsRegistry->getPDETermInstance(i_pde_string, o_pdeTerm);
@@ -121,7 +127,7 @@ public:
 #if 0
 	friend
 	std::ostream&
-	operator<<(std::ostream &io_os, const PDESolver_TimeSteppingStringParser &i_pa)
+	operator<<(std::ostream &io_os, const DESolver_TimeSteppingStringParser &i_pa)
 	{
 		return io_os;
 	}
@@ -131,6 +137,7 @@ public:
 }
 
 // Included here due to forward declaration
-#include "PDESolver_TimeStepper_Base.hpp"
+#include "DESolver_TimeStepper_Base.hpp"
+
 
 #endif

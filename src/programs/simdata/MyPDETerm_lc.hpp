@@ -2,8 +2,8 @@
 #define SRC_PROGRAMS_SIMDATA_TIMESTEPPERPDETERM_LC_HPP_
 
 
-#include "PDESolver_PDETerm_Base.hpp"
-#include "PDESolver_DataContainer_Base.hpp"
+#include <sweet/timeNew/PDESolver_PDETerm_Base.hpp>
+#include <sweet/timeNew/PDESolver_DataContainer_Base.hpp>
 #include "MyDataContainer.hpp"
 
 #include "../pde_sweSphere/ShackPDESWESphere.hpp"

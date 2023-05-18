@@ -3,12 +3,16 @@
 
 #include <vector>
 #include <string>
-#include "PDESolver_DataContainer_Base.hpp"
-#include "PDESolver_TimeStepper_Base.hpp"
-#include "sweet/core/shacks/ShackDictionary.hpp"
+#include <sweet/timeNew/DESolver_DataContainer_Base.hpp>
+#include <sweet/timeNew/DESolver_TimeStepper_Base.hpp>
+#include <sweet/core/shacks/ShackDictionary.hpp>
 
-class MyTimeStepper_ExplicitRungeKutta	:
-		public sweet::PDESolver_TimeStepper_Base
+
+namespace sweet
+{
+
+class DESolver_TimeStepper_ExplicitRungeKutta	:
+		public sweet::DESolver_TimeStepper_Base
 {
 private:
 	double _timestep_size;
@@ -24,6 +28,7 @@ private:
 		ERK2_MIDPOINT,
 		ERK2_HEUN,	// Heun's method
 		ERK2_RALSTON,	// Ralston's method
+		ERK2_RALSTON_CC,	// Ralston's method, CC version
 		ERK3,
 		ERK4,		// 4th order classical RK
 
@@ -31,8 +36,8 @@ private:
 	RKMethod _rkMethodID;
 
 	// PDE term to evaluate
-	std::shared_ptr<PDESolver_TimeStepper_Base> _timeStepper;
-	std::shared_ptr<sweet::PDESolver_PDETerm_Base> _pdeTerm;
+	std::shared_ptr<DESolver_TimeStepper_Base> _timeStepper;
+	std::shared_ptr<sweet::DESolver_DETerm_Base> _deTerm;
 
 	// Order of Runge-Kutta method
 	int _order;
@@ -44,11 +49,11 @@ private:
 	int _rkNumStages;
 
 	// Number of stages to allocate buffers
-	std::vector<sweet::PDESolver_DataContainer_Base*> _rkStageDataContainer;
-	std::vector<sweet::PDESolver_DataContainer_Base*> _rkTmpDataContainer;
+	std::vector<sweet::DESolver_DataContainer_Base*> _rkStageDataContainer;
+	std::vector<sweet::DESolver_DataContainer_Base*> _rkTmpDataContainer;
 
 public:
-	MyTimeStepper_ExplicitRungeKutta()	:
+	DESolver_TimeStepper_ExplicitRungeKutta()	:
 		_timestep_size(-1),
 		_rkMethodID(INVALID),
 		_order(-1),
@@ -57,7 +62,7 @@ public:
 	{
 	}
 
-	~MyTimeStepper_ExplicitRungeKutta()
+	~DESolver_TimeStepper_ExplicitRungeKutta()
 	{
 		clear();
 	}
@@ -76,8 +81,8 @@ public:
 			sweet::ShackDictionary *io_shackDict
 	)	override
 	{
-		_pdeTerm->shackRegistration(io_shackDict);
-		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(*_pdeTerm);
+		_deTerm->shackRegistration(io_shackDict);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(*_deTerm);
 
 		return true;
 	}
@@ -97,23 +102,14 @@ public:
 		return _debugMessage;
 	}
 
-	bool setupWithArguments_DEPRECATED(
-			std::shared_ptr<sweet::PDESolver_PDETerm_Base> &i_pdeTerm,
-			int i_order
-	)
-	{
-		_order = i_order;
-		_pdeTerm = i_pdeTerm;
-
-		_setupArgumentInternals();
-
-		return true;
-	}
 
 	bool _setupArgumentInternals()
 	{
-		if (_pdeTerm == nullptr)
+		if (_deTerm == nullptr)
 			return error.set("PDE Term not specified for time stepper"+getNewLineDebugMessage());
+
+		if (!_deTerm->isEvalAvailable("eval_tendencies"))
+			return error.set("eval_tendencies not available in DE term '"+std::string(_deTerm->getImplementedPDETerm())+"'");
 
 		_rkMethodID = INVALID;
 		_rkNumStages = -1;
@@ -127,12 +123,30 @@ public:
 			_order = 2;
 			_rkNumStages = 2;
 		}
+		else if (_method == "midpoint")
+		{
+			if (_order != -1 && _order != 2)
+				return error.set("Order of Midpoint method must be 2");
+
+			_rkMethodID = ERK2_MIDPOINT;
+			_order = 2;
+			_rkNumStages = 2;
+		}
 		else if (_method == "ralston")
 		{
 			if (_order != -1 && _order != 2)
 				return error.set("Order of Ralston's method must be 2");
 
 			_rkMethodID = ERK2_RALSTON;
+			_order = 2;
+			_rkNumStages = 2;
+		}
+		else if (_method == "ralstoncc")
+		{
+			if (_order != -1 && _order != 2)
+				return error.set("Order of Ralston's method must be 2");
+
+			_rkMethodID = ERK2_RALSTON_CC;
 			_order = 2;
 			_rkNumStages = 2;
 		}
@@ -163,30 +177,29 @@ public:
 
 	virtual
 	bool setupFunction(
-			std::shared_ptr<sweet::PDESolver_TimeStepping_Tree::Function> &i_function,
-			sweet::PDESolver_TimeStepping_Assemblation &i_tsAssemblation
-	)
+			std::shared_ptr<sweet::DESolver_TimeStepping_Tree::Function> &i_function,
+			sweet::DESolver_TimeStepping_Assemblation &i_tsAssemblation
+	)	override
 	{
-		int i = 0;
 		for (auto iter = i_function->arguments.begin(); iter != i_function->arguments.end(); iter++)
 		{
-			sweet::PDESolver_TimeStepping_Tree::Argument *a = (*iter).get();
+			sweet::DESolver_TimeStepping_Tree::Argument *a = (*iter).get();
 
 			switch(a->argType)
 			{
 #if 1
-			case sweet::PDESolver_TimeStepping_Tree::Argument::ARG_TYPE_KEY_FUNCTION:
-			case sweet::PDESolver_TimeStepping_Tree::Argument::ARG_TYPE_FUNCTION:
+			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_KEY_FUNCTION:
+			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_FUNCTION:
 				error.set("Time steppers inside this time stepper are not allowed, yet"+a->getNewLineDebugMessage());
 				return false;
 				break;
 #else
-			case sweet::PDESolver_TimeStepping_Tree::Argument::ARG_TYPE_KEY_FUNCTION:
+			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_KEY_FUNCTION:
 				if (a->key != "fun")
 					return error.set("Only key 'fun' supported for a function!"+a->getNewLineDebugMessage());
 				// continue with ARG_TYPE_FUNCTION
 
-			case sweet::PDESolver_TimeStepping_Tree::Argument::ARG_TYPE_FUNCTION:
+			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_FUNCTION:
 				if (timestepperArgFound)
 					return error.set("a 2nd timestepper was provided!"+a->getNewLineDebugMessage());
 
@@ -197,7 +210,7 @@ public:
 				break;
 #endif
 
-			case sweet::PDESolver_TimeStepping_Tree::Argument::ARG_TYPE_KEY_VALUE:
+			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_KEY_VALUE:
 				if (a->key == "order" || a->key == "o")
 				{
 					a->getValue(_order);
@@ -214,14 +227,13 @@ public:
 				return error.set("Key not supported"+a->getNewLineDebugMessage());
 				break;
 
-			case sweet::PDESolver_TimeStepping_Tree::Argument::ARG_TYPE_VALUE:
-
-				if (_pdeTerm != nullptr)
+			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_VALUE:
+				if (_deTerm != nullptr)
 					return error.set("Only one PDETerm is suppored"+a->getNewLineDebugMessage());
 
 				i_tsAssemblation.assemblePDETermByString(
 						a->value,
-						_pdeTerm
+						_deTerm
 					);
 				ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*a);
 				break;
@@ -230,8 +242,6 @@ public:
 				SWEETError("Internal error");
 				return error.set("Internal error");
 			}
-
-			i++;
 		}
 
 		// provide debug message in case that something goes wrong with the arguments
@@ -239,14 +249,13 @@ public:
 		return _setupArgumentInternals();
 	}
 
-	bool setupOpsAndDataContainers(
-		const sweet::SphereOperators *io_ops,
-		const sweet::PDESolver_DataContainer_Base &i_U
+
+	bool setupConfig(
+		const sweet::DESolver_Config_Base &i_deSolverConfig
 	) override
 	{
-		_pdeTerm->setupOpsAndDataContainers(io_ops, i_U);
-
-		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*_pdeTerm);
+		_deTerm->setupDETermConfig(i_deSolverConfig);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*_deTerm);
 
 		clear();
 
@@ -256,7 +265,7 @@ public:
 		_rkStageDataContainer.resize(_rkNumStages);
 
 		for (std::size_t i = 0; i < _rkStageDataContainer.size(); i++)
-			_rkStageDataContainer[i] = i_U.getNewInstance();
+			_rkStageDataContainer[i] = i_deSolverConfig.getNewDataContainerInstance();
 
 		/*
 		 * Setup temporary buffers
@@ -265,7 +274,7 @@ public:
 			_rkTmpDataContainer.resize(1);
 
 		for (std::size_t i = 0; i < _rkTmpDataContainer.size(); i++)
-			_rkTmpDataContainer[i] = i_U.getNewInstance();
+			_rkTmpDataContainer[i] = i_deSolverConfig.getNewDataContainerInstance();
 
 		return true;
 
@@ -282,22 +291,22 @@ public:
 		_rkTmpDataContainer.clear();
 	}
 
-	std::shared_ptr<PDESolver_TimeStepper_Base> getNewInstance()	override
+	std::shared_ptr<DESolver_TimeStepper_Base> getNewInstance()	override
 	{
-		return std::shared_ptr<PDESolver_TimeStepper_Base>(new MyTimeStepper_ExplicitRungeKutta);
+		return std::shared_ptr<DESolver_TimeStepper_Base>(new DESolver_TimeStepper_ExplicitRungeKutta);
 	}
 
-	void setTimestepSize(double i_dt)	override
+	void setTimeStepSize(double i_dt)	override
 	{
 		_timestep_size = i_dt;
 
 		// Not required for explicit time stepper, but we do it
-		_pdeTerm->setTimestepSize(i_dt);
+		_deTerm->setTimestepSize(i_dt);
 	}
 
 	void eval_timeIntegration(
-			const sweet::PDESolver_DataContainer_Base &i_U,
-			sweet::PDESolver_DataContainer_Base &o_U,
+			const sweet::DESolver_DataContainer_Base &i_U,
+			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulation_time
 	)	override
 	{
@@ -307,6 +316,7 @@ public:
 		case ERK2_MIDPOINT:	_eval_timeIntegration_ERK2_Midpoint(i_U, o_U, i_simulation_time);	return;
 		case ERK2_HEUN:	_eval_timeIntegration_ERK2_Heun(i_U, o_U, i_simulation_time);	return;
 		case ERK2_RALSTON:	_eval_timeIntegration_ERK2_Ralston(i_U, o_U, i_simulation_time);	return;
+		case ERK2_RALSTON_CC:	_eval_timeIntegration_ERK2_RalstonCC(i_U, o_U, i_simulation_time);	return;
 		case ERK3:	_eval_timeIntegration_ERK3(i_U, o_U, i_simulation_time);	return;
 		case ERK4:	_eval_timeIntegration_ERK4(i_U, o_U, i_simulation_time);	return;
 		default: ;
@@ -315,24 +325,24 @@ public:
 
 private:
 	void _eval_timeIntegration_ERK1(
-			const sweet::PDESolver_DataContainer_Base &i_U,
-			sweet::PDESolver_DataContainer_Base &o_U,
+			const sweet::DESolver_DataContainer_Base &i_U,
+			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulation_time
 	)
 	{
-		_pdeTerm->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
+		_deTerm->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
 
 		o_U.op_setVectorPlusScalarMulVector(i_U, _timestep_size, *_rkStageDataContainer[0]);
 	}
 
 private:
 	void _eval_timeIntegration_ERK2_Midpoint(
-			const sweet::PDESolver_DataContainer_Base &i_U,
-			sweet::PDESolver_DataContainer_Base &o_U,
+			const sweet::DESolver_DataContainer_Base &i_U,
+			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulation_time
 	)
 	{
-		_pdeTerm->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
+		_deTerm->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
 
 		o_U.op_setVectorPlusScalarMulVector(i_U, _timestep_size, *_rkStageDataContainer[0]);
 
@@ -351,14 +361,14 @@ private:
 		double c[1] = {0.5};
 
 		// STAGE 1
-		_pdeTerm->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
+		_deTerm->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
 
 		// STAGE 2
 		_rkTmpDataContainer[0]->op_setVectorPlusScalarMulVector(
 				i_U, dt*a2[0], *_rkStageDataContainer[0]
 		);
 
-		_pdeTerm->eval_tendencies(
+		_deTerm->eval_tendencies(
 				*_rkTmpDataContainer[0],
 				*_rkStageDataContainer[1],
 				i_simulation_time + c[0]*dt
@@ -369,12 +379,12 @@ private:
 
 private:
 	void _eval_timeIntegration_ERK2_Heun(
-			const sweet::PDESolver_DataContainer_Base &i_U,
-			sweet::PDESolver_DataContainer_Base &o_U,
+			const sweet::DESolver_DataContainer_Base &i_U,
+			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulation_time
 	)
 	{
-		_pdeTerm->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
+		_deTerm->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
 
 		o_U.op_setVectorPlusScalarMulVector(i_U, _timestep_size, *_rkStageDataContainer[0]);
 
@@ -392,14 +402,14 @@ private:
 		double c[1] = {1.0};
 
 		// STAGE 1
-		_pdeTerm->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
+		_deTerm->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
 
 		// STAGE 2
 		_rkTmpDataContainer[0]->op_setVectorPlusScalarMulVector(
 				i_U, dt*a2[0], *_rkStageDataContainer[0]
 		);
 
-		_pdeTerm->eval_tendencies(
+		_deTerm->eval_tendencies(
 				*_rkTmpDataContainer[0],
 				*_rkStageDataContainer[1],
 				i_simulation_time + c[0]*dt
@@ -412,38 +422,90 @@ private:
 
 private:
 	void _eval_timeIntegration_ERK2_Ralston(
-			const sweet::PDESolver_DataContainer_Base &i_U,
-			sweet::PDESolver_DataContainer_Base &o_U,
+			const sweet::DESolver_DataContainer_Base &i_U,
+			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulation_time
 	)
 	{
-		_pdeTerm->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
+		_deTerm->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
 
 		o_U.op_setVectorPlusScalarMulVector(i_U, _timestep_size, *_rkStageDataContainer[0]);
 
 
-		// See https://en.wikipedia.org/wiki/Heun%27s_method
-		// Table below Heun's method
+		/*
+		 * http://www.ams.org/journals/mcom/1962-16-080/S0025-5718-1962-0150954-0/S0025-5718-1962-0150954-0.pdf
+		 *
+		 * See table below Heun's method https://en.wikipedia.org/wiki/Heun%27s_method
+		 */
 		/*
 		 * c     a
 		 * 0   |
-		 * 2/3   | 2/3
+		 * 2/3 | 2/3
 		 * --------------
-		 *     | 1/4   3/4    b
+		 *     | 1/4   3/4  b
 		 */
 		double a2[1] = {2.0/3.0};
 		double b[2] = {1.0/4.0, 3.0/4.0};
 		double c[1] = {2.0/3.0};
 
 		// STAGE 1
-		_pdeTerm->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
+		_deTerm->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
 
 		// STAGE 2
 		_rkTmpDataContainer[0]->op_setVectorPlusScalarMulVector(
 				i_U, dt*a2[0], *_rkStageDataContainer[0]
 		);
 
-		_pdeTerm->eval_tendencies(
+		_deTerm->eval_tendencies(
+				*_rkTmpDataContainer[0],
+				*_rkStageDataContainer[1],
+				i_simulation_time + c[0]*dt
+			);
+
+		o_U.op_setVectorPlusScalarMulVector(i_U, dt*b[0], *_rkStageDataContainer[0]);
+		o_U.op_addScalarMulVector(dt*b[1], *_rkStageDataContainer[1]);
+	}
+
+
+private:
+	void _eval_timeIntegration_ERK2_RalstonCC(
+			const sweet::DESolver_DataContainer_Base &i_U,
+			sweet::DESolver_DataContainer_Base &o_U,
+			double i_simulation_time
+	)
+	{
+		_deTerm->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
+
+		o_U.op_setVectorPlusScalarMulVector(i_U, _timestep_size, *_rkStageDataContainer[0]);
+
+
+		/*
+		 * This is not the original Ralston method, but the one from the book
+		 * "Numerical Methods for Engineers" by Chapra and Canale
+		 *
+		 * This is discussed here:
+		 * http://sachinashanbhag.blogspot.com/2016/04/ralstons-method-controversy.html
+		 */
+		/*
+		 * c     a
+		 * 0   |
+		 * 3/4 | 3/4
+		 * --------------
+		 *     | 1/3   2/3  b
+		 */
+		double a2[1] = {3.0/4.0};
+		double b[2] = {1.0/3.0, 2.0/3.0};
+		double c[1] = {3.0/4.0};
+
+		// STAGE 1
+		_deTerm->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
+
+		// STAGE 2
+		_rkTmpDataContainer[0]->op_setVectorPlusScalarMulVector(
+				i_U, dt*a2[0], *_rkStageDataContainer[0]
+		);
+
+		_deTerm->eval_tendencies(
 				*_rkTmpDataContainer[0],
 				*_rkStageDataContainer[1],
 				i_simulation_time + c[0]*dt
@@ -455,8 +517,8 @@ private:
 
 private:
 	void _eval_timeIntegration_ERK3(
-			const sweet::PDESolver_DataContainer_Base &i_U,
-			sweet::PDESolver_DataContainer_Base &o_U,
+			const sweet::DESolver_DataContainer_Base &i_U,
+			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulation_time
 	)
 	{
@@ -476,14 +538,14 @@ private:
 		double c[2] = {1.0/3.0, 2.0/3.0};
 
 		// STAGE 1
-		_pdeTerm->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
+		_deTerm->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
 
 		// STAGE 2
 		_rkTmpDataContainer[0]->op_setVectorPlusScalarMulVector(
 				i_U, dt*a2[0], *_rkStageDataContainer[0]
 		);
 
-		_pdeTerm->eval_tendencies(
+		_deTerm->eval_tendencies(
 				*_rkTmpDataContainer[0],
 				*_rkStageDataContainer[1],
 				i_simulation_time + c[0]*dt
@@ -494,7 +556,7 @@ private:
 				i_U, dt*a3[1], *_rkStageDataContainer[1]
 		);
 
-		_pdeTerm->eval_tendencies(
+		_deTerm->eval_tendencies(
 				*_rkTmpDataContainer[0],
 				*_rkStageDataContainer[2],
 				i_simulation_time + c[1]*dt
@@ -508,8 +570,8 @@ private:
 
 private:
 	void _eval_timeIntegration_ERK4(
-			const sweet::PDESolver_DataContainer_Base &i_U,
-			sweet::PDESolver_DataContainer_Base &o_U,
+			const sweet::DESolver_DataContainer_Base &i_U,
+			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulation_time
 	)
 	{
@@ -531,13 +593,13 @@ private:
 		double c[3] = {0.5, 0.5, 1.0};
 
 		// STAGE 1
-		_pdeTerm->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
+		_deTerm->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
 
 		// STAGE 2
 		_rkTmpDataContainer[0]->op_setVectorPlusScalarMulVector(
 				i_U, dt*a2[0], *_rkStageDataContainer[0]
 		);
-		_pdeTerm->eval_tendencies(
+		_deTerm->eval_tendencies(
 				*_rkTmpDataContainer[0],
 				*_rkStageDataContainer[1],
 				i_simulation_time + c[0]*dt
@@ -547,7 +609,7 @@ private:
 		_rkTmpDataContainer[0]->op_setVectorPlusScalarMulVector(
 				i_U, dt*a3[1], *_rkStageDataContainer[1]
 		);
-		_pdeTerm->eval_tendencies(
+		_deTerm->eval_tendencies(
 				*_rkTmpDataContainer[0],
 				*_rkStageDataContainer[2],
 				i_simulation_time + c[1]*dt
@@ -558,7 +620,7 @@ private:
 		_rkTmpDataContainer[0]->op_setVectorPlusScalarMulVector(
 				i_U, dt*a4[2], *_rkStageDataContainer[2]
 		);
-		_pdeTerm->eval_tendencies(
+		_deTerm->eval_tendencies(
 				*_rkTmpDataContainer[0],
 				*_rkStageDataContainer[3],
 				i_simulation_time + c[2]*dt
@@ -581,6 +643,6 @@ private:
 	}
 };
 
-
+}
 
 #endif
