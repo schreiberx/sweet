@@ -363,9 +363,22 @@ public:
 				}
 		}
 
-			/*
-			 * Invert Eigenvalue matrix
-			 */
+		/*
+		 *  Normalize eigenvectors
+		 */
+		for (int j = 0; j < 3; j++)
+		{
+			double norm = 0;
+			for (int i = 0; i < 3; i++)
+				norm += std::abs(v[i][j]) * std::abs(v[i][j]);
+			norm = std::sqrt(norm);
+			for (int i = 0; i < 3; i++)
+				v[i][j] /= norm;
+		}
+
+		/*
+		 * Invert Eigenvector matrix
+		 */
 
 		if (i_compute_inverse){
 			v_inv[0][0] =  (v[1][1]*v[2][2] - v[1][2]*v[2][1]);

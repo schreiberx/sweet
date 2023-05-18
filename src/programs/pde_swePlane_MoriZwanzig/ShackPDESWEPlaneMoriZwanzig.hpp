@@ -165,7 +165,6 @@ public:
 		gravitation = 1. / epsilon / std::sqrt(F);
 		h0 = gravitation;
 
-
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(i_pa);
 		return true;
 	}

@@ -190,7 +190,6 @@ public:
 		///complex eigenvalues[3];
 		complex eigenvectors[3][3];
 
-
 		sweet::PlaneData_Spectral h_copy = io_h_pert;
 		sweet::PlaneData_Spectral u_copy = io_u;
 		sweet::PlaneData_Spectral v_copy = io_v;
