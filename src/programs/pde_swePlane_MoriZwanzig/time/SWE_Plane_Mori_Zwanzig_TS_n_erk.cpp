@@ -771,6 +771,8 @@ bool SWE_Plane_Mori_Zwanzig_TS_n_erk::setup(
 )
 {
 
+	PDESWEPlaneMoriZwanzigTS_BaseInterface::setup(io_ops, i_equation);
+
 	ops = io_ops;
 
 	equation = i_equation;

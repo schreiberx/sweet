@@ -1102,6 +1102,11 @@ public:
 				);
 	}
 
+	~ProgramPDESWEPlaneMoriZwanzig()
+	{
+		clear();
+	}
+
 };
 
 #endif

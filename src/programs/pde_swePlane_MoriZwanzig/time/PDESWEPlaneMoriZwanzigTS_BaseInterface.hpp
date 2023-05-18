@@ -92,7 +92,7 @@ public:
 		projection.setup(io_ops->planeDataConfig);
 
 		equation = i_equation;
-		if (equation != "P" && equation != "Q")
+		if (equation != "P" && equation != "Q" && equation != "SF")
 			SWEETError("Invalid equation: " + equation);
 
 		return true;

@@ -155,7 +155,8 @@ bool SWE_Plane_Mori_Zwanzig_TS_l_irk::setup(
 	if (shackPlaneDataOps->space_grid_use_c_staggering)
 		SWEETError("Staggering not supported for l_irk");
 
-	assert(i_order > 0);
+	assert(i_order_P > 0);
+	assert(i_order_Q > 0);
 	timestepping_order_P = i_order_P;
 	timestepping_order_Q = i_order_Q;
 

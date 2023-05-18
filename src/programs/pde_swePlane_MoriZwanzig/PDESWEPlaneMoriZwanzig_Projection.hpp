@@ -44,6 +44,8 @@ public:
 	typedef double T;
 	typedef std::complex<T> complex;
 
+	sweet::PlaneData_Config* planeDataConfig;
+
 	sweet::ShackPlaneDataOps *shackPlaneDataOps;
 	sweet::ShackTimestepControl *shackTimestepControl;
 	sweet::ShackIOData *shackIOData;
@@ -84,6 +86,9 @@ public:
 
 	bool setup(sweet::PlaneData_Config* i_planeDataConfig)
 	{
+
+		this->planeDataConfig = i_planeDataConfig;
+
 		this->normal_modes.setup(
 						shackPDESWEPlaneMZ->plane_rotating_f0,
 						shackPDESWEPlaneMZ->h0,
@@ -92,7 +97,55 @@ public:
 						shackPlaneDataOps->plane_domain_size[1]
 					);
 
+		i_planeDataConfig->printInformation();
 		// define S, F
+
+		// pre-treat negative values to avoid issues with divisions by 2 below
+		if (this->shackPDESWEPlaneMZ->S_geostrophic_min < 0)
+			this->shackPDESWEPlaneMZ->S_geostrophic_min = -10;
+		if (this->shackPDESWEPlaneMZ->S_geostrophic_max < 0)
+			this->shackPDESWEPlaneMZ->S_geostrophic_max = -10;
+		if (this->shackPDESWEPlaneMZ->S_gravity_west_min < 0)
+			this->shackPDESWEPlaneMZ->S_gravity_west_min = -10;
+		if (this->shackPDESWEPlaneMZ->S_gravity_west_max < 0)
+			this->shackPDESWEPlaneMZ->S_gravity_west_max = -10;
+		if (this->shackPDESWEPlaneMZ->S_gravity_east_min < 0)
+			this->shackPDESWEPlaneMZ->S_gravity_east_min = -10;
+		if (this->shackPDESWEPlaneMZ->S_gravity_east_max < 0)
+			this->shackPDESWEPlaneMZ->S_gravity_east_max = -10;
+
+		if (this->shackPDESWEPlaneMZ->F_geostrophic_min < 0)
+			this->shackPDESWEPlaneMZ->F_geostrophic_min = -10;
+		if (this->shackPDESWEPlaneMZ->F_geostrophic_max < 0)
+			this->shackPDESWEPlaneMZ->F_geostrophic_max = -10;
+		if (this->shackPDESWEPlaneMZ->F_gravity_west_min < 0)
+			this->shackPDESWEPlaneMZ->F_gravity_west_min = -10;
+		if (this->shackPDESWEPlaneMZ->F_gravity_west_max < 0)
+			this->shackPDESWEPlaneMZ->F_gravity_west_max = -10;
+		if (this->shackPDESWEPlaneMZ->F_gravity_east_min < 0)
+			this->shackPDESWEPlaneMZ->F_gravity_east_min = -10;
+		if (this->shackPDESWEPlaneMZ->F_gravity_east_max < 0)
+			this->shackPDESWEPlaneMZ->F_gravity_east_max = -10;
+
+#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
+
+		// set physical_size = (spectral_size * 3 + 1 ) / 2  then
+		// set spectral_size = physical_size
+
+		this->modes[0][0][0] = (this->shackPDESWEPlaneMZ->S_geostrophic_min  * 3 + 1 ) / 2;
+		this->modes[0][0][1] = (this->shackPDESWEPlaneMZ->S_geostrophic_max  * 3 + 1 ) / 2;
+		this->modes[0][1][0] = (this->shackPDESWEPlaneMZ->S_gravity_west_min * 3 + 1 ) / 2;
+		this->modes[0][1][1] = (this->shackPDESWEPlaneMZ->S_gravity_west_max * 3 + 1 ) / 2;
+		this->modes[0][2][0] = (this->shackPDESWEPlaneMZ->S_gravity_east_min * 3 + 1 ) / 2;
+		this->modes[0][2][1] = (this->shackPDESWEPlaneMZ->S_gravity_east_max * 3 + 1 ) / 2;
+
+		this->modes[1][0][0] = (this->shackPDESWEPlaneMZ->F_geostrophic_min  * 3 + 1 ) / 2 ;
+		this->modes[1][0][1] = (this->shackPDESWEPlaneMZ->F_geostrophic_max  * 3 + 1 ) / 2 ;
+		this->modes[1][1][0] = (this->shackPDESWEPlaneMZ->F_gravity_west_min * 3 + 1 ) / 2 ;
+		this->modes[1][1][1] = (this->shackPDESWEPlaneMZ->F_gravity_west_max * 3 + 1 ) / 2 ;
+		this->modes[1][2][0] = (this->shackPDESWEPlaneMZ->F_gravity_east_min * 3 + 1 ) / 2 ;
+		this->modes[1][2][1] = (this->shackPDESWEPlaneMZ->F_gravity_east_max * 3 + 1 ) / 2 ;
+#else
 		this->modes[0][0][0] = this->shackPDESWEPlaneMZ->S_geostrophic_min;
 		this->modes[0][0][1] = this->shackPDESWEPlaneMZ->S_geostrophic_max;
 		this->modes[0][1][0] = this->shackPDESWEPlaneMZ->S_gravity_west_min;
@@ -107,6 +160,9 @@ public:
 		this->modes[1][2][0] = this->shackPDESWEPlaneMZ->F_gravity_east_min;
 		this->modes[1][2][1] = this->shackPDESWEPlaneMZ->F_gravity_east_max;
 
+#endif
+
+
 		// treat negative values
 		for (int i = 0; i < 2; i++)
 			for (int wave_type = 0; wave_type < 3; wave_type++)
@@ -114,6 +170,10 @@ public:
 					if (this->modes[i][wave_type][j] < 0)
 						this->modes[i][wave_type][j] = 0;
 
+		std::cout << "DEFINITION OF S AND F" << std::endl;
+		for (int i = 0; i < 2; i++)
+			for (int wave_type = 0; wave_type < 3; wave_type++)
+				std::cout << i << " " << wave_type << " " << modes[i][wave_type][0] << " " << modes[i][wave_type][1] << std::endl;
 
 		std::vector<std::string> strs = {"S", "F"};
 		std::vector<std::string> strw = {"geostrophic", "gravity west", "gravity east"};
@@ -207,8 +267,14 @@ public:
 
 		for (int k1 = Kmin; k1 < Kmax; k1++)
 		{
+
+			// Only half of the modes are defined in k1 direction!!
+			if (k1 >= this->planeDataConfig->spectral_data_size[0])
+				continue;
+
 			for (int k2 = Kmin; k2 < Kmax; k2++)
 			{
+
 				complex U_proj[3] = {0., 0., 0.};
 				normal_modes.eigendecomposition(k1, k2, eigenvectors);
 

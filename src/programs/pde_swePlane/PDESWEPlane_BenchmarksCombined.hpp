@@ -165,7 +165,6 @@ public:
 		}
 		else if (shackPDESWEPlaneBenchmarks->benchmark_name == "unstablejet_dimensionless")
 		{
-			std::cout << "AAAAAAA " << shackPlaneDataOps->plane_domain_size[0] << std::endl;;
 			PDESWEPlaneBench_UnstableJet swe_unstablejet;
 			swe_unstablejet.shackRegistration(shackDict);
 			swe_unstablejet.setup(io_ops, io_planeDataConfig);
