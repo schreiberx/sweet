@@ -209,8 +209,13 @@ public:
 		if (!stringParser.parse_nextIdentifier(tmp))
 			return error.set("Failed to find first token in string - is it maybe empty?\n"+stringParser.getErrorInfo());
 
+		std::string debug_message = stringParser.getErrorInfo("Location or error");
+
 		o_timeSteppingTree.clear();
 		o_timeSteppingTree.mainFunction = std::make_shared<PDESolver_TimeStepping_Tree::Function>(tmp);
+
+		// store potential debugging information in time stepping string to use it later
+		o_timeSteppingTree.mainFunction->setDebugMessage(debug_message);
 
 		if (!stringParser.parse_particularCharacter('('))
 			return error.set("Open parenthesis '(' expected!\n"+stringParser.getErrorInfo());
@@ -240,7 +245,7 @@ public:
 	{
 		while (true)
 		{
-			std::string debug_message = stringParser.getErrorInfo("Failed to parse this argument");
+			std::string debug_message = stringParser.getErrorInfo("Location or error");
 
 			// Search for first identifier
 			// if it doesn't exist, assume that there are no further arguments
@@ -262,8 +267,8 @@ public:
 			std::shared_ptr<PDESolver_TimeStepping_Tree::Argument> arg = std::make_shared<PDESolver_TimeStepping_Tree::Argument>();
 			io_function->arguments.push_back(arg);
 
-			// prepare error message in case we need it later on
-			arg->debug_message = debug_message;
+			// store potential debugging information in time stepping string to use it later
+			arg->setDebugMessage(debug_message);
 
 			/*
 			 * Check for key-value or key-function
@@ -284,6 +289,9 @@ public:
 					arg->key = key;
 					arg->function = std::make_shared<PDESolver_TimeStepping_Tree::Function>(value);
 
+					// store potential debugging information in time stepping string to use it later
+					arg->function->setDebugMessage(debug_message);
+
 					if (!_setup_functionArguments(arg->function))
 						return false;
 
@@ -303,6 +311,9 @@ public:
 				// key-function
 				arg->argType = PDESolver_TimeStepping_Tree::Argument::ARG_TYPE_FUNCTION;
 				arg->function = std::make_shared<PDESolver_TimeStepping_Tree::Function>(identifier);
+
+				// store potential debugging information in time stepping string to use it later
+				arg->function->setDebugMessage(debug_message);
 
 				if (!_setup_functionArguments(arg->function))
 					return false;

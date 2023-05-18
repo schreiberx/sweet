@@ -10,6 +10,7 @@
 #include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
 #include <sweet/core/sphere/SphereOperators.hpp>
+#include <sweet/core/ErrorBase.hpp>
 #include "PDESolver_PDETerm_Base.hpp"
 #include "PDESolver_DataContainer_Base.hpp"
 
@@ -20,6 +21,8 @@ namespace sweet
 class PDESolver_PDETerm_Base
 {
 public:
+	ErrorBase error;
+
 	PDESolver_PDETerm_Base()
 	{
 	}
@@ -59,8 +62,8 @@ public:
 	 * Setup potential internal data structures
 	 */
 	virtual
-	void setup(
-			sweet::SphereOperators *io_ops,
+	bool setupOpsAndDataContainers(
+			const sweet::SphereOperators *io_ops,
 			const PDESolver_DataContainer_Base &i_u
 		) = 0;
 
@@ -78,8 +81,8 @@ public:
 	 */
 	virtual
 	void eval_tendencies(
-			PDESolver_DataContainer_Base &i_u,
-			PDESolver_DataContainer_Base &o_u,
+			const PDESolver_DataContainer_Base &i_U,
+			PDESolver_DataContainer_Base &o_U,
 			double i_time_stamp
 		){};
 
@@ -91,8 +94,8 @@ public:
 	 */
 	virtual
 	void eval_euler_forward(
-			PDESolver_DataContainer_Base &i_u,
-			PDESolver_DataContainer_Base &o_u,
+			const PDESolver_DataContainer_Base &i_U,
+			PDESolver_DataContainer_Base &o_U,
 			double i_time_stamp
 		){};
 
@@ -108,8 +111,8 @@ public:
 	 */
 	virtual
 	void eval_euler_backward(
-			PDESolver_DataContainer_Base &i_u,
-			PDESolver_DataContainer_Base &o_u,
+			const PDESolver_DataContainer_Base &i_U,
+			PDESolver_DataContainer_Base &o_U,
 			double i_time_stamp
 		){};
 
@@ -120,8 +123,8 @@ public:
 	 */
 	virtual
 	void eval_exponential(
-			PDESolver_DataContainer_Base &i_u,
-			PDESolver_DataContainer_Base &o_u,
+			const PDESolver_DataContainer_Base &i_U,
+			PDESolver_DataContainer_Base &o_U,
 			double i_time_stamp
 		){};
 };

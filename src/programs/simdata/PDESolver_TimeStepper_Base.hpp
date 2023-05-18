@@ -63,17 +63,21 @@ public:
 	) = 0;
 
 
-	/*
-	 * Setup potential internal data structures,
-	 * e.g., storage space for RK stages
-	 */
-	virtual
-	bool setupDataContainers(const PDESolver_DataContainer_Base &i_u) = 0;
-
 	virtual
 	bool setupFunction(
 			std::shared_ptr<sweet::PDESolver_TimeStepping_Tree::Function> &i_function,
 			sweet::PDESolver_TimeStepping_Assemblation &i_tsAssemblation
+	) = 0;
+
+
+	/*
+	 * Setup operators and potential internal data structures,
+	 * e.g., storage space for RK stages
+	 */
+	virtual
+	bool setupOpsAndDataContainers(
+		const sweet::SphereOperators *io_ops,
+		const sweet::PDESolver_DataContainer_Base &i_U
 	) = 0;
 
 	/*
@@ -96,8 +100,8 @@ public:
 	 */
 	virtual
 	void eval_timeIntegration(
-			PDESolver_DataContainer_Base &i_u,
-			PDESolver_DataContainer_Base &o_u,
+			const PDESolver_DataContainer_Base &i_U,
+			PDESolver_DataContainer_Base &o_U,
 			double i_simulation_time
 		) = 0;
 };

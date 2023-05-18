@@ -21,7 +21,7 @@ public:
 
 private:
 	ShackPDESWESphere *shackPDESWESphere;
-	sweet::SphereOperators *ops;
+	const sweet::SphereOperators *ops;
 
 	double dt;
 	sweet::SphereData_Physical fg;
@@ -46,6 +46,12 @@ private:
 		return static_cast<MyDataContainer&>(i_U);
 	}
 
+	static inline
+	const MyDataContainer& cast(const sweet::PDESolver_DataContainer_Base &i_U)
+	{
+		return static_cast<const MyDataContainer&>(i_U);
+	}
+
 public:
 	bool shackRegistration(
 			sweet::ShackDictionary *io_shackDict
@@ -67,8 +73,8 @@ public:
 		return std::shared_ptr<sweet::PDESolver_PDETerm_Base>(new MyPDETerm_lg);
 	}
 
-	void setup(
-		sweet::SphereOperators *io_ops,
+	bool setupOpsAndDataContainers(
+		const sweet::SphereOperators *io_ops,
 		const sweet::PDESolver_DataContainer_Base &i_u
 	) override
 	{
@@ -78,6 +84,8 @@ public:
 			fg = ops->getFG_fSphere(shackPDESWESphere->sphere_fsphere_f0);
 		else
 			fg = ops->getFG_rotatingSphere(shackPDESWESphere->sphere_rotating_coriolis_omega);
+
+		return true;
 	}
 
 	void setTimestepSize(double i_dt) override
@@ -89,7 +97,7 @@ public:
 	 * Return the time tendencies of the PDE term
 	 */
 	void eval_tendencies(
-			sweet::PDESolver_DataContainer_Base &i_U,
+			const sweet::PDESolver_DataContainer_Base &i_U,
 			sweet::PDESolver_DataContainer_Base &o_U,
 			double i_time_stamp
 	)	override
@@ -140,7 +148,7 @@ public:
 	 */
 #if 0
 	void eval_euler_forward(
-			PDESolver_DataContainer_Base &i_u,
+			const PDESolver_DataContainer_Base &i_u,
 			PDESolver_DataContainer_Base &o_u
 		)	override
 	{

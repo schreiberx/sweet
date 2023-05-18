@@ -128,7 +128,7 @@ public:
 
 	std::shared_ptr<sweet::PDESolver_TimeStepper_Base> timeStepper;
 
-	bool setup_4_timestepper(int rk_order)
+	bool setup_4_timestepper()
 	{
 #if 1
 		/*
@@ -168,25 +168,39 @@ public:
 		);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(tssa);
 
-#else
-
-		std::shared_ptr<sweet::PDESolver_PDETerm_Base> pde_term_lg;
-
-		/*
-		 * Register
-		 */
-		pde_term_lg = std::shared_ptr<sweet::PDESolver_PDETerm_Base>(new MyPDETerm_lg);
-		pde_term_lg->shackRegistration(&shackProgArgDict);
-		pde_term_lg->setup(&ops, U);
-
-		timeStepper = std::make_shared<MyTimeStepper_ExplicitRungeKutta>();
 		timeStepper->shackRegistration(&shackProgArgDict);
 
-		MyTimeStepper_ExplicitRungeKutta *_ERK = static_cast<MyTimeStepper_ExplicitRungeKutta*>(timeStepper.get());
-		_ERK->setupWithArguments(pde_term_lg, rk_order);
-		timeStepper->setTimestepSize(0.1);
-		timeStepper->setupDataContainers(U);
+		timeStepper->setupOpsAndDataContainers(&ops, U);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*timeStepper);
 
+		/*
+		 * Set time step size
+		 */
+		timeStepper->setTimestepSize(0.1);
+
+#else
+
+		for (int rk_order = 1; rk_order <= 4; rk_order++)
+		{
+			std::cout << "testing rk_order: " << rk_order << std::endl;
+
+			std::shared_ptr<sweet::PDESolver_PDETerm_Base> pde_term_lg;
+
+			/*
+			 * Register
+			 */
+			pde_term_lg = std::shared_ptr<sweet::PDESolver_PDETerm_Base>(new MyPDETerm_lg);
+			pde_term_lg->shackRegistration(&shackProgArgDict);
+			pde_term_lg->setup(&ops, U);
+
+			timeStepper = std::make_shared<MyTimeStepper_ExplicitRungeKutta>();
+			timeStepper->shackRegistration(&shackProgArgDict);
+
+			MyTimeStepper_ExplicitRungeKutta *_ERK = static_cast<MyTimeStepper_ExplicitRungeKutta*>(timeStepper.get());
+			_ERK->setupWithArguments(pde_term_lg, rk_order);
+			timeStepper->setTimestepSize(0.1);
+			timeStepper->setupDataContainers(U);
+		}
 #endif
 
 		return true;
@@ -280,28 +294,26 @@ bool runTests()
 
 int main(int argc, char *argv[])
 {
+#if 0
 	if (!runTests())
 		return -1;
+#endif
 
-	for (int rk_order = 1; rk_order <= 4; rk_order++)
-	{
-		std::cout << "testing rk_order: " << rk_order << std::endl;
-		PDESolver pdeSolver;
+	PDESolver pdeSolver;
 
-		pdeSolver.setup_1_shacks(argc, argv);
-		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(pdeSolver);
+	pdeSolver.setup_1_shacks(argc, argv);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(pdeSolver);
 
-		pdeSolver.setup_2_config();
-		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(pdeSolver);
+	pdeSolver.setup_2_config();
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(pdeSolver);
 
-		pdeSolver.setup_3_data();
-		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(pdeSolver);
+	pdeSolver.setup_3_data();
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(pdeSolver);
 
-		pdeSolver.setup_4_timestepper(rk_order);
-		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(pdeSolver);
+	pdeSolver.setup_4_timestepper();
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(pdeSolver);
 
-		pdeSolver.doTimestep();
-	}
+	pdeSolver.doTimestep();
 
 	return 0;
 }

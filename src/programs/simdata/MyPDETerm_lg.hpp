@@ -19,7 +19,7 @@ public:
 
 private:
 	ShackPDESWESphere *shackPDESWESphere;
-	sweet::SphereOperators *ops;
+	const sweet::SphereOperators *ops;
 
 	double dt;
 
@@ -43,6 +43,12 @@ private:
 		return static_cast<MyDataContainer&>(i_U);
 	}
 
+	static inline
+	const MyDataContainer& cast(const sweet::PDESolver_DataContainer_Base &i_U)
+	{
+		return static_cast<const MyDataContainer&>(i_U);
+	}
+
 	bool shackRegistration(
 			sweet::ShackDictionary *io_shackDict
 	)
@@ -63,12 +69,13 @@ private:
 		return std::shared_ptr<sweet::PDESolver_PDETerm_Base>(new MyPDETerm_lg);
 	}
 
-	void setup(
-		sweet::SphereOperators *io_ops,
+	bool setupOpsAndDataContainers(
+		const sweet::SphereOperators *io_ops,
 		const sweet::PDESolver_DataContainer_Base &i_u
 	) override
 	{
 		ops = io_ops;
+		return true;
 	}
 
 	void setTimestepSize(double i_dt) override
@@ -80,15 +87,15 @@ private:
 	 * Return the time tendencies of the PDE term
 	 */
 	void eval_tendencies(
-			sweet::PDESolver_DataContainer_Base &i_u,
+			const sweet::PDESolver_DataContainer_Base &i_u,
 			sweet::PDESolver_DataContainer_Base &o_u,
 			double i_time_stamp
 	)	override
 	{
 		assert(ops != nullptr);
 
-		MyDataContainer &i = static_cast<MyDataContainer&>(i_u);
-		MyDataContainer &o = static_cast<MyDataContainer&>(o_u);
+		const MyDataContainer &i = cast(i_u);
+		MyDataContainer &o = cast(o_u);
 
 		double gh = shackPDESWESphere->gravitation * shackPDESWESphere->h0;
 

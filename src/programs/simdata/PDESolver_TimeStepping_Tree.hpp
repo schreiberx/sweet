@@ -48,6 +48,11 @@ public:
 		/// Arguments of function
 		std::vector<std::shared_ptr<Argument>> arguments;
 
+	private:
+		/// String which contains information about the function to debug
+		/// (in case of an error in parsing the arguments in the time stepper)
+		std::string _debugMessage;
+
 	public:
 		Function(
 				const std::string &i_function_name
@@ -84,6 +89,20 @@ public:
 
 			std::cout << i_prefix_str << ")" << std::endl;
 		}
+
+public:
+		void setDebugMessage(const std::string &i_debugMessage)
+		{
+			_debugMessage = i_debugMessage;
+		}
+		std::string getDebugMessage()
+		{
+			return _debugMessage;
+		}
+		std::string getNewLineDebugMessage()
+		{
+			return "\n"+_debugMessage;
+		}
 	};
 
 public:
@@ -113,14 +132,16 @@ public:
 		 * Argument debugging message which can be printed in case there's something
 		 * wrong with this argument
 		 */
-		std::string debug_message;
+private:
+		std::string _debugMessage;
 
-		bool argumentParsedAndAccessed;
+		bool _argumentParsedAndAccessed;
 
 
+public:
 		Argument()	:
 			argType(ARG_INVALID),
-			argumentParsedAndAccessed(false)
+			_argumentParsedAndAccessed(false)
 		{
 		}
 
@@ -128,7 +149,7 @@ public:
 		{
 			key = "";
 			value = "";
-			argumentParsedAndAccessed = false;
+			_argumentParsedAndAccessed = false;
 		}
 
 		bool getValue(int &o_value)
@@ -173,6 +194,20 @@ public:
 			case ARG_INVALID:
 				break;
 			}
+		}
+
+public:
+		void setDebugMessage(const std::string &i_debugMessage)
+		{
+			_debugMessage = i_debugMessage;
+		}
+		std::string getDebugMessage()
+		{
+			return _debugMessage;
+		}
+		std::string getNewLineDebugMessage()
+		{
+			return "\n"+_debugMessage;
 		}
 	};
 
