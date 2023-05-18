@@ -228,8 +228,6 @@ bool SWE_Plane_Mori_Zwanzig_TS_l_exp_n_erk::setup(
 	timestepping_order_nonlinear_P = shackPDESWETimeDisc->timestepping_order_P;
 	timestepping_order_nonlinear_Q = shackPDESWETimeDisc->timestepping_order_Q;
 
-	timestepping_rk_P.setupBuffers(ops->planeDataConfig, timestepping_order_nonlinear_P);
-
 	if (shackPlaneDataOps->space_grid_use_c_staggering)
 		SWEETError("Staggering not supported for l_exp_n_erk");
 

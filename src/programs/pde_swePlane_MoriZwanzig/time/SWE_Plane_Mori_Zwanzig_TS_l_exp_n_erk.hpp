@@ -26,8 +26,6 @@ class SWE_Plane_Mori_Zwanzig_TS_l_exp_n_erk	: public PDESWEPlaneMoriZwanzigTS_Ba
 
 	bool use_only_linear_divergence;
 
-	sweet::TimesteppingExplicitRKPlaneData timestepping_rk_P;
-
 	SWE_Plane_Mori_Zwanzig_TS_l_exp ts_l_exp;
 	SWE_Plane_Mori_Zwanzig_TS_n_erk ts_n_erk;
 

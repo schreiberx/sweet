@@ -58,10 +58,9 @@ public:
 	// modes[i][0] = [min_geostr, max_geostr]   --> min_geostr <= k < max_geostr
 	// modes[i][1] = [min_west, max_west]
 	// modes[i][2] = [min_east, max_east]
-	// i = 0 : SP
-	// i = 1 : SQ
-	// i = 2 : FQ
-	int modes[3][3][2];
+	// i = 0 : S
+	// i = 1 : F
+	int modes[2][3][2];
 
 	bool shackRegistration(sweet::ShackDictionary &io_dict)
 	{
@@ -93,7 +92,7 @@ public:
 						shackPlaneDataOps->plane_domain_size[1]
 					);
 
-		// define SP, SQ, FQ
+		// define S, F
 		this->modes[0][0][0] = this->shackPDESWEPlaneMZ->S_geostrophic_min;
 		this->modes[0][0][1] = this->shackPDESWEPlaneMZ->S_geostrophic_max;
 		this->modes[0][1][0] = this->shackPDESWEPlaneMZ->S_gravity_west_min;
@@ -206,16 +205,6 @@ public:
 
 		int wave_type_min = 0;
 		int wave_type_max = 2;
-		////if (projection_type == "SP" || projection_type == "SQ") // only R0
-		////{
-		////	wave_type_min = 0;
-		////	wave_type_max = 0;
-		////}
-		////else // R- and R+
-		////{
-		////	wave_type_min = 1;
-		////	wave_type_max = 2;
-		////}
 
 		for (int k1 = Kmin; k1 < Kmax; k1++)
 		{

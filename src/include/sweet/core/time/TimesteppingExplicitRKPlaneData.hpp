@@ -38,7 +38,6 @@ public:
 		runge_kutta_order = i_rk_order;
 		int N = i_rk_order;
 
-		std::cout << "AAAAAAAAAAA " << N << std::endl;
 		if (N <= 0 || N > 4)
 			SWEETError("Invalid order for RK time stepping (Please set --timestepping-order and/or --timestepping-order2)");
 
@@ -48,7 +47,6 @@ public:
 
 		for (int i = 0; i < N; i++)
 		{
-			std::cout << "DDDDDDDDDDDDD " << i << " " << N << std::endl;
 			RK_h_t[i] = new PlaneData_Spectral(i_planeDataConfig);
 			RK_u_t[i] = new PlaneData_Spectral(i_planeDataConfig);
 			RK_v_t[i] = new PlaneData_Spectral(i_planeDataConfig);

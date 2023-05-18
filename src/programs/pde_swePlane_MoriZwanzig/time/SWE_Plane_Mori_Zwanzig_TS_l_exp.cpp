@@ -189,9 +189,6 @@ void SWE_Plane_Mori_Zwanzig_TS_l_exp::run_timestep_real(
 
 
 void SWE_Plane_Mori_Zwanzig_TS_l_exp::runTimestep(
-///		sweet::PlaneData_Spectral &io_h,	///< prognostic variables
-///		sweet::PlaneData_Spectral &io_u,	///< prognostic variables
-///		sweet::PlaneData_Spectral &io_v,	///< prognostic variables
 
 		sweet::PlaneData_Spectral &io_h_pert_SP,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_u_SP,		///< prognostic variables

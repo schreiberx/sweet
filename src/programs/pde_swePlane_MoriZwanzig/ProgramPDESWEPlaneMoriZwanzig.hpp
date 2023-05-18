@@ -125,11 +125,15 @@ public:
 	};
 
 	// Simulation data
-	SimDataAndOps dataAndOps_SP;
-	SimDataAndOps dataAndOps_SQ;
-	SimDataAndOps dataAndOps_FQ;
-	SimDataAndOps dataAndOps_S;
-	SimDataAndOps dataAndOps_F;
+	SimDataAndOps dataAndOps_SP;		// U_S^P
+	SimDataAndOps dataAndOps_SQ;		// U_S^Q
+	SimDataAndOps dataAndOps_FQ;		// U_F^Q
+	SimDataAndOps dataAndOps_MZ_S;		// U_S^P + U_S^Q - U_S(t = 0)
+	SimDataAndOps dataAndOps_MZ_F;		// U_F^Q
+	SimDataAndOps dataAndOps_MZ;		// U_S^MZ + U_F^MZ
+	SimDataAndOps dataAndOps_S;		// U_S
+	SimDataAndOps dataAndOps_F;		// U_F
+	SimDataAndOps dataAndOps_SF;		// U_S + U_F
 	SimDataAndOps dataAndOps_dummy;
 
 
@@ -224,55 +228,6 @@ public:
 	};
 
 	BenchmarkErrors benchmarkErrors;
-
-#if 0
-	class NormalModesData
-	{
-	public:
-		sweet::ErrorBase error;
-
-		// Diagnostic information about the projection to
-		//    the linear normal wave mode eigenspace (see SWE_bench_normalmodes->hpp)
-
-		sweet::PlaneData_Spectral geo;    //Coefficients multiplying geostrophic mode
-		sweet::PlaneData_Spectral igwest; //Coefficients multiplying west gravity mode
-		sweet::PlaneData_Spectral igeast; //Coefficients multiplying east gravity mode
-		double norm_spec;
-
-		PDESWEPlaneNormalModes pdeSWEPlaneNormalModes;
-
-	public:
-		bool shackRegistration(sweet::ShackDictionary &io_dict)
-		{
-			pdeSWEPlaneNormalModes.shackRegistration(io_dict);
-			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(pdeSWEPlaneNormalModes);
-			return true;
-		}
-
-	public:
-		bool setup(
-			sweet::PlaneData_Config *planeDataConfig
-		)
-		{
-			geo.setup(planeDataConfig);
-			igwest.setup(planeDataConfig);
-			igeast.setup(planeDataConfig);
-
-			return true;
-		}
-
-	public:
-		bool clear()
-		{
-			geo.clear();
-			igwest.clear();
-			igeast.clear();
-			return true;
-		}
-	};
-
-	NormalModesData *normalmodes;
-#endif
 
 	/// Diagnostic measures at initial stage, Initialize with 0
 	double diagnostics_energy_start = 0;
@@ -403,14 +358,22 @@ public:
 		dataAndOps_SP.setup(shackPlaneDataOps);
 		dataAndOps_SQ.setup(shackPlaneDataOps);
 		dataAndOps_FQ.setup(shackPlaneDataOps);
+		dataAndOps_MZ_S.setup(shackPlaneDataOps);
+		dataAndOps_MZ_F.setup(shackPlaneDataOps);
+		dataAndOps_MZ.setup(shackPlaneDataOps);
 		dataAndOps_S.setup(shackPlaneDataOps);
 		dataAndOps_F.setup(shackPlaneDataOps);
+		dataAndOps_SF.setup(shackPlaneDataOps);
 		dataAndOps_dummy.setup(shackPlaneDataOps);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(dataAndOps_SP);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(dataAndOps_SQ);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(dataAndOps_FQ);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(dataAndOps_MZ_S);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(dataAndOps_MZ_F);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(dataAndOps_MZ);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(dataAndOps_S);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(dataAndOps_F);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(dataAndOps_SF);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(dataAndOps_dummy);
 
 		/*
@@ -439,6 +402,8 @@ public:
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(projection);
 
 		// copy and project initial solutions
+		// SP = SQ = S = proj_S
+		// FQ = F = proj_F
 		dataAndOps_SQ.prog_h_pert = dataAndOps_SP.prog_h_pert;
 		dataAndOps_SQ.prog_u = dataAndOps_SP.prog_u;
 		dataAndOps_SQ.prog_v = dataAndOps_SP.prog_v;
@@ -452,22 +417,38 @@ public:
 		projection.project_S(dataAndOps_SQ.prog_h_pert, dataAndOps_SQ.prog_u, dataAndOps_SQ.prog_v);
 		projection.project_F(dataAndOps_FQ.prog_h_pert, dataAndOps_FQ.prog_u, dataAndOps_FQ.prog_v);
 
+		dataAndOps_MZ_S.prog_h_pert = dataAndOps_SP.prog_h_pert;
+		dataAndOps_MZ_S.prog_u = dataAndOps_SP.prog_u;
+		dataAndOps_MZ_S.prog_v = dataAndOps_SP.prog_v;
+
+		dataAndOps_MZ_F.prog_h_pert = dataAndOps_FQ.prog_h_pert;
+		dataAndOps_MZ_F.prog_u = dataAndOps_FQ.prog_u;
+		dataAndOps_MZ_F.prog_v = dataAndOps_FQ.prog_v;
+
+		dataAndOps_MZ.prog_h_pert = dataAndOps_MZ_S.prog_h_pert + dataAndOps_MZ_F.prog_h_pert;
+		dataAndOps_MZ.prog_u = dataAndOps_MZ_S.prog_u + dataAndOps_MZ_F.prog_u;
+		dataAndOps_MZ.prog_v = dataAndOps_MZ_S.prog_v + dataAndOps_MZ_F.prog_v;
+
 		dataAndOps_S.prog_h_pert = dataAndOps_SP.prog_h_pert;
 		dataAndOps_S.prog_u = dataAndOps_SP.prog_u;
 		dataAndOps_S.prog_v = dataAndOps_SP.prog_v;
+
 		dataAndOps_F.prog_h_pert = dataAndOps_FQ.prog_h_pert;
 		dataAndOps_F.prog_u = dataAndOps_FQ.prog_u;
 		dataAndOps_F.prog_v = dataAndOps_FQ.prog_v;
 
-		std::cout << "ZZZZZZZZ " << (h_orig - dataAndOps_SP.prog_h_pert).spectral_reduce_sum_sq() << std::endl;
-		std::cout << "ZZZZZZZZ " << (h_orig - dataAndOps_SQ.prog_h_pert).spectral_reduce_sum_sq() << std::endl;
-		std::cout << "ZZZZZZZZ " << (h_orig - dataAndOps_FQ.prog_h_pert).spectral_reduce_sum_sq() << std::endl;
+		dataAndOps_SF.prog_h_pert = dataAndOps_S.prog_h_pert + dataAndOps_F.prog_h_pert;
+		dataAndOps_SF.prog_u = dataAndOps_S.prog_u + dataAndOps_F.prog_u;
+		dataAndOps_SF.prog_v = dataAndOps_S.prog_v + dataAndOps_F.prog_v;
 
-		dataAndOps_SP.t0_prog_h_pert = dataAndOps_SP.prog_h_pert;
-		dataAndOps_SQ.t0_prog_h_pert = dataAndOps_SQ.prog_h_pert;
-		dataAndOps_FQ.t0_prog_h_pert = dataAndOps_FQ.prog_h_pert;
 		dataAndOps_S.t0_prog_h_pert = dataAndOps_S.prog_h_pert;
-		dataAndOps_F.t0_prog_h_pert = dataAndOps_F.prog_h_pert;
+		dataAndOps_S.t0_prog_u = dataAndOps_S.prog_u;
+		dataAndOps_S.t0_prog_v = dataAndOps_S.prog_v;
+
+
+
+
+
 
 		/*
 		 * Finish registration & getting class interfaces so that nobody can do some
@@ -561,10 +542,14 @@ public:
 		dataAndOps_SP.clear();
 		dataAndOps_SQ.clear();
 		dataAndOps_FQ.clear();
+		dataAndOps_MZ_S.clear();
+		dataAndOps_MZ_F.clear();
+		dataAndOps_MZ.clear();
 		dataAndOps_S.clear();
 		dataAndOps_F.clear();
+		dataAndOps_SF.clear();
+
 	}
-	
 
 	bool setup()
 	{
@@ -608,59 +593,12 @@ public:
 	// Update diagnostic variables related to normal modes
 	void update_normal_modes()
 	{
-
-#if 0
-		if (!compute_normal_modes)
-			return;
-
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		// Setup planeDiagnostics for normal mode projection
-		normalmodes->pdeSWEPlaneNormalModes.convert_allspectralmodes_to_normalmodes(
-			dataAndOps.prog_h_pert, dataAndOps.prog_u, dataAndOps.prog_v,
-			normalmodes->geo, normalmodes->igwest, normalmodes->igeast
-		);
-
-		if (shackTimestepControl->current_timestep_nr == 0){
-			//save the reference normalization parameter
-			std::cout << normalmodes->geo.spectral_reduce_rms() << std::endl;
-			std::cout << normalmodes->igwest.spectral_reduce_rms() << std::endl;
-			std::cout << normalmodes->igeast.spectral_reduce_rms() << std::endl;
-
-			normalmodes->norm_spec = normalmodes->geo.spectral_reduce_sum_sqr_quad()+
-				normalmodes->igwest.spectral_reduce_sum_sqr_quad()+
-				normalmodes->igeast.spectral_reduce_sum_sqr_quad();
-
-			normalmodes->norm_spec=std::sqrt(normalmodes->norm_spec);
-
-			if (normalmodes->norm_spec < 10e-14 ){
-				normalmodes->norm_spec = 1.0;
-				return;
-			}
-
-		}
-		normalmodes->geo = normalmodes->geo / normalmodes->norm_spec;
-		normalmodes->igwest = normalmodes->igwest / normalmodes->norm_spec;
-		normalmodes->igeast = normalmodes->igeast / normalmodes->norm_spec;
-#endif
-
-#endif
 	}
 
 
 	//Update diagnostic variables related to normal modes
 	void dump_normal_modes()
 	{
-#if 0
-		if (!compute_normal_modes )
-			return;
-
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		PDESWEPlaneBench_NormalModes n;
-		n.dump_all_normal_modes(normalmodes->geo, normalmodes->igwest, normalmodes->igeast);
-#endif
-
-		return;
-#endif
 	}
 
 	//Calculate the model diagnostics
@@ -700,26 +638,6 @@ public:
 #endif
 	}
 
-
-
-/////	void normal_mode_analysis()
-/////	{
-/////#if 0
-/////		normalmodes->pdeSWEPlaneNormalModes.normal_mode_analysis(
-/////								dataAndOps.prog_h_pert,
-/////								dataAndOps.prog_u,
-/////								dataAndOps.prog_v,
-/////								3,
-/////								&shackProgArgDict,
-/////								this,
-/////								&ProgramPDESWEPlaneMoriZwanzig::runTimestep
-/////						);
-/////
-/////		std::cout << "\n Done normal mode analysis in separate class" << std::endl;
-/////#endif
-/////	}
-
-
 	/**
 	 * Execute a single simulation time step
 	 */
@@ -755,6 +673,21 @@ public:
 				shackTimestepControl->current_simulation_time
 			);
 
+		dataAndOps_MZ_S.prog_h_pert = dataAndOps_SP.prog_h_pert + dataAndOps_SQ.prog_h_pert - dataAndOps_S.t0_prog_h_pert;
+		dataAndOps_MZ_S.prog_u = dataAndOps_SP.prog_u + dataAndOps_SQ.prog_u - dataAndOps_S.t0_prog_u;
+		dataAndOps_MZ_S.prog_v = dataAndOps_SP.prog_v + dataAndOps_SQ.prog_v - dataAndOps_S.t0_prog_v;
+
+		dataAndOps_MZ_F.prog_h_pert = dataAndOps_FQ.prog_h_pert;
+		dataAndOps_MZ_F.prog_u = dataAndOps_FQ.prog_u;
+		dataAndOps_MZ_F.prog_v = dataAndOps_FQ.prog_v;
+
+		dataAndOps_MZ.prog_h_pert = dataAndOps_MZ_S.prog_h_pert + dataAndOps_MZ_F.prog_h_pert;
+		dataAndOps_MZ.prog_u = dataAndOps_MZ_S.prog_u + dataAndOps_MZ_F.prog_u;
+		dataAndOps_MZ.prog_v = dataAndOps_MZ_S.prog_v + dataAndOps_MZ_F.prog_v;
+
+		dataAndOps_SF.prog_h_pert = dataAndOps_S.prog_h_pert + dataAndOps_F.prog_h_pert;
+		dataAndOps_SF.prog_u = dataAndOps_S.prog_u + dataAndOps_F.prog_u;
+		dataAndOps_SF.prog_v = dataAndOps_S.prog_v + dataAndOps_F.prog_v;
 
 		shackTimestepControl->timestepHelperEnd();
 
@@ -854,7 +787,7 @@ public:
 
 		SimDataAndOps* dataAndOps;
 
-		std::vector<std::string> sol_cases = {"SP", "SQ", "FQ"};
+		std::vector<std::string> sol_cases = {"SP", "SQ", "FQ", "MZ_S", "MZ_F", "MZ", "S", "F", "SF"};
 		for (std::vector<std::string>::iterator it = sol_cases.begin(); it != sol_cases.end(); it++)
 		{
 			std::string sol_case = *it;
@@ -865,6 +798,18 @@ public:
 				dataAndOps = &dataAndOps_SQ;
 			else if (sol_case == "FQ")
 				dataAndOps = &dataAndOps_FQ;
+			else if (sol_case == "MZ_S")
+				dataAndOps = &dataAndOps_MZ_S;
+			else if (sol_case == "MZ_F")
+				dataAndOps = &dataAndOps_MZ_F;
+			else if (sol_case == "MZ")
+				dataAndOps = &dataAndOps_MZ;
+			else if (sol_case == "S")
+				dataAndOps = &dataAndOps_S;
+			else if (sol_case == "F")
+				dataAndOps = &dataAndOps_F;
+			else if (sol_case == "SF")
+				dataAndOps = &dataAndOps_SF;
 
 			if (shackPlaneDataOps->space_grid_use_c_staggering) // Remap in case of C-grid
 			{

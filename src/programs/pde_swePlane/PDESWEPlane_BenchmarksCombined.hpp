@@ -163,6 +163,20 @@ public:
 
 			return true;
 		}
+		else if (shackPDESWEPlaneBenchmarks->benchmark_name == "unstablejet_dimensionless")
+		{
+			std::cout << "AAAAAAA " << shackPlaneDataOps->plane_domain_size[0] << std::endl;;
+			PDESWEPlaneBench_UnstableJet swe_unstablejet;
+			swe_unstablejet.shackRegistration(shackDict);
+			swe_unstablejet.setup(io_ops, io_planeDataConfig);
+			swe_unstablejet.setupBenchmark(
+					o_h_pert,
+					o_u,
+					o_v
+			);
+
+			return true;
+		}
 		else if (shackPDESWEPlaneBenchmarks->benchmark_name == "unstablejet")
 		{
 			double r = 6.37122e6;

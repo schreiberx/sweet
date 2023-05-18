@@ -19,7 +19,6 @@
 #include <sweet/core/plane/PlaneOperators.hpp>
 #include <sweet/expIntegration/ShackExpIntegration.hpp>
 
-///#include "../../pde_swePlane/time/PDESWEPlaneTS_BaseInterface.hpp"
 #include "PDESWEPlaneMoriZwanzigTS_BaseInterface.hpp"
 #include "SWE_Plane_Mori_Zwanzig_TS_l_direct.hpp"
 
@@ -56,14 +55,6 @@ public:
 	);
 
 	void runTimestep(
-///			const sweet::PlaneData_Spectral &i_h_pert,	///< prognostic variables
-///			const sweet::PlaneData_Spectral &i_u,	///< prognostic variables
-///			const sweet::PlaneData_Spectral &i_v,	///< prognostic variables
-
-///			sweet::PlaneData_Spectral &o_h_pert,	///< prognostic variables
-///			sweet::PlaneData_Spectral &o_u,	///< prognostic variables
-///			sweet::PlaneData_Spectral &o_v,	///< prognostic variables
-
 			const sweet::PlaneData_Spectral &i_h_pert_SP,		///< prognostic variables
 			const sweet::PlaneData_Spectral &i_u_SP,		///< prognostic variables
 			const sweet::PlaneData_Spectral &i_v_SP,		///< prognostic variables
@@ -94,13 +85,6 @@ public:
 
 
 	void run_timestep_real(
-//			const sweet::PlaneData_Spectral &i_h_pert,	///< prognostic variables
-//			const sweet::PlaneData_Spectral &i_u,	///< prognostic variables
-//			const sweet::PlaneData_Spectral &i_v,	///< prognostic variables
-//
-//			sweet::PlaneData_Spectral &o_h_pert,	///< prognostic variables
-//			sweet::PlaneData_Spectral &o_u,	///< prognostic variables
-//			sweet::PlaneData_Spectral &o_v,	///< prognostic variables
 
 			const sweet::PlaneData_Spectral &i_h_pert_SP,		///< prognostic variables
 			const sweet::PlaneData_Spectral &i_u_SP,		///< prognostic variables
@@ -131,9 +115,6 @@ public:
 	);
 
 	void runTimestep(
-///			sweet::PlaneData_Spectral &io_h_pert,	///< prognostic variables
-///			sweet::PlaneData_Spectral &io_u,	///< prognostic variables
-///			sweet::PlaneData_Spectral &io_v,	///< prognostic variables
 
 			sweet::PlaneData_Spectral &io_h_pert_SP,	///< prognostic variables
 			sweet::PlaneData_Spectral &io_u_SP,		///< prognostic variables

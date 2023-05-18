@@ -86,29 +86,49 @@ class Mori_Zwanzig:
     def getRuntimeOptions(self):
         retRuntimeOptionsStr = ''
 
-        ## XBraid parameters
-        retRuntimeOptionsStr += " --MZ-S-geostr-min="             + str(self.MZ_S_geostrophic_min)
-        retRuntimeOptionsStr += " --MZ-S-geostr-max="             + str(self.MZ_S_geostrophic_max)
-        retRuntimeOptionsStr += " --MZ-S-gw-min="                 + str(self.MZ_S_gravity_west_min)
-        retRuntimeOptionsStr += " --MZ-S-gw-max="                 + str(self.MZ_S_gravity_west_max)
-        retRuntimeOptionsStr += " --MZ-S-ge-min="                 + str(self.MZ_S_gravity_east_min)
-        retRuntimeOptionsStr += " --MZ-S-ge-max="                 + str(self.MZ_S_gravity_east_max)
+        ## MZ parameters
+        if self.MZ_S_geostrophic_min != None:
+            retRuntimeOptionsStr += " --MZ-S-geostr-min="             + str(self.MZ_S_geostrophic_min)
+        if self.MZ_S_geostrophic_max != None:
+            retRuntimeOptionsStr += " --MZ-S-geostr-max="             + str(self.MZ_S_geostrophic_max)
+        if self.MZ_S_gravity_west_min != None:
+            retRuntimeOptionsStr += " --MZ-S-gw-min="                 + str(self.MZ_S_gravity_west_min)
+        if self.MZ_S_gravity_west_max != None:
+            retRuntimeOptionsStr += " --MZ-S-gw-max="                 + str(self.MZ_S_gravity_west_max)
+        if self.MZ_S_gravity_east_min != None:
+            retRuntimeOptionsStr += " --MZ-S-ge-min="                 + str(self.MZ_S_gravity_east_min)
+        if self.MZ_S_gravity_east_max != None:
+            retRuntimeOptionsStr += " --MZ-S-ge-max="                 + str(self.MZ_S_gravity_east_max)
 
-        retRuntimeOptionsStr += " --MZ-F-geostr-min="             + str(self.MZ_F_geostrophic_min)
-        retRuntimeOptionsStr += " --MZ-F-geostr-max="             + str(self.MZ_F_geostrophic_max)
-        retRuntimeOptionsStr += " --MZ-F-gw-min="                 + str(self.MZ_F_gravity_west_min)
-        retRuntimeOptionsStr += " --MZ-F-gw-max="                 + str(self.MZ_F_gravity_west_max)
-        retRuntimeOptionsStr += " --MZ-F-ge-min="                 + str(self.MZ_F_gravity_east_min)
-        retRuntimeOptionsStr += " --MZ-F-ge-max="                 + str(self.MZ_F_gravity_east_max)
+        if self.MZ_F_geostrophic_min != None:
+            retRuntimeOptionsStr += " --MZ-F-geostr-min="             + str(self.MZ_F_geostrophic_min)
+        if self.MZ_F_geostrophic_max != None:
+            retRuntimeOptionsStr += " --MZ-F-geostr-max="             + str(self.MZ_F_geostrophic_max)
+        if self.MZ_F_gravity_west_min != None:
+            retRuntimeOptionsStr += " --MZ-F-gw-min="                 + str(self.MZ_F_gravity_west_min)
+        if self.MZ_F_gravity_west_max != None:
+            retRuntimeOptionsStr += " --MZ-F-gw-max="                 + str(self.MZ_F_gravity_west_max)
+        if self.MZ_F_gravity_east_min != None:
+            retRuntimeOptionsStr += " --MZ-F-ge-min="                 + str(self.MZ_F_gravity_east_min)
+        if self.MZ_F_gravity_east_max != None:
+            retRuntimeOptionsStr += " --MZ-F-ge-max="                 + str(self.MZ_F_gravity_east_max)
 
-        retRuntimeOptionsStr += " --MZ-epsilon="                   + str(self.MZ_epsilon)
-        retRuntimeOptionsStr += " --MZ-F="                         + str(self.MZ_F)
-        retRuntimeOptionsStr += " --MZ-timestepping-method-P="     + str(self.MZ_timestepping_method_P)
-        retRuntimeOptionsStr += " --MZ-timestepping-method-Q="     + str(self.MZ_timestepping_method_Q)
-        retRuntimeOptionsStr += " --MZ-timestepping-order-P="      + str(self.MZ_timestepping_order_P)
-        retRuntimeOptionsStr += " --MZ-timestepping-order-Q="      + str(self.MZ_timestepping_order_Q)
-        retRuntimeOptionsStr += " --MZ-timestepping-order2-P="     + str(self.MZ_timestepping_order2_P)
-        retRuntimeOptionsStr += " --MZ-timestepping-order2-Q="     + str(self.MZ_timestepping_order2_Q)
+        if self.MZ_epsilon != None:
+            retRuntimeOptionsStr += " --MZ-epsilon="                   + str(self.MZ_epsilon)
+        if self.MZ_F != None:
+            retRuntimeOptionsStr += " --MZ-F="                         + str(self.MZ_F)
+        if self.MZ_timestepping_method_P != None:
+            retRuntimeOptionsStr += " --MZ-timestepping-method-P="     + str(self.MZ_timestepping_method_P)
+        if self.MZ_timestepping_method_Q != None:
+            retRuntimeOptionsStr += " --MZ-timestepping-method-Q="     + str(self.MZ_timestepping_method_Q)
+        if self.MZ_timestepping_order_P != None:
+            retRuntimeOptionsStr += " --MZ-timestepping-order-P="      + str(self.MZ_timestepping_order_P)
+        if self.MZ_timestepping_order_Q != None:
+            retRuntimeOptionsStr += " --MZ-timestepping-order-Q="      + str(self.MZ_timestepping_order_Q)
+        if self.MZ_timestepping_order2_P != None:
+            retRuntimeOptionsStr += " --MZ-timestepping-order2-P="     + str(self.MZ_timestepping_order2_P)
+        if self.MZ_timestepping_order2_Q != None:
+            retRuntimeOptionsStr += " --MZ-timestepping-order2-Q="     + str(self.MZ_timestepping_order2_Q)
 
 
         return retRuntimeOptionsStr

@@ -60,31 +60,25 @@ int main_mpi(int i_argc, char *i_argv[])
 		simulation.shackTimestepControl->validateMaxSimulationTimeOrTimestepNr();
 		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(*(simulation.shackTimestepControl));
 
-		////if (simulation.shackPDESWEPlane->normal_mode_analysis_generation > 0)
-		////{
-		////	simulation.normal_mode_analysis();
-		////}
-		////else
-		////{
-			StopwatchBox::getInstance().main_timestepping.start();
+		StopwatchBox::getInstance().main_timestepping.start();
 
-			simulation.timestep_do_output();
-			///std::cout << "CHECKING STABILITY" << std::endl;
-			simulation.instability_detected();
-			while (!simulation.should_quit())
+		simulation.timestep_do_output();
+		///std::cout << "CHECKING STABILITY" << std::endl;
+		simulation.instability_detected();
+		while (!simulation.should_quit())
+		{
+			simulation.runTimestep();
+
+			// Instability
+			if (simulation.shackPDESWEPlane->instability_checks)
 			{
-				simulation.runTimestep();
-
-				// Instability
-				if (simulation.shackPDESWEPlane->instability_checks)
-				{
-					if (simulation.instability_detected())
-						SWEETError("INSTABILITY DETECTED");
-				}
+				if (simulation.instability_detected())
+					SWEETError("INSTABILITY DETECTED");
 			}
+		}
 
-			StopwatchBox::getInstance().main_timestepping.stop();
-		////}
+		StopwatchBox::getInstance().main_timestepping.stop();
+
 		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
 	}
 
