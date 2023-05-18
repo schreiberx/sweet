@@ -4,7 +4,7 @@
 
 #include <sweet/timeNew/DESolver_TimeTreeNode_Base.hpp>
 #include <sweet/timeNew/DESolver_DataContainer_Base.hpp>
-#include "MyDataContainer.hpp"
+#include "PDESWESphere_DataContainer.hpp"
 
 #include "../pde_sweSphere/ShackPDESWESphere.hpp"
 #include <sweet/core/ErrorBase.hpp>
@@ -12,13 +12,11 @@
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
 #include <sweet/core/sphere/SphereData_Physical.hpp>
 
+#include "PDESWESphere_DESolver_Config.hpp"
 
 class PDESWESphere_lc	:
 		public sweet::DESolver_TimeTreeNode_Base
 {
-public:
-	sweet::ErrorBase error;
-
 private:
 	ShackPDESWESphere *shackPDESWESphere;
 	const sweet::SphereOperators *ops;
@@ -41,15 +39,15 @@ public:
 
 private:
 	static inline
-	MyDataContainer& cast(sweet::DESolver_DataContainer_Base &i_U)
+	PDESWESphere_DataContainer& cast(sweet::DESolver_DataContainer_Base &i_U)
 	{
-		return static_cast<MyDataContainer&>(i_U);
+		return static_cast<PDESWESphere_DataContainer&>(i_U);
 	}
 
 	static inline
-	const MyDataContainer& cast(const sweet::DESolver_DataContainer_Base &i_U)
+	const PDESWESphere_DataContainer& cast(const sweet::DESolver_DataContainer_Base &i_U)
 	{
-		return static_cast<const MyDataContainer&>(i_U);
+		return static_cast<const PDESWESphere_DataContainer&>(i_U);
 	}
 
 public:
@@ -78,22 +76,27 @@ public:
 		return std::shared_ptr<sweet::DESolver_TimeTreeNode_Base>(new PDESWESphere_lc);
 	}
 
+	const PDESWESphere_DESolver_Config& cast(
+			const sweet::DESolver_Config_Base& i_deTermConfig
+	)
+	{
+		return static_cast<const PDESWESphere_DESolver_Config&>(i_deTermConfig);
+	}
+
 	virtual
 	bool setupConfig(
 		const sweet::DESolver_Config_Base &i_deTermConfig
 	) override
 	{
-		//const PDESWESphere_DESolver_Config& myConfig = cast(i_deTermConfig);
-/*
- * 		ops = io_ops;
+		const PDESWESphere_DESolver_Config& myConfig = cast(i_deTermConfig);
+
+ 		ops = myConfig.ops;
 
 		if (shackPDESWESphere->sphere_use_fsphere)
 			fg = ops->getFG_fSphere(shackPDESWESphere->sphere_fsphere_f0);
 		else
 			fg = ops->getFG_rotatingSphere(shackPDESWESphere->sphere_rotating_coriolis_omega);
 
- *
- */
 		return true;
 	}
 
@@ -118,8 +121,8 @@ public:
 	)	override
 	{
 		// TODO: Move to setup
-		sweet::SphereData_Physical ug(cast(i_U).phi.sphereDataConfig);
-		sweet::SphereData_Physical vg(cast(i_U).phi.sphereDataConfig);
+		sweet::SphereData_Physical ug(cast(i_U).phi_pert.sphereDataConfig);
+		sweet::SphereData_Physical vg(cast(i_U).phi_pert.sphereDataConfig);
 
 		/*
 		 * step 1a
@@ -152,7 +155,7 @@ public:
 		 * step 2a
 		 * Zero tendencies
 		 */
-		cast(o_U).phi.spectral_set_zero();
+		cast(o_U).phi_pert.spectral_set_zero();
 	}
 
 	/*

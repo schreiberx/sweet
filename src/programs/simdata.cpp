@@ -14,19 +14,19 @@
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
 #include <sweet/core/ErrorBase.hpp>
 
-#include "simdata/MyDataContainer.hpp"
-
 #include <sweet/timeNew/DESolver_TimeTreeNode_Base.hpp>
 #include <sweet/timeNew/DESolver_TimeStepperRegistryAll.hpp>
 #include <sweet/timeNew/DESolver_TimeTreeNode_Registry.hpp>
-#include "simdata/PDESWESphere_lg.hpp"
-#include "simdata/PDESWESphere_lc.hpp"
 
 
 #include <sweet/timeNew/DESolver_TimeStepping_StringParser.hpp>
 #include <sweet/timeNew/DESolver_TimeStepping_Tree.hpp>
 #include <sweet/timeNew/DESolver_TimeStepping_Assemblation.hpp>
 
+#include "simdata/PDESWESphere_lg.hpp"
+#include "simdata/PDESWESphere_lc.hpp"
+#include "simdata/PDESWESphere_DataContainer.hpp"
+#include "simdata/PDESWESphere_DESolver_Config.hpp"
 
 class ShackTimeSteppingMethod :
 		public sweet::ShackInterface
@@ -78,8 +78,8 @@ private:
 	sweet::SphereData_Config sphereDataConfig;
 	sweet::SphereOperators ops;
 
-	MyDataContainer U;
-	MyDataContainer U_tmp;
+	PDESWESphere_DataContainer U;
+	PDESWESphere_DataContainer U_tmp;
 
 public:
 	DESolver()	:
@@ -115,7 +115,7 @@ public:
 	bool setup_3_data()
 	{
 		U.setup(&sphereDataConfig);
-		U.phi.spectral_set_zero();
+		U.phi_pert.spectral_set_zero();
 		U.vrt.spectral_set_zero();
 		U.div.spectral_set_zero();
 
@@ -124,16 +124,15 @@ public:
 		return true;
 	}
 
+	sweet::DESolver_TimeStepping_Tree tsTree;
 	std::shared_ptr<sweet::DESolver_TimeTreeNode_Base> timeStepper;
 
 	bool setup_4_timestepper()
 	{
-#if 1
 		/*
 		 * Setup time stepping string parser and parse it
 		 */
 		sweet::DESolver_TimeSteppingStringParser tsStringParser;
-		sweet::DESolver_TimeStepping_Tree tsTree;
 
 		tsStringParser.genTimeSteppingTree(
 				shackTimeSteppingMethod->timestepping_method,
@@ -170,38 +169,17 @@ public:
 
 		timeStepper->shackRegistration(&shackProgArgDict);
 
-		timeStepper->setupOpsAndDataContainers(&ops, U);
+		PDESWESphere_DESolver_Config solverConfig;
+		solverConfig.myDataContainer = &U;
+		solverConfig.ops = &ops;
+
+		timeStepper->setupConfig(solverConfig);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*timeStepper);
 
 		/*
 		 * Set time step size
 		 */
-		timeStepper->setTimestepSize(0.1);
-
-#else
-
-		for (int rk_order = 1; rk_order <= 4; rk_order++)
-		{
-			std::cout << "testing rk_order: " << rk_order << std::endl;
-
-			std::shared_ptr<sweet::DESolver_DETerm_Base> pde_term_lg;
-
-			/*
-			 * Register
-			 */
-			pde_term_lg = std::shared_ptr<sweet::DESolver_DETerm_Base>(new MyDETerm_lg);
-			pde_term_lg->shackRegistration(&shackProgArgDict);
-			pde_term_lg->setup(&ops, U);
-
-			timeStepper = std::make_shared<DESolver_TimeStepper_ExplicitRungeKutta>();
-			timeStepper->shackRegistration(&shackProgArgDict);
-
-			DESolver_TimeStepper_ExplicitRungeKutta *_ERK = static_cast<DESolver_TimeStepper_ExplicitRungeKutta*>(timeStepper.get());
-			_ERK->setupWithArguments(pde_term_lg, rk_order);
-			timeStepper->setTimestepSize(0.1);
-			timeStepper->setupDataContainers(U);
-		}
-#endif
+		timeStepper->setTimeStepSize(0.1);
 
 		return true;
 	}

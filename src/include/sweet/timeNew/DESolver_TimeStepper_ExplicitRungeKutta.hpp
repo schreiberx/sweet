@@ -36,8 +36,7 @@ private:
 	ERKMethod _rkMethodID;
 
 	// DE term to evaluate
-	std::shared_ptr<DESolver_TimeTreeNode_Base> _timeFunTerm;
-	std::shared_ptr<DESolver_TimeTreeNode_Base> &_deTerm = _timeFunTerm;
+	std::shared_ptr<DESolver_TimeTreeNode_Base> _timeTreeNode;
 
 
 	// Order of Runge-Kutta method
@@ -82,18 +81,18 @@ public:
 			sweet::ShackDictionary *io_shackDict
 	)	override
 	{
-		_timeFunTerm->shackRegistration(io_shackDict);
-		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(*_timeFunTerm);
+		_timeTreeNode->shackRegistration(io_shackDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*_timeTreeNode);
 
 		return true;
 	}
 
 	bool _setupArgumentInternals()
 	{
-		if (_timeFunTerm == nullptr)
+		if (_timeTreeNode == nullptr)
 			return error.set("Some time node term needs to be given"+getNewLineDebugMessage());
 
-		if (!_timeFunTerm->isEvalAvailable("eval_tendencies"))
+		if (!_timeTreeNode->isEvalAvailable("eval_tendencies"))
 			return error.set("eval_tendencies not available in DE term");
 
 		_rkMethodID = INVALID;
@@ -185,10 +184,10 @@ public:
 				// continue with ARG_TYPE_FUNCTION
 
 			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_FUNCTION:
-				if (_timeFunTerm != nullptr)
+				if (_timeTreeNode != nullptr)
 					return error.set("a 2nd timestepper was provided!"+a->getNewLineDebugMessage());
 
-				i_tsAssemblation.assembleTimeTreeNodeByFunction(a->function, _timeFunTerm);
+				i_tsAssemblation.assembleTimeTreeNodeByFunction(a->function, _timeTreeNode);
 				ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(i_tsAssemblation);
 				break;
 #endif
@@ -212,12 +211,12 @@ public:
 
 			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_VALUE:
 
-				if (_timeFunTerm != nullptr)
+				if (_timeTreeNode != nullptr)
 					return error.set("Only one DETerm is supported"+a->getNewLineDebugMessage());
 
 				i_tsAssemblation.assembleTimeTreeNodeByName(
 						a->value,
-						_deTerm
+						_timeTreeNode
 					);
 				ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*a);
 				break;
@@ -238,8 +237,8 @@ public:
 		const sweet::DESolver_Config_Base &i_deConfig
 	) override
 	{
-		_deTerm->setupConfig(i_deConfig);
-		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*_deTerm);
+		_timeTreeNode->setupConfig(i_deConfig);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*_timeTreeNode);
 
 		clear();
 
@@ -285,7 +284,7 @@ public:
 		_timestep_size = i_dt;
 
 		// Not required for explicit time stepper, but we do it
-		_deTerm->setTimeStepSize(i_dt);
+		_timeTreeNode->setTimeStepSize(i_dt);
 	}
 
 	void eval_timeIntegration(
@@ -314,7 +313,7 @@ private:
 			double i_simulation_time
 	)
 	{
-		_deTerm->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
+		_timeTreeNode->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
 
 		o_U.op_setVectorPlusScalarMulVector(i_U, _timestep_size, *_rkStageDataContainer[0]);
 	}
@@ -326,7 +325,7 @@ private:
 			double i_simulation_time
 	)
 	{
-		_deTerm->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
+		_timeTreeNode->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
 
 		o_U.op_setVectorPlusScalarMulVector(i_U, _timestep_size, *_rkStageDataContainer[0]);
 
@@ -345,14 +344,14 @@ private:
 		double c[1] = {0.5};
 
 		// STAGE 1
-		_deTerm->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
+		_timeTreeNode->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
 
 		// STAGE 2
 		_rkTmpDataContainer[0]->op_setVectorPlusScalarMulVector(
 				i_U, dt*a2[0], *_rkStageDataContainer[0]
 		);
 
-		_deTerm->eval_tendencies(
+		_timeTreeNode->eval_tendencies(
 				*_rkTmpDataContainer[0],
 				*_rkStageDataContainer[1],
 				i_simulation_time + c[0]*dt
@@ -368,7 +367,7 @@ private:
 			double i_simulation_time
 	)
 	{
-		_deTerm->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
+		_timeTreeNode->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
 
 		o_U.op_setVectorPlusScalarMulVector(i_U, _timestep_size, *_rkStageDataContainer[0]);
 
@@ -386,14 +385,14 @@ private:
 		double c[1] = {1.0};
 
 		// STAGE 1
-		_deTerm->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
+		_timeTreeNode->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
 
 		// STAGE 2
 		_rkTmpDataContainer[0]->op_setVectorPlusScalarMulVector(
 				i_U, dt*a2[0], *_rkStageDataContainer[0]
 		);
 
-		_deTerm->eval_tendencies(
+		_timeTreeNode->eval_tendencies(
 				*_rkTmpDataContainer[0],
 				*_rkStageDataContainer[1],
 				i_simulation_time + c[0]*dt
@@ -411,7 +410,7 @@ private:
 			double i_simulation_time
 	)
 	{
-		_deTerm->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
+		_timeTreeNode->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
 
 		o_U.op_setVectorPlusScalarMulVector(i_U, _timestep_size, *_rkStageDataContainer[0]);
 
@@ -433,14 +432,14 @@ private:
 		double c[1] = {2.0/3.0};
 
 		// STAGE 1
-		_deTerm->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
+		_timeTreeNode->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
 
 		// STAGE 2
 		_rkTmpDataContainer[0]->op_setVectorPlusScalarMulVector(
 				i_U, dt*a2[0], *_rkStageDataContainer[0]
 		);
 
-		_deTerm->eval_tendencies(
+		_timeTreeNode->eval_tendencies(
 				*_rkTmpDataContainer[0],
 				*_rkStageDataContainer[1],
 				i_simulation_time + c[0]*dt
@@ -458,7 +457,7 @@ private:
 			double i_simulation_time
 	)
 	{
-		_deTerm->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
+		_timeTreeNode->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
 
 		o_U.op_setVectorPlusScalarMulVector(i_U, _timestep_size, *_rkStageDataContainer[0]);
 
@@ -482,14 +481,14 @@ private:
 		double c[1] = {3.0/4.0};
 
 		// STAGE 1
-		_deTerm->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
+		_timeTreeNode->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
 
 		// STAGE 2
 		_rkTmpDataContainer[0]->op_setVectorPlusScalarMulVector(
 				i_U, dt*a2[0], *_rkStageDataContainer[0]
 		);
 
-		_deTerm->eval_tendencies(
+		_timeTreeNode->eval_tendencies(
 				*_rkTmpDataContainer[0],
 				*_rkStageDataContainer[1],
 				i_simulation_time + c[0]*dt
@@ -522,14 +521,14 @@ private:
 		double c[2] = {1.0/3.0, 2.0/3.0};
 
 		// STAGE 1
-		_deTerm->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
+		_timeTreeNode->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
 
 		// STAGE 2
 		_rkTmpDataContainer[0]->op_setVectorPlusScalarMulVector(
 				i_U, dt*a2[0], *_rkStageDataContainer[0]
 		);
 
-		_deTerm->eval_tendencies(
+		_timeTreeNode->eval_tendencies(
 				*_rkTmpDataContainer[0],
 				*_rkStageDataContainer[1],
 				i_simulation_time + c[0]*dt
@@ -540,7 +539,7 @@ private:
 				i_U, dt*a3[1], *_rkStageDataContainer[1]
 		);
 
-		_deTerm->eval_tendencies(
+		_timeTreeNode->eval_tendencies(
 				*_rkTmpDataContainer[0],
 				*_rkStageDataContainer[2],
 				i_simulation_time + c[1]*dt
@@ -577,13 +576,13 @@ private:
 		double c[3] = {0.5, 0.5, 1.0};
 
 		// STAGE 1
-		_deTerm->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
+		_timeTreeNode->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
 
 		// STAGE 2
 		_rkTmpDataContainer[0]->op_setVectorPlusScalarMulVector(
 				i_U, dt*a2[0], *_rkStageDataContainer[0]
 		);
-		_deTerm->eval_tendencies(
+		_timeTreeNode->eval_tendencies(
 				*_rkTmpDataContainer[0],
 				*_rkStageDataContainer[1],
 				i_simulation_time + c[0]*dt
@@ -593,7 +592,7 @@ private:
 		_rkTmpDataContainer[0]->op_setVectorPlusScalarMulVector(
 				i_U, dt*a3[1], *_rkStageDataContainer[1]
 		);
-		_deTerm->eval_tendencies(
+		_timeTreeNode->eval_tendencies(
 				*_rkTmpDataContainer[0],
 				*_rkStageDataContainer[2],
 				i_simulation_time + c[1]*dt
@@ -604,7 +603,7 @@ private:
 		_rkTmpDataContainer[0]->op_setVectorPlusScalarMulVector(
 				i_U, dt*a4[2], *_rkStageDataContainer[2]
 		);
-		_deTerm->eval_tendencies(
+		_timeTreeNode->eval_tendencies(
 				*_rkTmpDataContainer[0],
 				*_rkStageDataContainer[3],
 				i_simulation_time + c[2]*dt

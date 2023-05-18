@@ -1,5 +1,5 @@
 /*
- * MyDataContainer.hpp
+ * PDESWESphere_DataContainer.hpp
  */
 
 #ifndef SRC_PROGRAMS_SIMDATA_MYDATACONTAINER_HPP_
@@ -11,7 +11,7 @@
 
 
 
-class MyDataContainer :
+class PDESWESphere_DataContainer :
 	public sweet::DESolver_DataContainer_Base
 {
 public:
@@ -21,33 +21,33 @@ public:
 	sweet::SphereData_Spectral data[Ndofs];
 
 	// Note, that these references don't increase the size of the class
-	sweet::SphereData_Spectral& phi = data[0];
+	sweet::SphereData_Spectral& phi_pert = data[0];
 	sweet::SphereData_Spectral& vrt = data[1];
 	sweet::SphereData_Spectral& div = data[2];
 
 public:
-	MyDataContainer()
+	PDESWESphere_DataContainer()
 	{
 	}
 
 public:
-	~MyDataContainer() override
+	~PDESWESphere_DataContainer() override
 	{
 		clear();
 	}
 
 private:
 	static inline
-	MyDataContainer& cast(sweet::DESolver_DataContainer_Base &i_U)
+	PDESWESphere_DataContainer& cast(sweet::DESolver_DataContainer_Base &i_U)
 	{
-		return static_cast<MyDataContainer&>(i_U);
+		return static_cast<PDESWESphere_DataContainer&>(i_U);
 	}
 
 private:
 	static inline
-	const MyDataContainer& cast(const sweet::DESolver_DataContainer_Base &i_U)
+	const PDESWESphere_DataContainer& cast(const sweet::DESolver_DataContainer_Base &i_U)
 	{
-		return static_cast<const MyDataContainer&>(i_U);
+		return static_cast<const PDESWESphere_DataContainer&>(i_U);
 	}
 
 public:
@@ -64,7 +64,7 @@ public:
 		const sweet::DESolver_DataContainer_Base &i_a
 	) override
 	{
-		const MyDataContainer &i_d = static_cast<const MyDataContainer&>(i_a);
+		const PDESWESphere_DataContainer &i_d = static_cast<const PDESWESphere_DataContainer&>(i_a);
 
 		for (int i = 0; i < Ndofs; i++)
 			data[i].setup(i_d.data[i].sphereDataConfig);
@@ -72,7 +72,7 @@ public:
 
 	DESolver_DataContainer_Base* getNewInstance() const override
 	{
-		MyDataContainer *retval = new MyDataContainer;
+		PDESWESphere_DataContainer *retval = new PDESWESphere_DataContainer;
 		retval->setup_like(*this);
 
 		return retval;

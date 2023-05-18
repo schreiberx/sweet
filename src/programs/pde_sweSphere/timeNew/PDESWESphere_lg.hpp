@@ -7,7 +7,7 @@
 #include <sweet/timeNew/DESolver_Config_Base.hpp>
 #include "PDESWESphere_DataContainer.hpp"
 
-#include "../pde_sweSphere/ShackPDESWESphere.hpp"
+#include "../ShackPDESWESphere.hpp"
 #include <sweet/core/ErrorBase.hpp>
 #include <sweet/core/sphere/SphereOperators.hpp>
 
@@ -112,6 +112,7 @@ private:
 	)	override
 	{
 		assert(ops != nullptr);
+		assert(shackPDESWESphere != nullptr);
 
 		const PDESWESphere_DataContainer &i = cast(i_u);
 		PDESWESphere_DataContainer &o = cast(o_u);
