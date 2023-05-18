@@ -22,6 +22,22 @@ public:
 
 public:
 	virtual
+	void op_setZero() = 0;
+
+public:
+	virtual
+	void op_setVector(
+			const DESolver_DataContainer_Base &i_a
+		) = 0;
+
+public:
+	virtual
+	void op_addVector(
+			const DESolver_DataContainer_Base &i_a
+		) = 0;
+
+public:
+	virtual
 	void op_setVectorPlusVector(
 			const DESolver_DataContainer_Base &i_a,
 			const DESolver_DataContainer_Base &i_b

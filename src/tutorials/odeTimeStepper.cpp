@@ -7,18 +7,15 @@
 
 #include <sweet/timeNew/DESolver_Config_Base.hpp>
 
-// Terms of differential equation
-#include <sweet/timeNew/DESolver_DETerm_Base.hpp>
-#include <sweet/timeNew/DESolver_DETerm_Registry.hpp>
-
 #include <sweet/timeNew/DESolver_TimeStepping_Assemblation.hpp>
 #include <sweet/timeNew/DESolver_TimeStepping_StringParser.hpp>
 #include <sweet/timeNew/DESolver_TimeStepping_Tree.hpp>
 
 // Terms of time stepper
-#include <sweet/timeNew/DESolver_TimeStepper_Base.hpp>
-#include <sweet/timeNew/DESolver_TimeStepper_Registry.hpp>
-#include <sweet/timeNew/DESolver_TimeStepper_ExplicitRungeKutta.hpp>
+
+#include <sweet/timeNew/DESolver_TimeTreeNode_Base.hpp>
+#include <sweet/timeNew/DESolver_TimeTreeNode_Registry.hpp>
+#include <sweet/timeNew/DESolver_TimeStepperRegistryAll.hpp>
 
 
 #include <algorithm>
@@ -37,21 +34,20 @@ public:
 	{
 	}
 
-	void setup(int i_degree)
+	void setup(int i_degree, double i_multiplier)
 	{
 		alphas.resize(i_degree);
 
 		for (std::size_t i = 0; i < alphas.size(); i++)
 		{
-			alphas[i] = 1.0/(double)(i+1.0);
-			alphas[i] = i+1.0;
+			alphas[i] = 1.0/(double)(i+1.0)*i_multiplier;
 		}
 	}
 
 	/**
 	 * Evaluate polynomial
 	 */
-	double eval(double i_x)
+	double eval(double i_t)
 	{
 		double acc = 0;
 		double x_pow = 1.0;
@@ -59,7 +55,7 @@ public:
 		for (std::size_t i = 0; i < alphas.size(); i++)
 		{
 			acc += alphas[i]*x_pow;
-			x_pow *= i_x;
+			x_pow *= i_t;
 		}
 
 		return acc;
@@ -101,33 +97,40 @@ class ShackODETimeStepper :
 public:
 	/// String of time stepping method
 	std::string timeSteppingString;
+
+	double timeStepSize;
+
 	int polynomialDegree;
+
+	int numPolynomials;
 
 	ShackODETimeStepper()	:
 		timeSteppingString(""),
+		timeStepSize(0.25),
 		polynomialDegree(4)
 	{
-
 	}
 
 	void printProgramArguments(const std::string& i_prefix = "")
 	{
 		std::cout << "ShackOdeTimeStepper:" << std::endl;
-		std::cout << "	--timestepping-method [string]	String of time stepping method" << std::endl;
+		std::cout << "	--time-stepping-method [string]	String of time stepping method" << std::endl;
+		std::cout << "	--time-step-size [double]	Size of time step" << std::endl;
 		std::cout << "	--polynomial-degree [int]	Degree of polynomial to use for time stepping" << std::endl;
+		std::cout << "	--num-polynomials [int]	Number of polynomials for functions 'f', 'g' and 'h'" << std::endl;
 	}
 
 	bool processProgramArguments(sweet::ProgramArguments &i_pa)
 	{
-		i_pa.getArgumentValueByKey("--timestepping-method", timeSteppingString);
-
+		i_pa.getArgumentValueByKey("--time-stepping-method", timeSteppingString);
+		i_pa.getArgumentValueByKey("--time-step-size", timeStepSize);
 		i_pa.getArgumentValueByKey("--polynomial-degree", polynomialDegree);
+		i_pa.getArgumentValueByKey("--num-polynomials", numPolynomials);
 
 		if (i_pa.error.exists())
 			return error.forwardWithPositiveReturn(i_pa.error);
 
 		return true;
-
 	}
 
 	virtual void printShack(
@@ -137,7 +140,9 @@ public:
 		std::cout << std::endl;
 		std::cout << "ODE TIME STEPPER:" << std::endl;
 		std::cout << " + timeSteppingString: " << timeSteppingString << std::endl;
+		std::cout << " + timeStepSize: " << timeStepSize << std::endl;
 		std::cout << " + polynomialDegree: " << polynomialDegree << std::endl;
+		std::cout << " + numPolynomials: " << numPolynomials << std::endl;
 		std::cout << std::endl;
 	}
 };
@@ -223,6 +228,31 @@ public:
 	}
 
 public:
+	void op_setZero() override
+	{
+		for (std::size_t i = 0; i < data.size(); i++)
+			data[i] = 0;
+	}
+
+public:
+	void op_setVector(
+			const sweet::DESolver_DataContainer_Base &i_a
+	) override
+	{
+		for (std::size_t i = 0; i < data.size(); i++)
+			data[i] = cast(i_a).data[i];
+	}
+
+public:
+	void op_addVector(
+			const sweet::DESolver_DataContainer_Base &i_a
+	) override
+	{
+		for (std::size_t i = 0; i < data.size(); i++)
+			data[i] += cast(i_a).data[i];
+	}
+
+public:
 	void op_setVectorPlusVector(
 			const sweet::DESolver_DataContainer_Base &i_a,
 			const sweet::DESolver_DataContainer_Base &i_b
@@ -273,14 +303,10 @@ public:
 	MyDataContainer *myDataContainer;
 
 	/*
-	 * A polynomial for the DE Term "A"
+	 * Polynomial for the DE terms
 	 */
-	SomePolynomial *somePolynomial_A;
+	std::vector<SomePolynomial> *polynomialsForTerms;
 
-	/*
-	 * A polynomial for the DE Term "B"
-	 */
-	SomePolynomial *somePolynomial_B;
 
 	/*
 	 * Return a new instance of a data container.
@@ -302,8 +328,9 @@ public:
 /**
  * This is one of the ODE terms we can solve for
  */
-class MyODETerm_A	:
-		public sweet::DESolver_DETerm_Base
+template <int N>
+class MyODETerm	:
+		public sweet::DESolver_TimeTreeNode_Base
 {
 public:
 	sweet::ErrorBase error;
@@ -311,16 +338,16 @@ public:
 private:
 	ShackODETimeStepper *shackODETimeStepper;
 
-	SomePolynomial *_somePolynomial;
+	SomePolynomial *_polynomialsForTerms;
 	double _dt;
 
 public:
-	MyODETerm_A()	:
+	MyODETerm()	:
 		_dt(-1)
 	{
 	}
 
-	~MyODETerm_A()	override
+	~MyODETerm()	override
 	{
 	}
 
@@ -348,14 +375,37 @@ private:
 		return true;
 	}
 
-	const char* getImplementedPDETerm()	override
+	void clear() override
 	{
-		return "f";
 	}
 
-	std::shared_ptr<sweet::DESolver_DETerm_Base> getNewInstance() override
+	bool setupFunction(
+			std::shared_ptr<sweet::DESolver_TimeStepping_Tree::Function> &i_function,
+			sweet::DESolver_TimeStepping_Assemblation &i_tsAssemblation
+	) override
 	{
-		return std::shared_ptr<sweet::DESolver_DETerm_Base>(new MyODETerm_A);
+		return true;
+	}
+
+	const std::vector<std::string> getNodeNames() override
+	{
+		std::vector<std::string> retval;
+		if (N == 0)
+			retval.push_back("f");
+
+		else if (N == 1)
+			retval.push_back("g");
+
+		else if (N == 2)
+			retval.push_back("h");
+
+		return retval;
+	}
+
+
+	std::shared_ptr<sweet::DESolver_TimeTreeNode_Base> getNewInstance() override
+	{
+		return std::shared_ptr<sweet::DESolver_TimeTreeNode_Base>(new MyODETerm);
 	}
 
 	const MyDESolver_Config& cast(const sweet::DESolver_Config_Base &i_config)
@@ -364,25 +414,26 @@ private:
 	}
 
 	virtual
-	bool setupDETermConfig(
+	bool setupConfig(
 		const sweet::DESolver_Config_Base &i_deTermConfig
 	) override
 	{
 		const MyDESolver_Config& myConfig = cast(i_deTermConfig);
 
-		_somePolynomial = myConfig.somePolynomial_A;
-		assert(_somePolynomial != nullptr);
-		_somePolynomial->setup(shackODETimeStepper->polynomialDegree);
+		_polynomialsForTerms = &(*myConfig.polynomialsForTerms)[N];
+		assert(_polynomialsForTerms != nullptr);
+		_polynomialsForTerms->setup(shackODETimeStepper->polynomialDegree, N+1);
+
 		return true;
 	}
 
-	void setTimestepSize(double i_dt) override
+	void setTimeStepSize(double i_dt) override
 	{
 		_dt = i_dt;
 	}
 
 	/*
-	 * Return the time tendencies of the PDE term
+	 * Return the time tendencies of the DE term
 	 */
 	void eval_tendencies(
 			const sweet::DESolver_DataContainer_Base &i_U,
@@ -393,11 +444,30 @@ private:
 		//const MyDataContainer &i = cast(i_U);
 		MyDataContainer &o = cast(o_U);
 
-		o.data[0] = _somePolynomial->eval_deriv(i_timeStamp);
+		o.data[0] = _polynomialsForTerms->eval_deriv(i_timeStamp);
+	}
+
+
+	/*
+	 * Return the time tendencies of the DE term
+	 */
+	void eval_eulerBackward(
+			const sweet::DESolver_DataContainer_Base &i_U,
+			sweet::DESolver_DataContainer_Base &o_U,
+			double i_timeStamp
+	)	override
+	{
+		//const MyDataContainer &i = cast(i_U);
+		MyDataContainer &o = cast(o_U);
+
+		/*
+		 * ( f(n+1) - f(n) ) / dt = f'(n+1)
+		 * f(n+1) - f(n) = f'(n+1) * dt
+		 * f(n+1) = f'(n+1) * dt + f(n)
+		 */
+		o.data[0] = _polynomialsForTerms->eval_deriv(i_timeStamp+_dt)*_dt + cast(i_U).data[0];
 	}
 };
-
-
 
 
 
@@ -418,10 +488,8 @@ private:
 public:
 	double timeStamp;
 	double maxTimeStamp;
-	double timeStepSize;
 
-	SomePolynomial somePolynomial_A;
-	SomePolynomial somePolynomial_B;
+	std::vector<SomePolynomial> somePolynomials;
 
 public:
 	ODETimeStepper()	:
@@ -443,7 +511,6 @@ public:
 	bool setup_2_config()
 	{
 		timeStamp = 0;
-		timeStepSize = 0.25;
 
 		return true;
 	}
@@ -458,7 +525,7 @@ public:
 		return true;
 	}
 
-	std::shared_ptr<sweet::DESolver_TimeStepper_Base> timeStepper;
+	std::shared_ptr<sweet::DESolver_TimeTreeNode_Base> timeStepper;
 
 	bool setup_4_timestepper()
 	{
@@ -476,16 +543,27 @@ public:
 		tsTree.print();
 
 		/*
-		 * Register PDE Terms
+		 * Register DE Terms
 		 */
-		sweet::DESolver_DETerm_Registry pdeTerm_registry;
-		pdeTerm_registry.registerPDETerm<MyODETerm_A>();
+		//sweet::DESolver_DETerm_Registry pdeTerm_registry;
+		sweet::DESolver_TimeTreeNode_Registry pdeTerm_registry;
+
+		pdeTerm_registry.registerTimeTreeNode<MyODETerm<0>>();
+
+		if (shackODETimeStepper->numPolynomials > 1)
+			pdeTerm_registry.registerTimeTreeNode<MyODETerm<1>>();
+
+		if (shackODETimeStepper->numPolynomials > 2)
+			pdeTerm_registry.registerTimeTreeNode<MyODETerm<2>>();
+
 
 		/*
 		 * Register time steppers
 		 */
-		sweet::DESolver_TimeStepper_Registry timeStepper_registry;
-		timeStepper_registry.registerTimeStepper<sweet::DESolver_TimeStepper_ExplicitRungeKutta>();
+		sweet::DESolver_TimeStepperRegistryAll tsRegistryAll;
+
+		sweet::DESolver_TimeTreeNode_Registry timeStepper_registry;
+		tsRegistryAll.registerAll(timeStepper_registry);
 
 		/*
 		 * Ready to assemble time stepper
@@ -506,10 +584,11 @@ public:
 		/*
 		 * final configuration of time steppers and DE Terms
 		 */
+		somePolynomials.resize(shackODETimeStepper->numPolynomials);
+
 		MyDESolver_Config deConfig;
 		deConfig.myDataContainer = &U;
-		deConfig.somePolynomial_A = &somePolynomial_A;
-		deConfig.somePolynomial_B = &somePolynomial_B;
+		deConfig.polynomialsForTerms = &somePolynomials;
 
 		timeStepper->setupConfig(deConfig);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*timeStepper);
@@ -517,7 +596,7 @@ public:
 		/*
 		 * Set time step size
 		 */
-		timeStepper->setTimeStepSize(timeStepSize);
+		timeStepper->setTimeStepSize(shackODETimeStepper->timeStepSize);
 
 		return true;
 	}
@@ -525,9 +604,14 @@ public:
 
 	bool setup_5_initialConditions()
 	{
-		U.data[0] = somePolynomial_A.eval(0);
+		U.data[0] = 0;
 
-		somePolynomial_A.print();
+		for (int i = 0; i < shackODETimeStepper->numPolynomials; i++)
+		{
+			U.data[0] += somePolynomials[i].eval(0);
+			somePolynomials[i].print();
+		}
+
 		return true;
 	}
 
@@ -541,7 +625,7 @@ public:
 		timeStepper->eval_timeIntegration(U, U_tmp, timeStamp);
 		U.swap(U_tmp);
 
-		timeStamp += timeStepSize;
+		timeStamp += shackODETimeStepper->timeStepSize;
 
 		if (std::abs(timeStamp - maxTimeStamp) < 1e-10)
 			return false;
@@ -556,7 +640,14 @@ public:
 
 	double getError()
 	{
-		return std::abs(U.data[0] - somePolynomial_A.eval(timeStamp));
+		double acc = 0;
+
+		for (int i = 0; i < shackODETimeStepper->numPolynomials; i++)
+		{
+			acc += somePolynomials[i].eval(timeStamp);
+		}
+
+		return std::abs(U.data[0] - acc);
 	}
 };
 

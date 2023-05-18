@@ -87,7 +87,8 @@ public:
 		 */
 	public:
 		bool parse_nextIdentifier(
-				std::string &o_token
+				std::string &o_token,
+				const std::string i_specialChars = ""	// Identifier can also consist out of these special characters
 		)
 		{
 			parse_skipWhitespace();
@@ -106,7 +107,8 @@ public:
 				if (	(c >= 'a' && c <= 'z') ||
 						(c >= 'A' && c <= 'Z') ||
 						(c >= '0' && c <= '9') ||
-						(c == '_')
+						(c == '_')	||
+						i_specialChars.find(c) != std::string::npos
 					)
 				{
 					// add to accummulator
@@ -209,7 +211,7 @@ public:
 		if (!stringParser.parse_nextIdentifier(tmp))
 			return error.set("Failed to find first token in string - is it maybe empty?\n"+stringParser.getErrorInfo());
 
-		std::string debug_message = stringParser.getErrorInfo("Location or error");
+		std::string debug_message = stringParser.getErrorInfo("Location of error");
 
 		o_timeSteppingTree.clear();
 		o_timeSteppingTree.mainFunction = std::make_shared<DESolver_TimeStepping_Tree::Function>(tmp);
@@ -245,7 +247,7 @@ public:
 	{
 		while (true)
 		{
-			std::string debug_message = stringParser.getErrorInfo("Location or error");
+			std::string debug_message = stringParser.getErrorInfo("Location of error");
 
 			// Search for first identifier
 			// if it doesn't exist, assume that there are no further arguments
@@ -278,7 +280,7 @@ public:
 				std::string &key = identifier;
 
 				std::string value;
-				if (!stringParser.parse_nextIdentifier(value))
+				if (!stringParser.parse_nextIdentifier(value, "."))
 					return error.set("Identifier expected!\n"+stringParser.getErrorInfo());
 
 				// Determine function

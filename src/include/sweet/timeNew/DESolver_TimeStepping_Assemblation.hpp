@@ -4,8 +4,8 @@
  * Always include these classes due to forward delaration stuff
  */
 
-#ifndef SRC_INCLUDE_SWEET_PDESOLVER_TIMESTEPPINGSTRING_ASSEMBLATION_HPP_
-#define SRC_INCLUDE_SWEET_PDESOLVER_TIMESTEPPINGSTRING_ASSEMBLATION_HPP_
+#ifndef SRC_INCLUDE_SWEET_DESOLVER_TIMESTEPPINGSTRING_ASSEMBLATION_HPP_
+#define SRC_INCLUDE_SWEET_DESOLVER_TIMESTEPPINGSTRING_ASSEMBLATION_HPP_
 
 #include <string>
 #include <vector>
@@ -13,14 +13,14 @@
 #include <memory>
 #include <sweet/core/ErrorBase.hpp>
 #include "DESolver_TimeStepping_Tree.hpp"
-#include "DESolver_TimeStepper_Registry.hpp"
-#include "DESolver_DETerm_Registry.hpp"
+#include "DESolver_TimeTreeNode_Registry.hpp"
+
 
 
 // Forward declaration of Base
 // It's included at the end of this file
 namespace sweet {
-	class DESolver_TimeStepper_Base;
+	class DESolver_TimeTreeNode_Base;
 }
 
 namespace sweet
@@ -35,13 +35,13 @@ public:
 	ErrorBase error;
 
 private:
-	DESolver_DETerm_Registry *pdeTermsRegistry;
+	DESolver_TimeTreeNode_Registry *deTermsRegistry;
 
-	DESolver_TimeStepper_Registry *timeSteppersRegistry;
+	DESolver_TimeTreeNode_Registry *timeSteppersRegistry;
 
 public:
 	DESolver_TimeStepping_Assemblation()	:
-		pdeTermsRegistry(nullptr),
+		deTermsRegistry(nullptr),
 		timeSteppersRegistry(nullptr)
 	{
 	}
@@ -53,11 +53,11 @@ public:
 
 
 	bool setup(
-		DESolver_DETerm_Registry &i_pdeTerms,
-		DESolver_TimeStepper_Registry &i_timeSteppers
+		DESolver_TimeTreeNode_Registry &i_pdeTerms,
+		DESolver_TimeTreeNode_Registry &i_timeSteppers
 	)
 	{
-		pdeTermsRegistry = &i_pdeTerms;
+		deTermsRegistry = &i_pdeTerms;
 		timeSteppersRegistry = &i_timeSteppers;
 
 		return true;
@@ -70,13 +70,13 @@ public:
 	 */
 	bool assembleTimeStepperByTree(
 			DESolver_TimeStepping_Tree &i_tree,
-			std::shared_ptr<DESolver_TimeStepper_Base> &o_timestepper
+			std::shared_ptr<DESolver_TimeTreeNode_Base> &o_timestepper
 	)
 	{
-		if (pdeTermsRegistry == nullptr || timeSteppersRegistry == nullptr)
+		if (deTermsRegistry == nullptr || timeSteppersRegistry == nullptr)
 			return error.set("You need to call setup(...) before the assemblation");
 
-		return assembleTimeStepperByFunction(
+		return assembleTimeTreeNodeByFunction(
 				i_tree.mainFunction,
 				o_timestepper
 			);
@@ -87,15 +87,15 @@ public:
 	/*
 	 * Setup the time stepper for a given function and return it
 	 */
-	bool assembleTimeStepperByFunction(
+	bool assembleTimeTreeNodeByFunction(
 		std::shared_ptr<DESolver_TimeStepping_Tree::Function> &i_function,
-		std::shared_ptr<DESolver_TimeStepper_Base> &o_timestepper
+		std::shared_ptr<DESolver_TimeTreeNode_Base> &o_timestepper
 	)
 	{
 		/*
 		 * Step 1) Search for implementation of time stepper of this particular function
 		 */
-		timeSteppersRegistry->getTimeStepperNewInstance(
+		timeSteppersRegistry->getTimeTreeNodeNewInstance(
 				i_function->function_name,
 				o_timestepper
 			);
@@ -113,16 +113,51 @@ public:
 		return true;
 	}
 
-	bool assemblePDETermByString(
-			const std::string i_pde_string,
-			std::shared_ptr<DESolver_DETerm_Base> &o_pdeTerm
+
+public:
+	/*
+	 * Setup the time stepper for a given function and return it
+	 */
+	bool assembleTimeTreeNodeByName(
+		const std::string i_nodeName,
+		std::shared_ptr<DESolver_TimeTreeNode_Base> &o_timestepper
 	)
 	{
-		pdeTermsRegistry->getPDETermInstance(i_pde_string, o_pdeTerm);
-		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*pdeTermsRegistry);
+		/*
+		 * Step 1) Search for implementation of time stepper of this particular function
+		 */
+
+		// we first search for the de terms
+		if (!deTermsRegistry->getTimeTreeNodeNewInstance(
+				i_nodeName,
+				o_timestepper
+			)
+		)
+		{
+			deTermsRegistry->error.reset();
+
+			timeSteppersRegistry->getTimeTreeNodeNewInstance(
+					i_nodeName,
+					o_timestepper
+				);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*timeSteppersRegistry);
+		}
 
 		return true;
 	}
+
+#if 0
+	bool assembleDETermByString(
+			const std::string i_pde_string,
+			std::shared_ptr<DESolver_TimeTreeNode_Base> &o_pdeTerm
+	)
+	{
+		deTermsRegistry->getTimeTreeNodeNewInstance(i_pde_string, o_pdeTerm);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*deTermsRegistry);
+
+		return true;
+	}
+#endif
 
 #if 0
 	friend
@@ -137,7 +172,7 @@ public:
 }
 
 // Included here due to forward declaration
-#include "DESolver_TimeStepper_Base.hpp"
+#include "DESolver_TimeTreeNode_Base.hpp"
 
 
 #endif

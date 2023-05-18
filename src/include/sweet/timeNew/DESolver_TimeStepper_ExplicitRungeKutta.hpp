@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 #include <sweet/timeNew/DESolver_DataContainer_Base.hpp>
-#include <sweet/timeNew/DESolver_TimeStepper_Base.hpp>
+#include <sweet/timeNew/DESolver_TimeTreeNode_Base.hpp>
 #include <sweet/core/shacks/ShackDictionary.hpp>
 
 
@@ -12,7 +12,7 @@ namespace sweet
 {
 
 class DESolver_TimeStepper_ExplicitRungeKutta	:
-		public sweet::DESolver_TimeStepper_Base
+		public sweet::DESolver_TimeTreeNode_Base
 {
 private:
 	double _timestep_size;
@@ -21,7 +21,7 @@ private:
 	/*
 	 * We use an enum to identify different RK implementations
 	 */
-	enum RKMethod
+	enum ERKMethod
 	{
 		INVALID = -1,
 		ERK1 = 1,	// 1st order forward Euler
@@ -33,11 +33,12 @@ private:
 		ERK4,		// 4th order classical RK
 
 	};
-	RKMethod _rkMethodID;
+	ERKMethod _rkMethodID;
 
-	// PDE term to evaluate
-	std::shared_ptr<DESolver_TimeStepper_Base> _timeStepper;
-	std::shared_ptr<sweet::DESolver_DETerm_Base> _deTerm;
+	// DE term to evaluate
+	std::shared_ptr<DESolver_TimeTreeNode_Base> _timeFunTerm;
+	std::shared_ptr<DESolver_TimeTreeNode_Base> &_deTerm = _timeFunTerm;
+
 
 	// Order of Runge-Kutta method
 	int _order;
@@ -68,7 +69,7 @@ public:
 	}
 
 	const std::vector<std::string>
-	getImplementedTimeSteppers()	override
+	getNodeNames()	override
 	{
 		std::vector<std::string> retval;
 		retval.push_back("erk");
@@ -81,35 +82,19 @@ public:
 			sweet::ShackDictionary *io_shackDict
 	)	override
 	{
-		_deTerm->shackRegistration(io_shackDict);
-		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(*_deTerm);
+		_timeFunTerm->shackRegistration(io_shackDict);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(*_timeFunTerm);
 
 		return true;
 	}
 
-	std::string _debugMessage;
-
-	std::string setDebugMessage(const std::string &i_debugMessage)
-	{
-		_debugMessage = i_debugMessage;
-		return _debugMessage;
-	}
-	std::string getNewLineDebugMessage()
-	{
-		if (_debugMessage != "")
-			return "\n"+_debugMessage;
-
-		return _debugMessage;
-	}
-
-
 	bool _setupArgumentInternals()
 	{
-		if (_deTerm == nullptr)
-			return error.set("PDE Term not specified for time stepper"+getNewLineDebugMessage());
+		if (_timeFunTerm == nullptr)
+			return error.set("Some time node term needs to be given"+getNewLineDebugMessage());
 
-		if (!_deTerm->isEvalAvailable("eval_tendencies"))
-			return error.set("eval_tendencies not available in DE term '"+std::string(_deTerm->getImplementedPDETerm())+"'");
+		if (!_timeFunTerm->isEvalAvailable("eval_tendencies"))
+			return error.set("eval_tendencies not available in DE term");
 
 		_rkMethodID = INVALID;
 		_rkNumStages = -1;
@@ -187,7 +172,7 @@ public:
 
 			switch(a->argType)
 			{
-#if 1
+#if 0
 			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_KEY_FUNCTION:
 			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_FUNCTION:
 				error.set("Time steppers inside this time stepper are not allowed, yet"+a->getNewLineDebugMessage());
@@ -200,13 +185,11 @@ public:
 				// continue with ARG_TYPE_FUNCTION
 
 			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_FUNCTION:
-				if (timestepperArgFound)
+				if (_timeFunTerm != nullptr)
 					return error.set("a 2nd timestepper was provided!"+a->getNewLineDebugMessage());
 
-				i_tsAssemblation.assembleTimeStepperByFunction(a->function, _timeStepper);
+				i_tsAssemblation.assembleTimeTreeNodeByFunction(a->function, _timeFunTerm);
 				ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(i_tsAssemblation);
-
-				timestepperArgFound = true;
 				break;
 #endif
 
@@ -228,10 +211,11 @@ public:
 				break;
 
 			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_VALUE:
-				if (_deTerm != nullptr)
-					return error.set("Only one PDETerm is suppored"+a->getNewLineDebugMessage());
 
-				i_tsAssemblation.assemblePDETermByString(
+				if (_timeFunTerm != nullptr)
+					return error.set("Only one DETerm is supported"+a->getNewLineDebugMessage());
+
+				i_tsAssemblation.assembleTimeTreeNodeByName(
 						a->value,
 						_deTerm
 					);
@@ -251,10 +235,10 @@ public:
 
 
 	bool setupConfig(
-		const sweet::DESolver_Config_Base &i_deSolverConfig
+		const sweet::DESolver_Config_Base &i_deConfig
 	) override
 	{
-		_deTerm->setupDETermConfig(i_deSolverConfig);
+		_deTerm->setupConfig(i_deConfig);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*_deTerm);
 
 		clear();
@@ -265,7 +249,7 @@ public:
 		_rkStageDataContainer.resize(_rkNumStages);
 
 		for (std::size_t i = 0; i < _rkStageDataContainer.size(); i++)
-			_rkStageDataContainer[i] = i_deSolverConfig.getNewDataContainerInstance();
+			_rkStageDataContainer[i] = i_deConfig.getNewDataContainerInstance();
 
 		/*
 		 * Setup temporary buffers
@@ -274,7 +258,7 @@ public:
 			_rkTmpDataContainer.resize(1);
 
 		for (std::size_t i = 0; i < _rkTmpDataContainer.size(); i++)
-			_rkTmpDataContainer[i] = i_deSolverConfig.getNewDataContainerInstance();
+			_rkTmpDataContainer[i] = i_deConfig.getNewDataContainerInstance();
 
 		return true;
 
@@ -291,9 +275,9 @@ public:
 		_rkTmpDataContainer.clear();
 	}
 
-	std::shared_ptr<DESolver_TimeStepper_Base> getNewInstance()	override
+	std::shared_ptr<DESolver_TimeTreeNode_Base> getNewInstance()	override
 	{
-		return std::shared_ptr<DESolver_TimeStepper_Base>(new DESolver_TimeStepper_ExplicitRungeKutta);
+		return std::shared_ptr<DESolver_TimeTreeNode_Base>(new DESolver_TimeStepper_ExplicitRungeKutta);
 	}
 
 	void setTimeStepSize(double i_dt)	override
@@ -301,7 +285,7 @@ public:
 		_timestep_size = i_dt;
 
 		// Not required for explicit time stepper, but we do it
-		_deTerm->setTimestepSize(i_dt);
+		_deTerm->setTimeStepSize(i_dt);
 	}
 
 	void eval_timeIntegration(

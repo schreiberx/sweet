@@ -7,39 +7,39 @@
 
 #include <map>
 #include <sweet/core/ErrorBase.hpp>
-#include "DESolver_TimeStepper_Base.hpp"
+#include "DESolver_TimeTreeNode_Base.hpp"
 
 
 namespace sweet
 {
 
-class DESolver_TimeStepper_Registry
+class DESolver_TimeTreeNode_Registry
 {
 public:
 	sweet::ErrorBase error;
 
 private:
-	std::map<std::string, std::shared_ptr<DESolver_TimeStepper_Base>> registry;
+	std::map<std::string, std::shared_ptr<DESolver_TimeTreeNode_Base>> registry;
 
 public:
-	DESolver_TimeStepper_Registry()
+	DESolver_TimeTreeNode_Registry()
 	{
 	}
 
 public:
-	~DESolver_TimeStepper_Registry()
+	~DESolver_TimeTreeNode_Registry()
 	{
 		clear();
 	}
 
 public:
 	template <typename T>
-	bool registerTimeStepper()
+	bool registerTimeTreeNode()
 	{
-		std::shared_ptr<DESolver_TimeStepper_Base> b = std::make_shared<T>();
+		std::shared_ptr<DESolver_TimeTreeNode_Base> b = std::make_shared<T>();
 
 		// get names of all time steppers
-		const std::vector<std::string> ts = b->getImplementedTimeSteppers();
+		const std::vector<std::string> ts = b->getNodeNames();
 
 		// insert as keys to registry
 		for (std::size_t i = 0; i < ts.size(); i++)
@@ -58,9 +58,9 @@ public:
 	/*
 	 * Find a time stepper according to its string
 	 */
-	bool getTimeStepperNewInstance(
+	bool getTimeTreeNodeNewInstance(
 			const std::string &i_ts_string,
-			std::shared_ptr<DESolver_TimeStepper_Base> &o_timestepper_instance
+			std::shared_ptr<DESolver_TimeTreeNode_Base> &o_timestepper_instance
 	)
 	{
 		auto iter = registry.find(i_ts_string);

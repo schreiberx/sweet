@@ -2,8 +2,8 @@
 #define SRC_PROGRAMS_SIMDATA_TIMESTEPPERPDETERM_LC_HPP_
 
 
-#include <sweet/timeNew/PDESolver_PDETerm_Base.hpp>
-#include <sweet/timeNew/PDESolver_DataContainer_Base.hpp>
+#include <sweet/timeNew/DESolver_TimeTreeNode_Base.hpp>
+#include <sweet/timeNew/DESolver_DataContainer_Base.hpp>
 #include "MyDataContainer.hpp"
 
 #include "../pde_sweSphere/ShackPDESWESphere.hpp"
@@ -13,8 +13,8 @@
 #include <sweet/core/sphere/SphereData_Physical.hpp>
 
 
-class MyPDETerm_lc	:
-		public sweet::PDESolver_PDETerm_Base
+class PDESWESphere_lc	:
+		public sweet::DESolver_TimeTreeNode_Base
 {
 public:
 	sweet::ErrorBase error;
@@ -27,27 +27,27 @@ private:
 	sweet::SphereData_Physical fg;
 
 public:
-	MyPDETerm_lc()	:
+	PDESWESphere_lc()	:
 		shackPDESWESphere(nullptr),
 		ops(nullptr),
 		dt(-1)
 	{
 	}
 
-	~MyPDETerm_lc()	override
+	~PDESWESphere_lc()	override
 	{
 	}
 
 
 private:
 	static inline
-	MyDataContainer& cast(sweet::PDESolver_DataContainer_Base &i_U)
+	MyDataContainer& cast(sweet::DESolver_DataContainer_Base &i_U)
 	{
 		return static_cast<MyDataContainer&>(i_U);
 	}
 
 	static inline
-	const MyDataContainer& cast(const sweet::PDESolver_DataContainer_Base &i_U)
+	const MyDataContainer& cast(const sweet::DESolver_DataContainer_Base &i_U)
 	{
 		return static_cast<const MyDataContainer&>(i_U);
 	}
@@ -63,42 +63,57 @@ public:
 		return true;
 	}
 
-	const char* getImplementedPDETerm()	override
+
+	virtual
+	const std::vector<std::string> getNodeNames()
 	{
-		return "lc";
+		std::vector<std::string> retval;
+		retval.push_back("lc");
+		return retval;
+
 	}
 
-	std::shared_ptr<sweet::PDESolver_PDETerm_Base> getNewInstance() override
+	std::shared_ptr<sweet::DESolver_TimeTreeNode_Base> getNewInstance() override
 	{
-		return std::shared_ptr<sweet::PDESolver_PDETerm_Base>(new MyPDETerm_lg);
+		return std::shared_ptr<sweet::DESolver_TimeTreeNode_Base>(new PDESWESphere_lc);
 	}
 
-	bool setupOpsAndDataContainers(
-		const sweet::SphereOperators *io_ops,
-		const sweet::PDESolver_DataContainer_Base &i_u
+	virtual
+	bool setupConfig(
+		const sweet::DESolver_Config_Base &i_deTermConfig
 	) override
 	{
-		ops = io_ops;
+		//const PDESWESphere_DESolver_Config& myConfig = cast(i_deTermConfig);
+/*
+ * 		ops = io_ops;
 
 		if (shackPDESWESphere->sphere_use_fsphere)
 			fg = ops->getFG_fSphere(shackPDESWESphere->sphere_fsphere_f0);
 		else
 			fg = ops->getFG_rotatingSphere(shackPDESWESphere->sphere_rotating_coriolis_omega);
 
+ *
+ */
 		return true;
 	}
 
-	void setTimestepSize(double i_dt) override
+	void setTimeStepSize(double i_dt) override
 	{
 		dt = i_dt;
 	}
+
+
+	void clear() override
+	{
+	}
+
 
 	/*
 	 * Return the time tendencies of the PDE term
 	 */
 	void eval_tendencies(
-			const sweet::PDESolver_DataContainer_Base &i_U,
-			sweet::PDESolver_DataContainer_Base &o_U,
+			const sweet::DESolver_DataContainer_Base &i_U,
+			sweet::DESolver_DataContainer_Base &o_U,
 			double i_time_stamp
 	)	override
 	{
@@ -148,8 +163,8 @@ public:
 	 */
 #if 0
 	void eval_euler_forward(
-			const PDESolver_DataContainer_Base &i_u,
-			PDESolver_DataContainer_Base &o_u
+			const DESolver_DataContainer_Base &i_u,
+			DESolver_DataContainer_Base &o_u
 		)	override
 	{
 	}

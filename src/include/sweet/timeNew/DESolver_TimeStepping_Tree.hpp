@@ -167,6 +167,21 @@ public:
 			return true;
 		}
 
+		bool getValue(double &o_value)
+		{
+			try
+			{
+				o_value = std::stod(value);
+			}
+			catch (const std::exception &e)
+			{
+				error.set("Exception caught during conversion of value '"+value+"' to integer: "+e.what());
+				return false;
+			}
+
+			return true;
+		}
+
 	public:
 		void print(const std::string &i_prefix_str = "")
 		{

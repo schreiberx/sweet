@@ -16,17 +16,16 @@
 
 #include "simdata/MyDataContainer.hpp"
 
-#include <sweet/timeNew/PDESolver_PDETerm_Registry.hpp>
-#include "simdata/MyPDETerm_lg.hpp"
-#include "simdata/MyPDETerm_lc.hpp"
+#include <sweet/timeNew/DESolver_TimeTreeNode_Base.hpp>
+#include <sweet/timeNew/DESolver_TimeStepperRegistryAll.hpp>
+#include <sweet/timeNew/DESolver_TimeTreeNode_Registry.hpp>
+#include "simdata/PDESWESphere_lg.hpp"
+#include "simdata/PDESWESphere_lc.hpp"
 
-#include <sweet/timeNew/PDESolver_TimeStepper_Base.hpp>
-#include <sweet/timeNew/PDESolver_TimeStepper_Registry.hpp>
-#include <sweet/timeNew/PDESolver_TimeStepper_ExplicitRungeKutta.hpp>
 
-#include <sweet/timeNew/PDESolver_TimeStepping_StringParser.hpp>
-#include <sweet/timeNew/PDESolver_TimeStepping_Tree.hpp>
-#include <sweet/timeNew/PDESolver_TimeStepping_Assemblation.hpp>
+#include <sweet/timeNew/DESolver_TimeStepping_StringParser.hpp>
+#include <sweet/timeNew/DESolver_TimeStepping_Tree.hpp>
+#include <sweet/timeNew/DESolver_TimeStepping_Assemblation.hpp>
 
 
 class ShackTimeSteppingMethod :
@@ -67,7 +66,7 @@ public:
 
 
 
-class PDESolver
+class DESolver
 {
 public:
 	sweet::ErrorBase error;
@@ -79,12 +78,11 @@ private:
 	sweet::SphereData_Config sphereDataConfig;
 	sweet::SphereOperators ops;
 
-
 	MyDataContainer U;
 	MyDataContainer U_tmp;
 
 public:
-	PDESolver()	:
+	DESolver()	:
 		shackSphereDataOps(nullptr)
 	{
 	}
@@ -126,7 +124,7 @@ public:
 		return true;
 	}
 
-	std::shared_ptr<sweet::PDESolver_TimeStepper_Base> timeStepper;
+	std::shared_ptr<sweet::DESolver_TimeTreeNode_Base> timeStepper;
 
 	bool setup_4_timestepper()
 	{
@@ -134,8 +132,8 @@ public:
 		/*
 		 * Setup time stepping string parser and parse it
 		 */
-		sweet::PDESolver_TimeSteppingStringParser tsStringParser;
-		sweet::PDESolver_TimeStepping_Tree tsTree;
+		sweet::DESolver_TimeSteppingStringParser tsStringParser;
+		sweet::DESolver_TimeStepping_Tree tsTree;
 
 		tsStringParser.genTimeSteppingTree(
 				shackTimeSteppingMethod->timestepping_method,
@@ -145,22 +143,24 @@ public:
 		tsTree.print();
 
 		/*
-		 * Register PDE Terms
+		 * Register DE Terms
 		 */
-		sweet::PDESolver_PDETerm_Registry pdeTerm_registry;
-		pdeTerm_registry.registerPDETerm<MyPDETerm_lg>();
-		pdeTerm_registry.registerPDETerm<MyPDETerm_lc>();
+
+		sweet::DESolver_TimeTreeNode_Registry pdeTerm_registry;
+		pdeTerm_registry.registerTimeTreeNode<PDESWESphere_lg>();
+		pdeTerm_registry.registerTimeTreeNode<PDESWESphere_lc>();
 
 		/*
 		 * Register time steppers
 		 */
-		sweet::PDESolver_TimeStepper_Registry timeStepper_registry;
-		timeStepper_registry.registerTimeStepper<PDESolver_TimeStepper_ExplicitRungeKutta>();
+		sweet::DESolver_TimeTreeNode_Registry timeStepper_registry;
+		sweet::DESolver_TimeStepperRegistryAll registryAll;
+		registryAll.registerAll(timeStepper_registry);
 
 		/*
 		 * Ready to assemble time stepper
 		 */
-		sweet::PDESolver_TimeStepping_Assemblation tssa;
+		sweet::DESolver_TimeStepping_Assemblation tssa;
 		tssa.setup(pdeTerm_registry, timeStepper_registry);
 		tssa.assembleTimeStepperByTree(
 			tsTree,
@@ -184,19 +184,19 @@ public:
 		{
 			std::cout << "testing rk_order: " << rk_order << std::endl;
 
-			std::shared_ptr<sweet::PDESolver_PDETerm_Base> pde_term_lg;
+			std::shared_ptr<sweet::DESolver_DETerm_Base> pde_term_lg;
 
 			/*
 			 * Register
 			 */
-			pde_term_lg = std::shared_ptr<sweet::PDESolver_PDETerm_Base>(new MyPDETerm_lg);
+			pde_term_lg = std::shared_ptr<sweet::DESolver_DETerm_Base>(new MyDETerm_lg);
 			pde_term_lg->shackRegistration(&shackProgArgDict);
 			pde_term_lg->setup(&ops, U);
 
-			timeStepper = std::make_shared<PDESolver_TimeStepper_ExplicitRungeKutta>();
+			timeStepper = std::make_shared<DESolver_TimeStepper_ExplicitRungeKutta>();
 			timeStepper->shackRegistration(&shackProgArgDict);
 
-			PDESolver_TimeStepper_ExplicitRungeKutta *_ERK = static_cast<PDESolver_TimeStepper_ExplicitRungeKutta*>(timeStepper.get());
+			DESolver_TimeStepper_ExplicitRungeKutta *_ERK = static_cast<DESolver_TimeStepper_ExplicitRungeKutta*>(timeStepper.get());
 			_ERK->setupWithArguments(pde_term_lg, rk_order);
 			timeStepper->setTimestepSize(0.1);
 			timeStepper->setupDataContainers(U);
@@ -220,8 +220,8 @@ public:
 
 bool runTests()
 {
-	sweet::PDESolver_TimeSteppingStringParser tssParser;
-	sweet::PDESolver_TimeStepping_Tree tsTree;
+	sweet::DESolver_TimeSteppingStringParser tssParser;
+	sweet::DESolver_TimeStepping_Tree tsTree;
 
 	{
 		std::string tmp = "foo()";
@@ -299,7 +299,7 @@ int main(int argc, char *argv[])
 		return -1;
 #endif
 
-	PDESolver pdeSolver;
+	DESolver pdeSolver;
 
 	pdeSolver.setup_1_shacks(argc, argv);
 	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(pdeSolver);

@@ -7,12 +7,12 @@
 
 #include <algorithm>
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
-#include <sweet/timeNew/PDESolver_DataContainer_Base.hpp>
+#include <sweet/timeNew/DESolver_DataContainer_Base.hpp>
 
 
 
 class MyDataContainer :
-	public sweet::PDESolver_DataContainer_Base
+	public sweet::DESolver_DataContainer_Base
 {
 public:
 	// Doesn't increase the size of the class
@@ -38,21 +38,21 @@ public:
 
 private:
 	static inline
-	MyDataContainer& cast(sweet::PDESolver_DataContainer_Base &i_U)
+	MyDataContainer& cast(sweet::DESolver_DataContainer_Base &i_U)
 	{
 		return static_cast<MyDataContainer&>(i_U);
 	}
 
 private:
 	static inline
-	const MyDataContainer& cast(const sweet::PDESolver_DataContainer_Base &i_U)
+	const MyDataContainer& cast(const sweet::DESolver_DataContainer_Base &i_U)
 	{
 		return static_cast<const MyDataContainer&>(i_U);
 	}
 
 public:
 	void swap(
-		PDESolver_DataContainer_Base &i_U
+		DESolver_DataContainer_Base &i_U
 	) override
 	{
 		for (int i = 0; i < Ndofs; i++)
@@ -61,7 +61,7 @@ public:
 
 public:
 	void setup_like(
-		const sweet::PDESolver_DataContainer_Base &i_a
+		const sweet::DESolver_DataContainer_Base &i_a
 	) override
 	{
 		const MyDataContainer &i_d = static_cast<const MyDataContainer&>(i_a);
@@ -70,7 +70,7 @@ public:
 			data[i].setup(i_d.data[i].sphereDataConfig);
 	}
 
-	PDESolver_DataContainer_Base* getNewInstance() const override
+	DESolver_DataContainer_Base* getNewInstance() const override
 	{
 		MyDataContainer *retval = new MyDataContainer;
 		retval->setup_like(*this);
@@ -95,9 +95,34 @@ public:
 	}
 
 public:
+	void op_setVector(
+			const sweet::DESolver_DataContainer_Base &i_a
+	) override
+	{
+		for (int i = 0; i < Ndofs; i++)
+			data[i] = cast(i_a).data[i];
+	}
+
+public:
+	void op_addVector(
+			const sweet::DESolver_DataContainer_Base &i_a
+	) override
+	{
+		for (int i = 0; i < Ndofs; i++)
+			data[i] += cast(i_a).data[i];
+	}
+
+public:
+	void op_setZero() override
+	{
+		for (int i = 0; i < Ndofs; i++)
+			data[i].spectral_set_zero();
+	}
+
+public:
 	void op_setVectorPlusVector(
-			const sweet::PDESolver_DataContainer_Base &i_a,
-			const sweet::PDESolver_DataContainer_Base &i_b
+			const sweet::DESolver_DataContainer_Base &i_a,
+			const sweet::DESolver_DataContainer_Base &i_b
 	) override
 	{
 		for (int i = 0; i < Ndofs; i++)
@@ -106,9 +131,9 @@ public:
 
 public:
 	void op_setVectorPlusScalarMulVector(
-			const sweet::PDESolver_DataContainer_Base &i_a,
+			const sweet::DESolver_DataContainer_Base &i_a,
 			double i_scalar,
-			const sweet::PDESolver_DataContainer_Base &i_b
+			const sweet::DESolver_DataContainer_Base &i_b
 	) override
 	{
 		for (int i = 0; i < Ndofs; i++)
@@ -118,7 +143,7 @@ public:
 public:
 	void op_addScalarMulVector(
 			double i_scalar,
-			const sweet::PDESolver_DataContainer_Base &i_a
+			const sweet::DESolver_DataContainer_Base &i_a
 		) override
 	{
 		for (int i = 0; i < Ndofs; i++)
