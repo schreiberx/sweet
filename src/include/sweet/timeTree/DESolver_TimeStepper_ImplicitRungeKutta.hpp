@@ -3,8 +3,8 @@
 
 #include <vector>
 #include <string>
-#include <sweet/timeNew/DESolver_DataContainer_Base.hpp>
-#include <sweet/timeNew/DESolver_TimeTreeNode_Base.hpp>
+#include <sweet/timeTree/DESolver_DataContainer_Base.hpp>
+#include <sweet/timeTree/DESolver_TimeTreeNode_Base.hpp>
 #include <sweet/core/shacks/ShackDictionary.hpp>
 
 

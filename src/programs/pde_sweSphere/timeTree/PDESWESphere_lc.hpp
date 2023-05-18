@@ -2,9 +2,11 @@
 #define SRC_PROGRAMS_SIMDATA_TIMESTEPPERPDETERM_LC_HPP_
 
 
-#include <sweet/timeNew/DESolver_TimeTreeNode_Base.hpp>
-#include <sweet/timeNew/DESolver_DataContainer_Base.hpp>
+#include <sweet/timeTree/DESolver_TimeTreeNode_Base.hpp>
+#include <sweet/timeTree/DESolver_TimeTreeNode_BaseHelper.hpp>
+#include <sweet/timeTree/DESolver_DataContainer_Base.hpp>
 #include "PDESWESphere_DataContainer.hpp"
+#include "PDESWESphere_DESolver_Config.hpp"
 
 #include "../ShackPDESWESphere.hpp"
 #include <sweet/core/ErrorBase.hpp>
@@ -12,10 +14,14 @@
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
 #include <sweet/core/sphere/SphereData_Physical.hpp>
 
-#include "PDESWESphere_DESolver_Config.hpp"
 
-class PDESWESphere_lc	:
-		public sweet::DESolver_TimeTreeNode_Base
+class PDESWESphere_lc :
+	public sweet::DESolver_TimeTreeNode_Base,
+	public sweet::DESolver_TimeTreeNode_BaseHelper<
+			PDESWESphere_lc,
+			PDESWESphere_DataContainer,
+			PDESWESphere_DESolver_Config
+		>
 {
 private:
 	ShackPDESWESphere *shackPDESWESphere;
@@ -23,6 +29,9 @@ private:
 
 	double dt;
 	sweet::SphereData_Physical fg;
+
+	sweet::SphereData_Physical ug;
+	sweet::SphereData_Physical vg;
 
 public:
 	PDESWESphere_lc()	:
@@ -36,24 +45,10 @@ public:
 	{
 	}
 
-
-private:
-	static inline
-	PDESWESphere_DataContainer& cast(sweet::DESolver_DataContainer_Base &i_U)
-	{
-		return static_cast<PDESWESphere_DataContainer&>(i_U);
-	}
-
-	static inline
-	const PDESWESphere_DataContainer& cast(const sweet::DESolver_DataContainer_Base &i_U)
-	{
-		return static_cast<const PDESWESphere_DataContainer&>(i_U);
-	}
-
 public:
 	bool shackRegistration(
 			sweet::ShackDictionary *io_shackDict
-	)
+	)	override
 	{
 		shackPDESWESphere = io_shackDict->getAutoRegistration<ShackPDESWESphere>();
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*io_shackDict);
@@ -61,9 +56,8 @@ public:
 		return true;
 	}
 
-
-	virtual
-	const std::vector<std::string> getNodeNames()
+public:
+	const std::vector<std::string> getNodeNames()	override
 	{
 		std::vector<std::string> retval;
 		retval.push_back("lc");
@@ -76,12 +70,6 @@ public:
 		return std::shared_ptr<sweet::DESolver_TimeTreeNode_Base>(new PDESWESphere_lc);
 	}
 
-	const PDESWESphere_DESolver_Config& cast(
-			const sweet::DESolver_Config_Base& i_deTermConfig
-	)
-	{
-		return static_cast<const PDESWESphere_DESolver_Config&>(i_deTermConfig);
-	}
 
 	virtual
 	bool setupConfig(
@@ -96,6 +84,9 @@ public:
 			fg = ops->getFG_fSphere(shackPDESWESphere->sphere_fsphere_f0);
 		else
 			fg = ops->getFG_rotatingSphere(shackPDESWESphere->sphere_rotating_coriolis_omega);
+
+		ug.setup(ops->sphereDataConfig);
+		vg.setup(ops->sphereDataConfig);
 
 		return true;
 	}
@@ -120,10 +111,6 @@ public:
 			double i_time_stamp
 	)	override
 	{
-		// TODO: Move to setup
-		sweet::SphereData_Physical ug(cast(i_U).phi_pert.sphereDataConfig);
-		sweet::SphereData_Physical vg(cast(i_U).phi_pert.sphereDataConfig);
-
 		/*
 		 * step 1a
 		 */
@@ -157,22 +144,7 @@ public:
 		 */
 		cast(o_U).phi_pert.spectral_set_zero();
 	}
-
-	/*
-	 * Return the forward Euler evaluation of the term:
-	 *
-	 * (U^{n+1}-U^{n})/Dt = dU^{n}/dt
-	 * <=> U^{n+1} = U^n + Dt* (dU^{n}n/dt)
-	 */
-#if 0
-	void eval_euler_forward(
-			const DESolver_DataContainer_Base &i_u,
-			DESolver_DataContainer_Base &o_u
-		)	override
-	{
-	}
-#endif
 };
 
 
-#endif /* SRC_PROGRAMS_SIMDATA_TIMESTEPPERPDETERM_LG_HPP_ */
+#endif

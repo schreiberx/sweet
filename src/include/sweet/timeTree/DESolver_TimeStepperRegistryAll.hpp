@@ -11,10 +11,10 @@
 
 #include "DESolver_TimeTreeNode_Registry.hpp"
 
-#include <sweet/timeNew/DESolver_TimeStepper_ExplicitRungeKutta.hpp>
-#include <sweet/timeNew/DESolver_TimeStepper_ImplicitRungeKutta.hpp>
-#include <sweet/timeNew/DESolver_TimeStepper_AddDETerms.hpp>
-#include <sweet/timeNew/DESolver_TimeStepper_StrangSplitting.hpp>
+#include <sweet/timeTree/DESolver_TimeStepper_ExplicitRungeKutta.hpp>
+#include <sweet/timeTree/DESolver_TimeStepper_ImplicitRungeKutta.hpp>
+#include <sweet/timeTree/DESolver_TimeStepper_AddDETerms.hpp>
+#include <sweet/timeTree/DESolver_TimeStepper_StrangSplitting.hpp>
 
 
 namespace sweet

@@ -2,20 +2,24 @@
 #define SRC_PROGRAMS_SIMDATA_TIMESTEPPERPDETERM_LG_HPP_
 
 
-#include <sweet/timeNew/DESolver_TimeTreeNode_Base.hpp>
-#include <sweet/timeNew/DESolver_DataContainer_Base.hpp>
-#include <sweet/timeNew/DESolver_Config_Base.hpp>
+#include <sweet/timeTree/DESolver_TimeTreeNode_Base.hpp>
+#include <sweet/timeTree/DESolver_TimeTreeNode_BaseHelper.hpp>
+#include <sweet/timeTree/DESolver_DataContainer_Base.hpp>
 #include "PDESWESphere_DataContainer.hpp"
+#include "PDESWESphere_DESolver_Config.hpp"
 
 #include "../ShackPDESWESphere.hpp"
 #include <sweet/core/ErrorBase.hpp>
 #include <sweet/core/sphere/SphereOperators.hpp>
 
-#include "PDESWESphere_DESolver_Config.hpp"
-
 
 class PDESWESphere_lg	:
-		public sweet::DESolver_TimeTreeNode_Base
+		public sweet::DESolver_TimeTreeNode_Base,
+	public sweet::DESolver_TimeTreeNode_BaseHelper<
+			PDESWESphere_lg,
+			PDESWESphere_DataContainer,
+			PDESWESphere_DESolver_Config
+		>
 {
 private:
 	ShackPDESWESphere *shackPDESWESphere;
@@ -36,22 +40,10 @@ public:
 	}
 
 
-private:
-	static inline
-	PDESWESphere_DataContainer& cast(sweet::DESolver_DataContainer_Base &i_U)
-	{
-		return static_cast<PDESWESphere_DataContainer&>(i_U);
-	}
-
-	static inline
-	const PDESWESphere_DataContainer& cast(const sweet::DESolver_DataContainer_Base &i_U)
-	{
-		return static_cast<const PDESWESphere_DataContainer&>(i_U);
-	}
-
+public:
 	bool shackRegistration(
 			sweet::ShackDictionary *io_shackDict
-	)
+	) override
 	{
 		shackPDESWESphere = io_shackDict->getAutoRegistration<ShackPDESWESphere>();
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*io_shackDict);
@@ -73,12 +65,6 @@ private:
 		return std::shared_ptr<sweet::DESolver_TimeTreeNode_Base>(new PDESWESphere_lg);
 	}
 
-	const PDESWESphere_DESolver_Config& cast(
-			const sweet::DESolver_Config_Base& i_deTermConfig
-	)
-	{
-		return static_cast<const PDESWESphere_DESolver_Config&>(i_deTermConfig);
-	}
 
 	virtual
 	bool setupConfig(
@@ -91,7 +77,6 @@ private:
 
 		return true;
 	}
-
 
 	void setTimeStepSize(double i_dt) override
 	{
@@ -124,22 +109,7 @@ private:
 		o.div = -ops->laplace(i.phi_pert);
 		o.vrt.spectral_set_zero();
 	}
-
-	/*
-	 * Return the forward Euler evaluation of the term:
-	 *
-	 * (U^{n+1}-U^{n})/Dt = dU^{n}/dt
-	 * <=> U^{n+1} = U^n + Dt* (dU^{n}n/dt)
-	 */
-#if 0
-	void eval_euler_forward(
-			DESolver_DataContainer_Base &i_u,
-			DESolver_DataContainer_Base &o_u
-	) override
-	{
-	}
-#endif
 };
 
 
-#endif /* SRC_PROGRAMS_SIMDATA_TIMESTEPPERPDETERM_LG_HPP_ */
+#endif

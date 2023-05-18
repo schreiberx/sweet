@@ -1,7 +1,7 @@
 #ifndef SRC_PROGRAMS_SIMDATA_PDESWESPHERE_DESOLVER_CONFIG_HPP_
 #define SRC_PROGRAMS_SIMDATA_PDESWESPHERE_DESOLVER_CONFIG_HPP_
 
-#include <sweet/timeNew/DESolver_Config_Base.hpp>
+#include <sweet/timeTree/DESolver_Config_Base.hpp>
 #include <sweet/core/sphere/SphereOperators.hpp>
 #include "PDESWESphere_DataContainer.hpp"
 

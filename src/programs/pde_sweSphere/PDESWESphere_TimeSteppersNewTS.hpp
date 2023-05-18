@@ -11,18 +11,18 @@
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
 #include <sweet/core/ErrorBase.hpp>
 
-#include <sweet/timeNew/DESolver_TimeTreeNode_Base.hpp>
-#include <sweet/timeNew/DESolver_TimeStepperRegistryAll.hpp>
-#include <sweet/timeNew/DESolver_TimeTreeNode_Registry.hpp>
+#include <sweet/timeTree/DESolver_TimeTreeNode_Base.hpp>
+#include <sweet/timeTree/DESolver_TimeStepperRegistryAll.hpp>
+#include <sweet/timeTree/DESolver_TimeTreeNode_Registry.hpp>
 
-#include <sweet/timeNew/DESolver_TimeStepping_StringParser.hpp>
-#include <sweet/timeNew/DESolver_TimeStepping_Tree.hpp>
-#include <sweet/timeNew/DESolver_TimeStepping_Assemblation.hpp>
+#include <sweet/timeTree/DESolver_TimeStepping_StringParser.hpp>
+#include <sweet/timeTree/DESolver_TimeStepping_Tree.hpp>
+#include <sweet/timeTree/DESolver_TimeStepping_Assemblation.hpp>
 
-#include "timeNew/PDESWESphere_lg.hpp"
-#include "timeNew/PDESWESphere_lc.hpp"
-#include "timeNew/PDESWESphere_DataContainer.hpp"
-#include "timeNew/PDESWESphere_DESolver_Config.hpp"
+#include "timeTree/PDESWESphere_lg.hpp"
+#include "timeTree/PDESWESphere_lc.hpp"
+#include "timeTree/PDESWESphere_DataContainer.hpp"
+#include "timeTree/PDESWESphere_DESolver_Config.hpp"
 
 /**
  * SWE Plane time steppers
@@ -43,6 +43,8 @@ public:
 	// A registry of all time steppers
 	sweet::DESolver_TimeTreeNode_Registry timeStepper_registry;
 
+	// Config file for DE solver
+	PDESWESphere_DESolver_Config deSolver_Config;
 public:
 	void setup_1_registerAllTimesteppers()
 	{
@@ -103,11 +105,9 @@ public:
 		timeIntegrator->shackRegistration(i_shackDict);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*timeIntegrator);
 
-		PDESWESphere_DESolver_Config solverConfig;
-		solverConfig.myDataContainer = &i_U;
-		solverConfig.ops = io_ops;
-
-		timeIntegrator->setupConfig(solverConfig);
+		deSolver_Config.myDataContainer = &i_U;
+		deSolver_Config.ops = io_ops;
+		timeIntegrator->setupConfig(deSolver_Config);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*timeIntegrator);
 
 		/*
