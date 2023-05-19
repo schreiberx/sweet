@@ -43,6 +43,10 @@
 
 // Time steppers
 #include "PDESWESphere_TimeSteppers.hpp"
+// Time steppers
+#include "PDESWESphere_TimeSteppersNewTS.hpp"
+
+#include "timeTree/PDESWESphere_DataContainer.hpp"
 
 // Diagnostics
 #include "PDESWESphere_Diagnostics.hpp"
@@ -73,9 +77,8 @@ public:
 		sweet::SphereData_Config sphereDataConfig;
 		sweet::SphereOperators ops;
 
-		sweet::SphereData_Spectral prog_phi_pert;
-		sweet::SphereData_Spectral prog_div;
-		sweet::SphereData_Spectral prog_vrt;
+		PDESWESphere_DataContainer prog;
+		PDESWESphere_DataContainer progTmp;
 
 		sweet::SphereData_Spectral t0_prog_phi_pert;
 		sweet::SphereData_Spectral t0_prog_div;
@@ -112,9 +115,7 @@ public:
 			ops.setup(&sphereDataConfig, i_shackSphereDataOps);
 			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(ops);
 
-			prog_phi_pert.setup(sphereDataConfig);
-			prog_div.setup(sphereDataConfig);
-			prog_vrt.setup(sphereDataConfig);
+			prog.setup(&sphereDataConfig);
 
 #if SWEET_GUI
 			sweet::ShackPlaneDataOps shackPlaneDataOps;
@@ -129,9 +130,7 @@ public:
 
 		void clear(bool i_clear_spectral_transforms = true)
 		{
-			prog_phi_pert.clear();
-			prog_div.clear();
-			prog_vrt.clear();
+			prog.clear();
 
 			t0_prog_phi_pert.clear();
 			t0_prog_div.clear();
@@ -149,6 +148,8 @@ public:
 
 	// time integrators
 	PDESWESphere_TimeSteppers timeSteppers;
+	PDESWESphere_TimeSteppersNewTS timeSteppersNewTS;
+	bool useNewTimeSteppers;
 
 	// Handler to all benchmarks
 	PDESWESphere_BenchmarksCombined sphereBenchmarks;
@@ -223,15 +224,33 @@ public:
 		sphereBenchmarks.setup_2_shackRegistration(&shackProgArgDict);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(sphereBenchmarks);
 
+		shackProgArgDict.processProgramArguments(shackTimeDisc);
 
-		/*
-		 * Setup time steppers
-		 */
-		timeSteppers.setup_1_registerAllTimesteppers();
-		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(timeSteppers);
 
-		timeSteppers.setup_2_shackRegistration(&shackProgArgDict);
-		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(timeSteppers);
+		if (shackTimeDisc->timestepping_method.find('(') != std::string::npos)
+			useNewTimeSteppers = true;
+		else
+			useNewTimeSteppers = false;
+
+		if (useNewTimeSteppers)
+		{
+			/*
+			 * Setup NEW time steppers
+			 */
+			timeSteppersNewTS.setup_1_registerAllTimesteppers();
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(timeSteppersNewTS);
+		}
+		else
+		{
+			/*
+			 * Setup legacy time steppers
+			 */
+			timeSteppers.setup_1_registerAllTimesteppers();
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(timeSteppers);
+
+			timeSteppers.setup_2_shackRegistration(&shackProgArgDict);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(timeSteppers);
+		}
 
 		/*
 		 * Process HELP arguments
@@ -239,11 +258,15 @@ public:
 		shackProgArgDict.processHelpArguments();
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
-		/*
-		 * Close shack registration & getting shacks
-		 */
-		shackProgArgDict.closeRegistration();
-		shackProgArgDict.closeGet();
+		if (!useNewTimeSteppers)
+		{
+			/*
+			 * Close shack registration & getting shacks
+			 */
+			shackProgArgDict.closeRegistration();
+
+			shackProgArgDict.closeGet();
+		}
 
 		return true;
 	}
@@ -310,21 +333,46 @@ public:
 		/*
 		 * Now we're ready to setup the time steppers
 		 */
-		timeSteppers.setup_3_timestepper(
+		if (useNewTimeSteppers)
+		{
+			timeSteppersNewTS.setup_2_timestepper(
 				shackTimeDisc->timestepping_method,
 				&shackProgArgDict,
-				&dataConfigOps.ops
+				&dataConfigOps.ops,
+				dataConfigOps.prog
 			);
-		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(timeSteppers);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(timeSteppersNewTS);
+
+			timeSteppersNewTS.timeIntegrator->setTimeStepSize(shackTimestepControl->current_timestep_size);
+
+
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(timeSteppersNewTS);
+		
+		}
+		else
+		{
+			timeSteppers.setup_3_timestepper(
+					shackTimeDisc->timestepping_method,
+					&shackProgArgDict,
+					&dataConfigOps.ops
+				);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(timeSteppers);
+		}
+		
+		if (useNewTimeSteppers)
+		{
+			shackProgArgDict.closeRegistration();
+			shackProgArgDict.closeGet();
+		}
 
 
 		/*
 		 * Load initial state of benchmark
 		 */
 		sphereBenchmarks.benchmark->getInitialState(
-				dataConfigOps.prog_phi_pert,
-				dataConfigOps.prog_vrt,
-				dataConfigOps.prog_div
+				dataConfigOps.prog.phi_pert,
+				dataConfigOps.prog.vrt,
+				dataConfigOps.prog.div
 			);
 
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(sphereBenchmarks);
@@ -333,9 +381,9 @@ public:
 		/*
 		 * Backup data at t=0
 		 */
-		dataConfigOps.t0_prog_phi_pert = dataConfigOps.prog_phi_pert;
-		dataConfigOps.t0_prog_vrt = dataConfigOps.prog_vrt;
-		dataConfigOps.t0_prog_div = dataConfigOps.prog_div;
+		dataConfigOps.t0_prog_phi_pert = dataConfigOps.prog.phi_pert;
+		dataConfigOps.t0_prog_vrt = dataConfigOps.prog.vrt;
+		dataConfigOps.t0_prog_div = dataConfigOps.prog.div;
 
 		/*
 		 * Finish registration & getting class interfaces so that nobody can do some
@@ -365,7 +413,14 @@ public:
 		dataConfigOps.vis_plane_data.clear();
 #endif
 
-		timeSteppers.clear();
+		if (useNewTimeSteppers)
+		{
+			timeSteppersNewTS.clear();
+		}
+		else
+		{
+			timeSteppers.clear();
+		}
 
 		dataConfigOps.clear(i_clear_spectral_transforms);
 	}
@@ -428,7 +483,7 @@ public:
 
 	void printSimulationErrors()
 	{
-		sweet::SphereData_Spectral diff = dataConfigOps.t0_prog_phi_pert-dataConfigOps.prog_phi_pert;
+		sweet::SphereData_Spectral diff = dataConfigOps.t0_prog_phi_pert-dataConfigOps.prog.phi_pert;
 
 		double lmax_error = diff.toPhys().physical_reduce_max_abs();
 		double rms_error = diff.toPhys().physical_reduce_rms();
@@ -452,11 +507,23 @@ public:
 		shackTimestepControl->timestepHelperStart();
 
 
-		timeSteppers.timestepper->runTimestep(
-				dataConfigOps.prog_phi_pert, dataConfigOps.prog_vrt, dataConfigOps.prog_div,
-				shackTimestepControl->current_timestep_size,
-				shackTimestepControl->current_simulation_time
-			);
+		if (useNewTimeSteppers)
+		{
+			timeSteppersNewTS.timeIntegrator->eval_timeIntegration(
+					dataConfigOps.prog,
+					dataConfigOps.progTmp,
+					shackTimestepControl->current_simulation_time
+				);
+			dataConfigOps.prog.swap(dataConfigOps.progTmp);
+		}
+		else
+		{
+			timeSteppers.timestepper->runTimestep(
+					dataConfigOps.prog.phi_pert, dataConfigOps.prog.vrt, dataConfigOps.prog.div,
+					shackTimestepControl->current_timestep_size,
+					shackTimestepControl->current_simulation_time
+				);
+		}
 
 		shackTimestepControl->timestepHelperEnd();
 
@@ -488,9 +555,9 @@ public:
 
 		diagnostics.update_phi_vrt_div_2_mass_energy_enstrophy(
 				&dataConfigOps.ops,
-				dataConfigOps.prog_phi_pert,
-				dataConfigOps.prog_vrt,
-				dataConfigOps.prog_div,
+				dataConfigOps.prog.phi_pert,
+				dataConfigOps.prog.vrt,
+				dataConfigOps.prog.div,
 
 				shackSphereDataOps->sphere_radius,
 				shackPDESWESphere->gravitation
@@ -554,9 +621,9 @@ public:
 			/*
 			 * Compute difference
 			 */
-			sweet::SphereData_Spectral diff_phi = dataConfigOps.prog_phi_pert - anal_solution_phi_pert;
-			sweet::SphereData_Spectral diff_vrt = dataConfigOps.prog_vrt - anal_solution_vrt;
-			sweet::SphereData_Spectral diff_div = dataConfigOps.prog_div - anal_solution_div;
+			sweet::SphereData_Spectral diff_phi = dataConfigOps.prog.phi_pert - anal_solution_phi_pert;
+			sweet::SphereData_Spectral diff_vrt = dataConfigOps.prog.vrt - anal_solution_vrt;
+			sweet::SphereData_Spectral diff_div = dataConfigOps.prog.div - anal_solution_div;
 
 			double error_phi = diff_phi.toPhys().physical_reduce_max_abs();
 			double error_vrt = diff_vrt.toPhys().physical_reduce_max_abs();
@@ -579,15 +646,15 @@ public:
 		{
 			fileOutput.write_file_output(
 					dataConfigOps.ops,
-					dataConfigOps.prog_phi_pert,
-					dataConfigOps.prog_div,
-					dataConfigOps.prog_vrt
+					dataConfigOps.prog.phi_pert,
+					dataConfigOps.prog.div,
+					dataConfigOps.prog.vrt
 			);
 
 			if (shackIOData->verbosity > 0)
 			{
-				double progPhiMin = dataConfigOps.prog_phi_pert.toPhys().physical_reduce_min();
-				double progPhiMax = dataConfigOps.prog_phi_pert.toPhys().physical_reduce_max();
+				double progPhiMin = dataConfigOps.prog.phi_pert.toPhys().physical_reduce_min();
+				double progPhiMax = dataConfigOps.prog.phi_pert.toPhys().physical_reduce_max();
 
 				if (shackParallelization->isMPIRoot)
 				{
@@ -633,7 +700,7 @@ public:
 
 	bool detect_instability()
 	{
-		if (dataConfigOps.prog_phi_pert.spectral_is_first_nan_or_inf())
+		if (dataConfigOps.prog.phi_pert.spectral_is_first_nan_or_inf())
 		{
 			if (shackParallelization->isMPIRoot)
 			{
@@ -648,10 +715,16 @@ public:
 
 	void normalmode_analysis()
 	{
+		if (useNewTimeSteppers)
+		{
+			SWEETError("Not supported, yet");
+		}
+		else
+		{
 		PDESWESphere_NormalModeAnalysis::normal_mode_analysis(
-				dataConfigOps.prog_phi_pert,
-				dataConfigOps.prog_vrt,
-				dataConfigOps.prog_div,
+				dataConfigOps.prog.phi_pert,
+				dataConfigOps.prog.vrt,
+				dataConfigOps.prog.div,
 
 				shackIOData,
 				shackTimestepControl,
@@ -661,6 +734,7 @@ public:
 				this,
 				&ProgramPDESWESphere::runTimestep
 			);
+		}
 	}
 
 	void output_timings()
@@ -724,19 +798,19 @@ public:
 			default:
 
 			case 0:
-				dataConfigOps.vis_plane_data = sweet::Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(sweet::SphereData_Spectral(dataConfigOps.prog_phi_pert), dataConfigOps.planeDataConfig);
+				dataConfigOps.vis_plane_data = sweet::Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(sweet::SphereData_Spectral(dataConfigOps.prog.phi_pert), dataConfigOps.planeDataConfig);
 				break;
 
 			case 1:
-				dataConfigOps.vis_plane_data = sweet::Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(sweet::SphereData_Spectral(dataConfigOps.prog_vrt), dataConfigOps.planeDataConfig);
+				dataConfigOps.vis_plane_data = sweet::Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(sweet::SphereData_Spectral(dataConfigOps.prog.vrt), dataConfigOps.planeDataConfig);
 				break;
 
 			case 2:
-				dataConfigOps.vis_plane_data = sweet::Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(sweet::SphereData_Spectral(dataConfigOps.prog_div), dataConfigOps.planeDataConfig);
+				dataConfigOps.vis_plane_data = sweet::Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(sweet::SphereData_Spectral(dataConfigOps.prog.div), dataConfigOps.planeDataConfig);
 				break;
 
 			case 3:
-				dataConfigOps.vis_plane_data = sweet::Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(shackPDESWESphere->h0 + sweet::SphereData_Spectral(dataConfigOps.prog_phi_pert)/shackPDESWESphere->gravitation, dataConfigOps.planeDataConfig);
+				dataConfigOps.vis_plane_data = sweet::Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(shackPDESWESphere->h0 + sweet::SphereData_Spectral(dataConfigOps.prog.phi_pert)/shackPDESWESphere->gravitation, dataConfigOps.planeDataConfig);
 				break;
 
 			case 4:
@@ -745,18 +819,18 @@ public:
 				sweet::SphereData_Physical v(dataConfigOps.sphereDataConfig);
 
 				// Don't use Robert, since we're not interested in the Robert formulation here
-				dataConfigOps.ops.vrtdiv_to_uv(dataConfigOps.prog_vrt, dataConfigOps.prog_div, u, v);
+				dataConfigOps.ops.vrtdiv_to_uv(dataConfigOps.prog.vrt, dataConfigOps.prog.div, u, v);
 				dataConfigOps.vis_plane_data = sweet::Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(u, dataConfigOps.planeDataConfig);
 				break;
 			}
 
 			case 5:
 			{
-				sweet::SphereData_Physical u(dataConfigOps.prog_vrt.sphereDataConfig);
-				sweet::SphereData_Physical v(dataConfigOps.prog_vrt.sphereDataConfig);
+				sweet::SphereData_Physical u(dataConfigOps.prog.vrt.sphereDataConfig);
+				sweet::SphereData_Physical v(dataConfigOps.prog.vrt.sphereDataConfig);
 
 				// Don't use Robert, since we're not interested in the Robert formulation here
-				dataConfigOps.ops.vrtdiv_to_uv(dataConfigOps.prog_vrt, dataConfigOps.prog_div, u, v);
+				dataConfigOps.ops.vrtdiv_to_uv(dataConfigOps.prog.vrt, dataConfigOps.prog.div, u, v);
 				dataConfigOps.vis_plane_data = sweet::Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(v, dataConfigOps.planeDataConfig);
 				break;
 			}
@@ -778,15 +852,15 @@ public:
 				switch (id)
 				{
 				case 6:
-					dataConfigOps.vis_plane_data = sweet::Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(dataConfigOps.prog_phi_pert - anal_solution_phi_pert, dataConfigOps.planeDataConfig);
+					dataConfigOps.vis_plane_data = sweet::Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(dataConfigOps.prog.phi_pert - anal_solution_phi_pert, dataConfigOps.planeDataConfig);
 					break;
 
 				case 7:
-					dataConfigOps.vis_plane_data = sweet::Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(dataConfigOps.prog_vrt - anal_solution_vrt, dataConfigOps.planeDataConfig);
+					dataConfigOps.vis_plane_data = sweet::Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(dataConfigOps.prog.vrt - anal_solution_vrt, dataConfigOps.planeDataConfig);
 					break;
 
 				case 8:
-					dataConfigOps.vis_plane_data = sweet::Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(dataConfigOps.prog_div - anal_solution_div, dataConfigOps.planeDataConfig);
+					dataConfigOps.vis_plane_data = sweet::Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(dataConfigOps.prog.div - anal_solution_div, dataConfigOps.planeDataConfig);
 					break;
 				}
 			}

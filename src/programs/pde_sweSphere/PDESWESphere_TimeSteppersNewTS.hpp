@@ -2,8 +2,8 @@
  * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
-#ifndef SRC_PROGRAMS_SWE_SPHERE_TIMESTEPPERS_HPP_
-#define SRC_PROGRAMS_SWE_SPHERE_TIMESTEPPERS_HPP_
+#ifndef SRC_PROGRAMS_SWE_SPHERE_TIMESTEPPERS_NEW_TS_HPP_
+#define SRC_PROGRAMS_SWE_SPHERE_TIMESTEPPERS_NEW_TS_HPP_
 
 #include <sweet/core/ErrorBase.hpp>
 

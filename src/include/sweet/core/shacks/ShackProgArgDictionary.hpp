@@ -83,6 +83,18 @@ public:
 		return ShackDictionary::processProgramArguments(_programArguments);
 	}
 
+	/*
+	 * Process program arguments only for a particular instance.
+	 *
+	 * This is helpful if we need some early evaluation of program arguments.
+	 */
+	bool processProgramArguments(ShackInterface *io_shackInstance)
+	{
+		bool retval = io_shackInstance->processProgramArguments(_programArguments);
+		io_shackInstance->argumentsProcessed = true;
+		return retval;
+	}
+
 
 	bool processHelpArguments(bool i_with_error = true)
 	{
