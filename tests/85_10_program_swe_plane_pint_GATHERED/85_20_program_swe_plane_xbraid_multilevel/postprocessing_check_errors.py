@@ -45,10 +45,10 @@ def read_error_file(path):
 
 
 # Group together  similar time stepping methods
-groups = ['runtime.xbraid_max_levels', 'runtime.xbraid_cfactor', 'runtime.xbraid_pt', 'runtime.xbraid_timestepping_method']
+groups = ['runtime.xbraid_max_levels', 'runtime.xbraid_cfactor', 'runtime.xbraid_pt', 'runtime.xbraid_timestepping_method', 'runtime.xbraid_spatial_coarsening']
 
 # Create plots for these variables
-vars_ = ["u"]
+vars_ = ["h_pert", "u", "v"]
 
 
 ###########################################################

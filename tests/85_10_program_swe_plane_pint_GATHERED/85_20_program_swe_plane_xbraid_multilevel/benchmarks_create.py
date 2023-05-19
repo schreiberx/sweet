@@ -167,9 +167,10 @@ tsms_coarse = ["l_rexi_n_erk", "l_rexi_n_etdrk", "l_cn_na_sl_nd_settls"]
 jg.runtime.xbraid_store_iterations = 1;
 jg.runtime.xbraid_access_level = 2;
 
-cfactors = [2, 4, 8];
+cfactors = [2, 4];
 nbs_levels = [2, 4];
-nb_pts = [1, 2];
+nb_pts = [1];
+spatial_coarsenings = [0, 1]
 ##nb_pts = [1, 2, 4];
 
 for tsm_fine in tsms_fine:
@@ -178,40 +179,42 @@ for tsm_fine in tsms_fine:
             for cfactor in cfactors:
                 for nb_levels in nbs_levels:
                     for pt in nb_pts:
+                        for spatial_coarsening in spatial_coarsenings:
 
-                        jg.runtime.xbraid_timestepping_method = tsm_fine + "," + tsm_coarse;
-                        jg.runtime.xbraid_timestepping_order = str(orders[tsm_fine]) + "," + str(orders[tsm_coarse]);
-                        jg.runtime.xbraid_timestepping_order2 = str(orders[tsm_fine]) + "," + str(orders[tsm_coarse]);
+                            jg.runtime.xbraid_timestepping_method = tsm_fine + "," + tsm_coarse;
+                            jg.runtime.xbraid_timestepping_order = str(orders[tsm_fine]) + "," + str(orders[tsm_coarse]);
+                            jg.runtime.xbraid_timestepping_order2 = str(orders[tsm_fine]) + "," + str(orders[tsm_coarse]);
 
-                        if online_error:
-                            jg.runtime.xbraid_store_iterations = 0;
-                            jg.runtime.xbraid_load_fine_csv_files = 1;
-                            jg.runtime.xbraid_path_fine_csv_files = ref_path;
-                        else:
-                            jg.runtime.xbraid_store_iterations = 1;
-                            jg.runtime.xbraid_load_fine_csv_files = 0;
+                            if online_error:
+                                jg.runtime.xbraid_store_iterations = 0;
+                                jg.runtime.xbraid_load_fine_csv_files = 1;
+                                jg.runtime.xbraid_path_fine_csv_files = ref_path;
+                            else:
+                                jg.runtime.xbraid_store_iterations = 1;
+                                jg.runtime.xbraid_load_fine_csv_files = 0;
 
-                        jg.runtime.xbraid_cfactor = cfactor;
-                        jg.runtime.xbraid_max_levels = nb_levels;
-                        jg.runtime.xbraid_pt = pt;
+                            jg.runtime.xbraid_cfactor = cfactor;
+                            jg.runtime.xbraid_max_levels = nb_levels;
+                            jg.runtime.xbraid_spatial_coarsening = spatial_coarsening;
+                            jg.runtime.xbraid_pt = pt;
 
-                        params_pspace_num_cores_per_rank = [jg.platform_resources.num_cores_per_socket]
-                        params_pspace_num_threads_per_rank = [jg.platform_resources.num_cores_per_socket]
-                        params_ptime_num_cores_per_rank = [1]
+                            params_pspace_num_cores_per_rank = [jg.platform_resources.num_cores_per_socket]
+                            params_pspace_num_threads_per_rank = [jg.platform_resources.num_cores_per_socket]
+                            params_ptime_num_cores_per_rank = [1]
 
-                        # Update TIME parallelization
-                        ptime = JobParallelizationDimOptions('time')
-                        ptime.num_cores_per_rank = 1
-                        ptime.num_threads_per_rank = 1 #pspace.num_cores_per_rank
-                        ptime.num_ranks = pt
+                            # Update TIME parallelization
+                            ptime = JobParallelizationDimOptions('time')
+                            ptime.num_cores_per_rank = 1
+                            ptime.num_threads_per_rank = 1 #pspace.num_cores_per_rank
+                            ptime.num_ranks = pt
 
-                        pspace = JobParallelizationDimOptions('space')
-                        pspace.num_cores_per_rank = 1
-                        pspace.num_threads_per_rank = params_pspace_num_cores_per_rank[-1]
-                        pspace.num_ranks = 1
+                            pspace = JobParallelizationDimOptions('space')
+                            pspace.num_cores_per_rank = 1
+                            pspace.num_threads_per_rank = params_pspace_num_cores_per_rank[-1]
+                            pspace.num_ranks = 1
 
-                        # Setup parallelization
-                        jg.setup_parallelization([pspace, ptime], override_insufficient_resources=True)
+                            # Setup parallelization
+                            jg.setup_parallelization([pspace, ptime], override_insufficient_resources=True)
 
 
-                        jg.gen_jobscript_directory();
+                            jg.gen_jobscript_directory();

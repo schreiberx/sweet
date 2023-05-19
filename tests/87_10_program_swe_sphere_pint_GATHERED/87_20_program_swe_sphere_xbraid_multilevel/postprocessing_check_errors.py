@@ -14,7 +14,7 @@ from matplotlib.lines import Line2D
 
 def read_error_file(path):
 
-    lines = [line.rstrip() for line in open(path)];
+    lines = [line.rstrip() for line in open(path.replace(".sweet", ".csv"))];
 
     err_L1 = -1;
     err_L2 = -1;
@@ -48,7 +48,7 @@ def read_error_file(path):
 groups = ['runtime.xbraid_max_levels', 'runtime.xbraid_cfactor', 'runtime.xbraid_pt', 'runtime.xbraid_timestepping_method']
 
 # Create plots for these variables
-vars_ = ["u"]
+vars_ = ["phi_pert", "vrt", "div"]
 
 
 ###########################################################
@@ -61,15 +61,15 @@ tag_cleanup_info = []
 
 for i in vars_:
     tagnames_y += [
-        f"plane_data_diff_prog_{i}.res_norm_l1",
-        f"plane_data_diff_prog_{i}.res_norm_l2",
-        f"plane_data_diff_prog_{i}.res_norm_linf"
+        f"sphere_data_diff_prog_{i}.res_norm_l1",
+        f"sphere_data_diff_prog_{i}.res_norm_l2",
+        f"sphere_data_diff_prog_{i}.res_norm_linf"
     ]
 
     tag_cleanup_info += [
-        {"ref_file_starts_with": f"output_prog_{i}", "tag_src": "res_norm_linf", "tag_dst": f"plane_data_diff_prog_{i}.res_norm_linf"},
-        {"ref_file_starts_with": f"output_prog_{i}", "tag_src": "res_norm_l1", "tag_dst": f"plane_data_diff_prog_{i}.res_norm_l1"},
-        {"ref_file_starts_with": f"output_prog_{i}", "tag_src": "res_norm_l2", "tag_dst": f"plane_data_diff_prog_{i}.res_norm_l2"}
+        {"ref_file_starts_with": f"output_prog_{i}", "tag_src": "res_norm_linf", "tag_dst": f"sphere_data_diff_prog_{i}.res_norm_linf"},
+        {"ref_file_starts_with": f"output_prog_{i}", "tag_src": "res_norm_l1", "tag_dst": f"sphere_data_diff_prog_{i}.res_norm_l1"},
+        {"ref_file_starts_with": f"output_prog_{i}", "tag_src": "res_norm_l2", "tag_dst": f"sphere_data_diff_prog_{i}.res_norm_l2"}
     ]
 
 j = JobsData(verbosity=0)
@@ -87,7 +87,7 @@ for group in job_groups.values():
     assert len(group) == 2
 
 ## Cleanup postprocessed data
-JobsData_GroupsCleanupPostprocessed(job_groups, tag_cleanup_info, pickle_file_default_prefix="plane_data_norms_physical_space_", pint = True)
+JobsData_GroupsCleanupPostprocessed(job_groups, tag_cleanup_info, pickle_file_default_prefix="sphere_data_norms_physical_space_", pint = True)
 
 small = 1e-10
 ## compare online and offline errors
@@ -119,9 +119,9 @@ for key, group in job_groups.items():
 
             ## get offline errors
             try:
-                err_offline['res_norm_linf'] = group[offline_job][f"plane_data_diff_prog_{i}.res_norm_linf" + niter_str]
-                err_offline['res_norm_l1'] = group[offline_job][f"plane_data_diff_prog_{i}.res_norm_l1" + niter_str]
-                err_offline['res_norm_l2'] = group[offline_job][f"plane_data_diff_prog_{i}.res_norm_l2" + niter_str]
+                err_offline['res_norm_linf'] = group[offline_job][f"sphere_data_diff_prog_{i}.res_norm_linf" + niter_str]
+                err_offline['res_norm_l1'] = group[offline_job][f"sphere_data_diff_prog_{i}.res_norm_l1" + niter_str]
+                err_offline['res_norm_l2'] = group[offline_job][f"sphere_data_diff_prog_{i}.res_norm_l2" + niter_str]
             except:
                 br = True
                 break

@@ -46,7 +46,8 @@ jg.compile.sphere_spectral_dealiasing = "enable";
 # Benchmark ID
 #
 #jg.runtime.bench_id = 1
-jg.runtime.benchmark_name = "galewsky"
+##jg.runtime.benchmark_name = "rossby_haurwitz_wave"
+jg.runtime.benchmark_name = "gaussian_bump"
 
 #
 # Compute error or difference to initial data
@@ -69,10 +70,10 @@ jg.compile.threading = "omp"
 #
 # Time, Mode and Physical resolution
 #
-jg.runtime.max_simulation_time = 100.
-jg.runtime.output_timestep_size = 25.
-timestep_size_reference = 2.5
-timestep_size_fine = 5.
+jg.runtime.max_simulation_time = 720.
+jg.runtime.output_timestep_size = 180.
+timestep_size_reference = 18.
+timestep_size_fine = 36.
 jg.runtime.timestep_size = timestep_size_fine
 jg.runtime.timestepping_method = tsm_fine
 jg.runtime.timestepping_order = orders[tsm_fine]
@@ -86,7 +87,6 @@ jg.reference_job = True
 jg.compile.program = "programs/pde_sweSphere"
 jg.compile.mode = "debug"
 jg.compile.sweet_mpi = "disable"
-jg.compile.xbraid_scalar = 'disable'
 
 jg.compile.xbraid = "none";
 jg.runtime.xbraid_enabled = 0;
