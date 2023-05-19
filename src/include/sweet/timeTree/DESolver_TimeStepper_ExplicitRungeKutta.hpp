@@ -325,11 +325,6 @@ private:
 			double i_simulation_time
 	)
 	{
-		_timeTreeNode->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
-
-		o_U.op_setVectorPlusScalarMulVector(i_U, _timestep_size, *_rkStageDataContainer[0]);
-
-
 		// See https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods#Explicit_Runge.E2.80.93Kutta_methods
 		// See https://de.wikipedia.org/wiki/Runge-Kutta-Verfahren
 		/*
@@ -367,11 +362,6 @@ private:
 			double i_simulation_time
 	)
 	{
-		_timeTreeNode->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
-
-		o_U.op_setVectorPlusScalarMulVector(i_U, _timestep_size, *_rkStageDataContainer[0]);
-
-
 		// See https://en.wikipedia.org/wiki/Heun%27s_method
 		/*
 		 * c     a
@@ -410,11 +400,6 @@ private:
 			double i_simulation_time
 	)
 	{
-		_timeTreeNode->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
-
-		o_U.op_setVectorPlusScalarMulVector(i_U, _timestep_size, *_rkStageDataContainer[0]);
-
-
 		/*
 		 * http://www.ams.org/journals/mcom/1962-16-080/S0025-5718-1962-0150954-0/S0025-5718-1962-0150954-0.pdf
 		 *
@@ -457,11 +442,6 @@ private:
 			double i_simulation_time
 	)
 	{
-		_timeTreeNode->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
-
-		o_U.op_setVectorPlusScalarMulVector(i_U, _timestep_size, *_rkStageDataContainer[0]);
-
-
 		/*
 		 * This is not the original Ralston method, but the one from the book
 		 * "Numerical Methods for Engineers" by Chapra and Canale
