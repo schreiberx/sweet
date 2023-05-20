@@ -32,9 +32,9 @@ if [[ $? -eq 0 ]]; then
 	echo "$MULE_MPIF90 seems to support -fallow-argument-mismatch, using this per default"
 	echo "FFLAGS += -fallow-argument-mismatch" >> Makefile.local
 fi
+
 # DO NOT UNCOMMENT THIS, since linux cluster reuses the TMPDIR for creating a temporary file
 #rm -rf "${TMPDIR}"
-
 
 # Disable LTO since this doesn't work on all platforms
 echo "LDFLAGS += -fno-lto" >> Makefile.local
@@ -74,7 +74,7 @@ config_exec make
 
 echo_info "Installing..."
 
-# Copy modules
+# Copy modules and change this path if necessary
 echo_info cp -v -f ./include/*mod "$INCDIR_LIBPFASST"
 cp -v -f ./include/*mod "$INCDIR_LIBPFASST" || echo_error_exit "Failed to install .mod files"
 

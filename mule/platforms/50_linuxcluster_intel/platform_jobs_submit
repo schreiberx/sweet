@@ -8,7 +8,6 @@
 # Job ID in each line
 #
 
-
 if [[ -z "$1" ]]; then
 	DIRS=job_bench*
 else
