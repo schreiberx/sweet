@@ -150,6 +150,15 @@ public:
 			data[i] += i_scalar*cast(i_a).data[i];
 	}
 
+public:
+	void op_mulScalar(
+			double i_scalar
+		) override
+	{
+		for (int i = 0; i < Ndofs; i++)
+			data[i] *= i_scalar;
+	}
+
 };
 
 

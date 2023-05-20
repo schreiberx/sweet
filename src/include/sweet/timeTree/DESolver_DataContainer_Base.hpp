@@ -57,6 +57,11 @@ public:
 			double i_scalar,
 			const DESolver_DataContainer_Base &i_a
 		) = 0;
+public:
+	virtual
+	void op_mulScalar(
+			double i_scalar
+		) = 0;
 
 public:
 	virtual

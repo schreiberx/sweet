@@ -134,7 +134,7 @@ public:
 			_order = 2;
 			_rkNumStages = 2;
 		}
-		else if (_method == "std")
+		else if (_method == "std" || _method == "default")
 		{
 			if (_order < 1 || _order > 4)
 				return error.set("Order of ERK method needs to be 1, 2, 3 or 4"+getNewLineDebugMessage());

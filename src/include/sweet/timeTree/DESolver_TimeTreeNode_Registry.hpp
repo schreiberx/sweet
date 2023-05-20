@@ -42,14 +42,16 @@ public:
 		const std::vector<std::string> ts = b->getNodeNames();
 
 		// insert as keys to registry
-		for (std::size_t i = 0; i < ts.size(); i++)
+		for (auto &iter : ts)
 		{
-			auto iter = registry.find(ts[i]);
+			auto i = registry.find(iter);
 
-			if (iter != registry.end())
-				return error.set("Time stepper with string "+ts[i]+" already registered");
+			if (i != registry.end())
+			{
+				return error.set("Time tree node handler for '"+iter+"' already registered!");
+			}
 
-			registry[ts[i]] = b;
+			registry[iter] = b;
 		}
 
 		return true;

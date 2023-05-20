@@ -1,5 +1,5 @@
-#ifndef SRC_PROGRAMS_SIMDATA_TIMESTEPPERPDETERM_LG_HPP_
-#define SRC_PROGRAMS_SIMDATA_TIMESTEPPERPDETERM_LG_HPP_
+#ifndef SRC_PROGRAMS_SIMDATA_TIMESTEPPERPDETERM_NR_UV_HPP_
+#define SRC_PROGRAMS_SIMDATA_TIMESTEPPERPDETERM_NR_UV_HPP_
 
 
 /*
@@ -17,7 +17,7 @@
 #include "PDESWESphere_DESolver_Config.hpp"
 
 
-class PDESWESphere_lg	:
+class PDESWESphere_nr_uv	:
 	public sweet::DESolver_TimeTreeNode_Base,
 	public sweet::DESolver_TimeTreeNode_CastHelper<
 			PDESWESphere_DataContainer,
@@ -30,9 +30,20 @@ private:
 
 	double dt;
 
+	/*
+	 * Coriolis effect
+	 */
+	sweet::SphereData_Physical fg;
+
+	/*
+	 * Temporary variables
+	 */
+	sweet::SphereData_Physical ug;
+	sweet::SphereData_Physical vg;
+
 public:
-	PDESWESphere_lg();
-	~PDESWESphere_lg();
+	PDESWESphere_nr_uv();
+	~PDESWESphere_nr_uv();
 
 public:
 	bool shackRegistration(

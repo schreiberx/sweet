@@ -1,5 +1,5 @@
-#ifndef SRC_PROGRAMS_SIMDATA_MYTIMESTEPPER_ADDDETERMS_HPP_
-#define SRC_PROGRAMS_SIMDATA_MYTIMESTEPPER_ADDDETERMS_HPP_
+#ifndef SRC_PROGRAMS_SIMDATA_MYTIMESTEPPER_NEGDETERMS_HPP_
+#define SRC_PROGRAMS_SIMDATA_MYTIMESTEPPER_NEGDETERMS_HPP_
 
 #include <vector>
 #include <string>
@@ -11,7 +11,10 @@
 namespace sweet
 {
 
-class DESolver_TimeStepper_AddDETerms	:
+/*
+ * Negate a PDE term (put a minus sign in front of the tendencies)
+ */
+class DESolver_TimeStepper_NegDETerms	:
 		public sweet::DESolver_TimeTreeNode_Base
 {
 private:
@@ -25,12 +28,12 @@ private:
 	std::vector<sweet::DESolver_DataContainer_Base*> _tmpDataContainer;
 
 public:
-	DESolver_TimeStepper_AddDETerms()	:
+	DESolver_TimeStepper_NegDETerms()	:
 		_timestep_size(-1)
 	{
 	}
 
-	~DESolver_TimeStepper_AddDETerms()
+	~DESolver_TimeStepper_NegDETerms()
 	{
 		clear();
 	}
@@ -39,8 +42,8 @@ public:
 	getNodeNames()	override
 	{
 		std::vector<std::string> retval;
-		retval.push_back("add");
-		retval.push_back("ADD");
+		retval.push_back("neg");
+		retval.push_back("NEG");
 		return retval;
 	}
 
@@ -94,11 +97,13 @@ public:
 				ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*a);
 				break;
 
+
 			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_KEY_VALUE:
-				return error.set("Key-value not supported"+a->getNewLineDebugMessage());
+				return error.set("Key not supported"+a->getNewLineDebugMessage());
 				break;
 
 			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_VALUE:
+
 				_timeTreeNode.push_back(std::shared_ptr<sweet::DESolver_TimeTreeNode_Base>());
 
 				i_tsAssemblation.assembleTimeTreeNodeByName(
@@ -149,7 +154,7 @@ public:
 
 	std::shared_ptr<DESolver_TimeTreeNode_Base> getNewInstance()	override
 	{
-		return std::shared_ptr<DESolver_TimeTreeNode_Base>(new DESolver_TimeStepper_AddDETerms);
+		return std::shared_ptr<DESolver_TimeTreeNode_Base>(new DESolver_TimeStepper_NegDETerms);
 	}
 
 	void setTimeStepSize(double i_dt)	override
@@ -175,6 +180,8 @@ public:
 			i->eval_tendencies(i_U, *_tmpDataContainer[0], i_simulation_time);
 			o_U.op_addVector(*_tmpDataContainer[0]);
 		}
+
+		o_U.op_mulScalar(-1.0);
 	}
 
 	void print(const std::string &i_prefix = "")
