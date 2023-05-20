@@ -1,17 +1,17 @@
 #include "PDESWESphere_TimeSteppersNewTS.hpp"
 
 
-#include "timeTree/PDESWESphere_ln.hpp"
+#include "PDESWESphere_ln.hpp"
 
-#include "timeTree/PDESWESphere_l.hpp"
-#include "timeTree/PDESWESphere_lg.hpp"
-#include "timeTree/PDESWESphere_lc.hpp"
+#include "PDESWESphere_l.hpp"
+#include "PDESWESphere_lg.hpp"
+#include "PDESWESphere_lc.hpp"
 
-#include "timeTree/PDESWESphere_n.hpp"
-#include "timeTree/PDESWESphere_na_uv.hpp"
-#include "timeTree/PDESWESphere_nr_uv.hpp"
-#include "timeTree/PDESWESphere_na_vd.hpp"
-#include "timeTree/PDESWESphere_nr_vd.hpp"
+#include "PDESWESphere_n.hpp"
+#include "PDESWESphere_na_uv.hpp"
+#include "PDESWESphere_nr_uv.hpp"
+#include "PDESWESphere_na_vd.hpp"
+#include "PDESWESphere_nr_vd.hpp"
 
 
 bool PDESWESphere_TimeSteppersNewTS::setup_1_registerAllTimesteppers()

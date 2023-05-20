@@ -19,8 +19,8 @@
 #include <sweet/timeTree/DESolver_TimeStepping_Tree.hpp>
 #include <sweet/timeTree/DESolver_TimeStepping_Assemblation.hpp>
 
-#include "timeTree/PDESWESphere_DataContainer.hpp"
-#include "timeTree/PDESWESphere_DESolver_Config.hpp"
+#include "PDESWESphere_DataContainer.hpp"
+#include "PDESWESphere_DESolver_Config.hpp"
 
 /**
  * SWE Plane time steppers
