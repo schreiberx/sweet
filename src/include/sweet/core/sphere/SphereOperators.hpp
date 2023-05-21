@@ -61,7 +61,7 @@ public:
 
 	SphereData_Physical getFG_fSphere(
 			double i_fsphere_f0
-	)
+	)	const
 	{
 		assert(sphereDataConfig != nullptr);
 
@@ -81,7 +81,7 @@ public:
 
 	SphereData_Physical getFG_rotatingSphere(
 			double i_sphere_rotating_coriolis_omega
-	)
+	)	const
 	{
 		assert(sphereDataConfig != nullptr);
 

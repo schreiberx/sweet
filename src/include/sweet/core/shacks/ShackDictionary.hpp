@@ -48,9 +48,10 @@ public:
 
 
 public:
-	ShackDictionary()
+	ShackDictionary()	:
+		_registerationOfClassInstanceFinished(false),
+		_getFinished(false)
 	{
-		clear();
 	}
 
 
@@ -58,11 +59,9 @@ public:
 	void clear()
 	{
 		for (auto i = _list.begin(); i != _list.end(); i++)
-		{
 			delete *i;
-		}
-		_list.clear();
 
+		_list.clear();
 		error.reset();
 
 		_registerationOfClassInstanceFinished = false;
@@ -133,7 +132,7 @@ public:
 		if (_getFinished)
 		{
 			const std::string& tname = typeid(T).name();
-			error.set("Getting an element class already finished (type '"+tname+"')");
+			error.set("Getting a dictionary element class already finished (type '"+tname+"')");
 			return nullptr;
 		}
 
@@ -156,7 +155,8 @@ public:
 	 */
 public:
 	template<typename T>
-	T* getAutoRegistration()
+	T* getAutoRegistration(
+	)
 	{
 		if (!exists<T>())
 			if (!registerFirstTime<T>())
@@ -180,11 +180,15 @@ public:
 	{
 		for (auto i = _list.begin(); i != _list.end(); i++)
 		{
+			if ((*i)->argumentsProcessed)
+				continue;
+
 			if (!((*i)->processProgramArguments(i_pa)))
 			{
 				error.forward((*i)->error);
 				return false;
 			}
+			(*i)->argumentsProcessed = true;
 		}
 		return true;
 	}

@@ -489,15 +489,25 @@ public:
 	/**
 	 * save a screenshot to a bitmap file
 	 */
+	static
 	bool saveScreenshot(
-			const std::string &filename	///< filepath to store the screenshot to
+			const std::string &i_filename	///< filepath to store the screenshot to
 	)
 	{
-		Bitmap24 bitmap(window_width, window_height);
+		GLint viewport[4];
+		glGetIntegerv(GL_VIEWPORT, viewport);
 
-		glReadPixels(0, 0, window_width, window_height, GL_BGR, GL_UNSIGNED_BYTE, bitmap.data);
+		int width = viewport[2];
+		int height = viewport[3];
 
-		if (!bitmap.save(filename))
+		Bitmap24 bitmap(width, height);
+
+		glPixelStorei(GL_PACK_ALIGNMENT, 1);
+		glPixelStorei(GL_PACK_ROW_LENGTH, 0);
+		glPixelStorei(GL_PACK_IMAGE_HEIGHT, 0);
+		glReadPixels(0, 0, width, height, GL_BGR, GL_UNSIGNED_BYTE, bitmap.data.data());
+
+		if (!bitmap.save(i_filename))
 		{
 			std::cerr << "Failed to save bitmap" << std::endl;
 			return false;
@@ -538,7 +548,10 @@ public:
 		}
 
 		save_bitmap.resize(window_width, window_height);
-		glReadPixels(0, 0, window_width, window_height, GL_BGR, GL_UNSIGNED_BYTE, save_bitmap.data);
+		glPixelStorei(GL_PACK_ALIGNMENT, 1);
+		glPixelStorei(GL_PACK_ROW_LENGTH, 0);
+		glPixelStorei(GL_PACK_IMAGE_HEIGHT, 0);
+		glReadPixels(0, 0, window_width, window_height, GL_BGR, GL_UNSIGNED_BYTE, save_bitmap.data.data());
 
 		save_bitmap_filename = filename;
 		save_bitmap_thread = SDL_CreateThread(&saveScreenshotThread, "saveBitmapThread", this);

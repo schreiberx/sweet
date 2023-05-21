@@ -165,7 +165,7 @@ class MemBlockAlloc
 	/**
 	 * verbosity
 	 */
-	int verbosity_level = 1;
+	int verbosity_level = 0;
 
 	/**
 	 * Number of allocation domains

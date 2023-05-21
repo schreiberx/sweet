@@ -22,6 +22,13 @@ class ShackInterface
 public:
 	ErrorBase error;
 
+	bool argumentsProcessed;
+
+	ShackInterface()	:
+		argumentsProcessed(false)
+	{
+	}
+
 	virtual void printProgramArguments(const std::string &i_prefix = "")
 	= 0;
 	//{}

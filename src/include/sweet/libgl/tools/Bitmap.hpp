@@ -19,6 +19,7 @@
 
 #include <stdio.h>
 #include <string>
+#include <vector>
 
 /**
  * store bitmap
@@ -29,7 +30,7 @@ public:
 	int width;			///< bitmap width
 	int height;			///< bitmap height
 
-	char *data;			///< allocated bitmap data where the 24 bit bitmap data has to be loaded before the bitmap can be stored
+	std::vector<char> data;			///< allocated bitmap data where the 24 bit bitmap data has to be loaded before the bitmap can be stored
 
 
 
@@ -44,7 +45,7 @@ public:
 		width(i_width),
 		height(i_height)
 	{
-		data = new char[width*height*3];
+		data.resize(width*height*3);
 	}
 
 	/**
@@ -54,7 +55,6 @@ public:
 		width(0),
 		height(0)
 	{
-		data = nullptr;
 	}
 
 	void resize(
@@ -65,11 +65,9 @@ public:
 		if (width == i_width && height == i_height)
 			return;
 
-		delete data;
-
 		width = i_width;
 		height = i_height;
-		data = new char[width*height*3];
+		data.resize(width*height*3);
 	}
 
 
@@ -148,14 +146,14 @@ public:
 		// write data
 		if (padding == 0)
 		{
-			fwrite(data, 3*width*height, 1, file);
+			fwrite(data.data(), 3*width*height, 1, file);
 		}
 		else
 		{
 			for (int y = 0; y < height; y++)
 			{
 				fwrite(&data[y*width*3], 3*width, 1, file);
-				fwrite(data, padding, 1, file);
+				fwrite(data.data(), padding, 1, file);
 			}
 		}
 
@@ -169,8 +167,6 @@ public:
 	 */
 	~Bitmap24()
 	{
-		if (data)
-			delete data;
 	}
 };
 
