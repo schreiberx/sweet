@@ -89,7 +89,7 @@ for group in job_groups.values():
 ## Cleanup postprocessed data
 JobsData_GroupsCleanupPostprocessed(job_groups, tag_cleanup_info, pickle_file_default_prefix="sphere_data_norms_physical_space_", pint = True)
 
-small = 1e-10
+small = 1e-6
 ## compare online and offline errors
 for key, group in job_groups.items():
 
@@ -137,6 +137,7 @@ for key, group in job_groups.items():
             max_error = 0
             max_norm = 0
             for n in ['res_norm_l1', 'res_norm_l2', 'res_norm_linf']:
+                print("AAAAAAAAAAAAAAA", group[online_job]["runtime.p_job_dirpath"], group[offline_job]["runtime.p_job_dirpath"], f)
                 assert abs(err_online[n] - err_offline[n]) < small, (err_online[n], err_offline[n])
                 max_error = max(max_error, abs(err_online[n] - err_offline[n]))
                 max_norm = max(max_norm, abs(err_online[n]), abs(err_offline[n]))

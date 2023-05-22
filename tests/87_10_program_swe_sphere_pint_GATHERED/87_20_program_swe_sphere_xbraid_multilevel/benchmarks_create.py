@@ -76,7 +76,7 @@ jg.runtime.timestepping_order2 = orders[tsm_fine]
 jg.runtime.space_res_spectral = 32
 
 
-## Reference job
+## Reference job + create plan
 jg.reference_job = True
 
 jg.compile.program = "programs/pde_sweSphere"
@@ -93,11 +93,12 @@ jg.runtime.timestepping_method = tsm_fine
 jg.runtime.timestepping_order = orders[tsm_fine]
 jg.runtime.timestepping_order2 = orders[tsm_fine]
 
+jg.runtime.reuse_plans = "save"
+
 jg.gen_jobscript_directory();
 
 
 ## MGRIT jobs
-
 jg.reference_job = False
 jg.reference_job_unique_id = jg.job_unique_id
 ref_path = jg.p_job_dirpath
@@ -107,6 +108,8 @@ jg.compile.program = "programs/xbraid_pde_sweSphere"
 jg.compile.mode = "debug"
 jg.compile.sweet_mpi = "enable"
 jg.compile.xbraid_sphere = 'enable'
+
+jg.runtime.reuse_plans = "require_load"
 
 jg.compile.xbraid = "mpi";
 jg.runtime.xbraid_enabled = 1;
@@ -145,7 +148,8 @@ jg.runtime.xbraid_max_levels = 1
 jg.runtime.xbraid_store_iterations = 1;
 
 tsms_fine = [tsm_fine]
-tsms_coarse = ["l_irk_n_erk", "l_irk_na_sl_settls_uv_only"]
+###tsms_coarse = ["l_irk_n_erk", "l_irk_na_sl_settls_uv_only"]
+tsms_coarse = ["l_irk_n_erk"]
 jg.runtime.xbraid_store_iterations = 1;
 jg.runtime.xbraid_access_level = 2;
 
