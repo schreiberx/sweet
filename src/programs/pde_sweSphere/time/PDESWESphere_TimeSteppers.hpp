@@ -6,7 +6,7 @@
 #define SRC_PROGRAMS_SWE_SPHERE_TIMESTEPPERS_HPP_
 
 
-#include "time/PDESWESphereTS_BaseInterface.hpp"
+#include "PDESWESphereTS_BaseInterface.hpp"
 #include <sweet/core/ErrorBase.hpp>
 
 /**

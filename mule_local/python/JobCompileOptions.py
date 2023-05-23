@@ -639,7 +639,12 @@ class JobCompileOptions(InfoError):
                 tag_id = tags[0]
                 tag = tags[1]
                 if tag in l:
-                    fad = l[l.find(tag)+len(tag):]
+                    pos = l.find(tag)
+                    if pos > 0:
+                        if l[pos-1] not in " */\\":
+                            continue
+
+                    fad = l[pos+len(tag):]
                     fad = fad.replace('\r', '')
                     fad = fad.replace('\n', '')
 
