@@ -178,7 +178,12 @@ for (nb_levels, cfactor, nrelax, tsm, spatial_coarsening) in product(nbs_levels,
     if plot_solution:
         jg.runtime.xbraid_store_iterations = 1;
         jg.runtime.output_file_mode = 'csv';
-        if [nb_levels, cfactor, nrelax, coarsening] not in [[2,4,2,51],[2,2,2,128]]:
+        if [nb_levels, cfactor, nrelax, spatial_coarsening, tsm] not in [
+                                                                          [3,2,0,51,"l_irk_n_erk"],
+                                                                          [3,2,5,128,"l_irk_n_erk"],
+                                                                          [2,2,0,51,"l_irk_na_sl_nr_settls_uv_only"],
+                                                                          [2,2,0,128,"l_irk_na_sl_nr_settls_uv_only"],
+                                                                        ]:
             continue
 
     jg.runtime.xbraid_timestepping_method = "l_irk_n_erk," + tsm;
