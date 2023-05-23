@@ -1,0 +1,4 @@
+#!/bin/bash
+
+export PATH=$(pwd)/common_postprocessing_scripts:$PATH
+export PYTHONPATH=$(pwd)/common_postprocessing_scripts:$PYTHONPATH

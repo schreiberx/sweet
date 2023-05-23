@@ -31,7 +31,7 @@
 #include "PDESWESphere_BenchmarksCombined.hpp"
 
 // Time steppers
-#include "PDESWESphere_TimeSteppers.hpp"
+#include "time/PDESWESphere_TimeSteppers.hpp"
 
 #include<vector>
 

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if [ $MULE_PLATFORM_ID == 'dahu_llvm' ]; then
+	mule.benchmark.jobs_submit job_bench_*
+else
+	mule.benchmark.jobs_submit job_bench_*
+fi

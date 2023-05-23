@@ -1,0 +1,3 @@
+#!/bin/bash
+
+cp shtns* ../fftw_shtns_plan/.

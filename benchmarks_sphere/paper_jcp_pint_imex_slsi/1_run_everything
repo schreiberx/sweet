@@ -1,0 +1,13 @@
+#!/bin/bash
+
+cd dummy_crate_plan
+./1_run_everything
+cd ../
+
+cd three_gaussian_bumps
+./1_run_everything
+cd ../
+
+cd unstable_jet
+./1_run_everything
+cd ../

@@ -147,7 +147,7 @@ jg.runtime.xbraid_pt = 1;
 jg.runtime.xbraid_max_levels = 1
 jg.runtime.xbraid_store_iterations = 1;
 
-for nb_pt in range(1,2):
+for nb_pt in [1,2,4]:
     jg.runtime.xbraid_pt = nb_pt;
 
     params_pspace_num_cores_per_rank = [jg.platform_resources.num_cores_per_socket]

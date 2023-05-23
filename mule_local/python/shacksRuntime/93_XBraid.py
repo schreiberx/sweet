@@ -39,6 +39,7 @@ class XBraid:
         self.xbraid_path_fine_csv_files = None
         self.xbraid_store_iterations = None
         self.xbraid_spatial_coarsening = None
+        self.xbraid_no_output = None
 
 
     def load_from_dict(self, d):
@@ -118,6 +119,8 @@ class XBraid:
                     uniqueIDStr += '_xb_store_iterations'+str(self.xbraid_store_iterations)
                 if self.xbraid_spatial_coarsening != None:
                     uniqueIDStr += '_xb_spc'+str(self.xbraid_spatial_coarsening)
+                if self.xbraid_no_output != None:
+                    uniqueIDStr += '_xb_noout'+str(self.xbraid_no_output)
 
         return uniqueIDStr
 
@@ -194,5 +197,7 @@ class XBraid:
                 retRuntimeOptionsStr += " --xbraid-store-iterations="+str(self.xbraid_store_iterations)
             if self.xbraid_spatial_coarsening != None:
                 retRuntimeOptionsStr += " --xbraid-spatial-coarsening="+str(self.xbraid_spatial_coarsening)
+            if self.xbraid_no_output != None:
+                retRuntimeOptionsStr += " --xbraid-no-output="+str(self.xbraid_no_output)
 
         return retRuntimeOptionsStr

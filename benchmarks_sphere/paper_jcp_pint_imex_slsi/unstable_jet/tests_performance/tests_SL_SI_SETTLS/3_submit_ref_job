@@ -1,0 +1,7 @@
+#!/bin/bash
+
+ref_dir="fine_sim"
+
+cd $ref_dir
+mule.benchmark.jobs_submit
+cd ../

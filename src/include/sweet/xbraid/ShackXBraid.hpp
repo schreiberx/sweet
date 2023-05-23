@@ -202,6 +202,11 @@ public:
 	 */
 	int xbraid_spatial_coarsening = 0;
 
+	/**
+	 * Don't produce any output (errors / solutions)
+	 * Useful for performance tests
+	 */
+	bool xbraid_no_output = false;
 
 	/*
 	 * Check arguments
@@ -329,6 +334,7 @@ public:
 		std::cout << "	--xbraid-path-fine-csv-files [string]        XBraid parameter path_fine_csv_files, default: ''"         << std::endl;
 		std::cout << "	--xbraid-store-iterations [0/1]              XBraid parameter store_iterations, default: 0"             << std::endl;
 		std::cout << "	--xbraid-spatial-coarsening [0/1]            XBraid parameter spatial_coarsening, default: 0"           << std::endl;
+		std::cout << "	--xbraid-no-output [0/1]                     XBraid parameter no_output, default: 0"                    << std::endl;
 		std::cout << "" << std::endl;
 	}
 
@@ -369,6 +375,7 @@ public:
 		i_pa.getArgumentValueByKey("--xbraid-path-fine-csv-files", xbraid_path_fine_csv_files);
 		i_pa.getArgumentValueByKey("--xbraid-store-iterations", xbraid_store_iterations);
 		i_pa.getArgumentValueByKey("--xbraid-spatial-coarsening", xbraid_spatial_coarsening);
+		i_pa.getArgumentValueByKey("--xbraid-no-output", xbraid_no_output);
 
 		ERROR_FORWARD_ALWAYS_RETURN_BOOLEAN(i_pa);
 	}
@@ -414,6 +421,7 @@ public:
 		std::cout << " + xbraid_path_fine_csv_files: "          << xbraid_path_fine_csv_files          << std::endl;
 		std::cout << " + xbraid_store_iterations: "             << xbraid_store_iterations             << std::endl;
 		std::cout << " + xbraid_spatial_coarsening: "           << xbraid_spatial_coarsening           << std::endl;
+		std::cout << " + xbraid_no_output: "                    << xbraid_no_output                    << std::endl;
 		std::cout << std::endl;
 	}
 };

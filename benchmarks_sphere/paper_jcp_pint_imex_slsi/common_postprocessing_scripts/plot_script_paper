@@ -1,0 +1,18 @@
+#!/bin/bash
+
+date=$1
+var=$2
+ref_job=$3
+plot_type=$4         ## map, contour, both
+extent=$5            ## full, paper, zoom2
+compare_solution=$6  ## 0, 1, 2
+roll=$7
+lim_ref=$8
+input_lim=$9
+
+ref_type="ref"
+
+for f in job_*; do
+    plot_spheredata_paper.py $f/output_"$var"_t0000000"$date".csv sphere $plot_type $extent $compare_solution $ref_job/output_"$var"_t0000000"$date".csv $roll $ref_type $lim_ref $input_lim
+done
+

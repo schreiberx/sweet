@@ -59,7 +59,7 @@
 #elif SWEET_XBRAID_SPHERE
 	#include <sweet/parareal/Parareal_GenericData_SphereData_Spectral.hpp>
 	#include <sweet/core/shacksShared/ShackSphereDataOps.hpp>
-	#include "src/programs/pde_sweSphere/PDESWESphere_TimeSteppers.hpp"
+	#include "src/programs/pde_sweSphere/time/PDESWESphere_TimeSteppers.hpp"
 	#include "src/programs/pde_sweSphere/PDESWESphere_BenchmarksCombined.hpp"
 	#include "src/programs/pde_sweSphere/ShackPDESWESphere.hpp"
 	#include "src/programs/pde_sweSphere/time/ShackPDESWESphereTimeDiscretization.hpp"
@@ -1553,6 +1553,9 @@ public:
 				std::abs(fmod(t, this->shackIOData->output_each_sim_seconds) - this->shackIOData->output_each_sim_seconds) < small
 			)
 				do_output = true;
+
+			if (this->shackXBraid->xbraid_no_output)
+				do_output = false;
 
 			////if (do_output)
 			////	std::cout << "AAA " << t << " " << it << " " <<  t * simVars->iodata.output_time_scale << " " << this->simVars->iodata.output_each_sim_seconds << " " << fmod(t, this->simVars->iodata.output_each_sim_seconds) << " " << do_output << std::endl;
