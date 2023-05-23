@@ -31,7 +31,9 @@ class SphereData:
             self._read_file_sweet(filename)
 
         elif filename.endswith(".csv"):
-            raise Exception("TODO")
+            self._read_file_csv(filename)
+            setup_physical = False
+            ###raise Exception("TODO")
 
         else:
             raise Exception("Unknown file ending")
@@ -66,6 +68,11 @@ class SphereData:
 
         self.file_info['lats'] = ops.lats
         self.file_info['lons'] = ops.lons
+
+
+    def _read_file_csv(self, filename):
+        ## skip first row and column (lat-lon values)
+        self.data_physical = np.loadtxt(filename)[1:, 1:]
 
 
     def _read_file_sweet(self, filename, setup_physical=True):

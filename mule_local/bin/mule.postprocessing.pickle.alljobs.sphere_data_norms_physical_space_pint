@@ -70,6 +70,22 @@ def _process_job(job_id, job_data):
     for ref_output_file in ref_output_files:
         print(f"  + diff for: {ref_output_file}")
 
+        ## skip spectral output if physical output
+        if "_spec" in ref_output_file and ".csv" in ref_output_file:
+            continue
+
+        ## skip files containing errors computed online
+        if "xbraid_error" in ref_output_file:
+            continue
+
+        ## skip files containing xbraid residuals
+        if "residual" in ref_output_file:
+            continue
+
+        ## only read prog_* results
+        if (not "phi_pert" in ref_output_file) and (not "div" in ref_output_file) and (not "vrt" in ref_output_file):
+            continue
+
         assert "_iter" in ref_output_file
         idx = ref_output_file.find("_iter")
         ref_output_file_ref = ref_output_file[:idx] + ref_output_file[idx + 8:]
@@ -78,7 +94,8 @@ def _process_job(job_id, job_data):
         try:
             s = SphereDataNormsPhysicalSpace(
                     ref_job_data['jobgeneration.job_dirpath']+'/'+ref_output_file_ref,
-                    job_data['jobgeneration.job_dirpath']+'/'+ref_output_file
+                    job_data['jobgeneration.job_dirpath']+'/'+ref_output_file,
+                    physical_output = True
             )
 
         except Exception as e:

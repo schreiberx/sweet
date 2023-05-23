@@ -21,7 +21,7 @@ from mule.JobParallelizationDimOptions import *
 
 orders = {};
 orders["l_irk_n_erk"] = 2;
-orders["l_irk_na_sl_settls_uv_only"] = 2;
+orders["l_irk_na_sl_nr_settls_uv_only"] = 2;
 
 tsm_fine = "l_irk_n_erk"
 
@@ -30,7 +30,7 @@ tsm_fine = "l_irk_n_erk"
 jg = JobGeneration()
 
 
-jg.runtime.output_file_mode = "bin"
+jg.runtime.output_file_mode = "csv"
 
 # Verbosity mode
 jg.runtime.verbosity = 3
@@ -114,7 +114,7 @@ jg.runtime.reuse_plans = "require_load"
 jg.compile.xbraid = "mpi";
 jg.runtime.xbraid_enabled = 1;
 jg.runtime.xbraid_max_levels = 3
-jg.runtime.xbraid_skip = 1
+jg.runtime.xbraid_skip = 0
 jg.runtime.xbraid_min_coarse = 2
 jg.runtime.xbraid_nrelax = 1
 jg.runtime.xbraid_nrelax0 = -1
@@ -131,7 +131,7 @@ jg.runtime.xbraid_access_level = 1
 jg.runtime.xbraid_run_wrapper_tests = 0
 jg.runtime.xbraid_fullrnorm = 2
 jg.runtime.xbraid_use_seq_soln = 0
-jg.runtime.xbraid_use_rand = 1
+jg.runtime.xbraid_use_rand = 0
 jg.runtime.xbraid_timestepping_method = tsm_fine
 jg.runtime.xbraid_timestepping_order = orders[tsm_fine]
 jg.runtime.xbraid_timestepping_order2 = orders[tsm_fine]
@@ -148,8 +148,7 @@ jg.runtime.xbraid_max_levels = 1
 jg.runtime.xbraid_store_iterations = 1;
 
 tsms_fine = [tsm_fine]
-###tsms_coarse = ["l_irk_n_erk", "l_irk_na_sl_settls_uv_only"]
-tsms_coarse = ["l_irk_n_erk"]
+tsms_coarse = ["l_irk_n_erk", "l_irk_na_sl_nr_settls_uv_only"]
 jg.runtime.xbraid_store_iterations = 1;
 jg.runtime.xbraid_access_level = 2;
 
