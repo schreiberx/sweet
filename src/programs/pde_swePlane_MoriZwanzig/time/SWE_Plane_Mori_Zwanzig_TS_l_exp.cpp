@@ -35,7 +35,7 @@ bool SWE_Plane_Mori_Zwanzig_TS_l_exp::setup(
 	ops = io_ops;
 
 	if (shackPlaneDataOps->space_grid_use_c_staggering)
-		SWEETError("Staggering not supported for l_rexi");
+		SWEETError("Staggering not supported for l_exp");
 
 #if !SWEET_USE_LIBFFT
 	std::cerr << "Spectral space required for solvers, use compile option --libfft=enable" << std::endl;
@@ -61,13 +61,6 @@ bool SWE_Plane_Mori_Zwanzig_TS_l_exp::setup(
 
 
 void SWE_Plane_Mori_Zwanzig_TS_l_exp::runTimestep(
-/////		const sweet::PlaneData_Spectral &i_h_pert,	///< prognostic variables
-/////		const sweet::PlaneData_Spectral &i_u,	///< prognostic variables
-/////		const sweet::PlaneData_Spectral &i_v,	///< prognostic variables
-/////
-/////		sweet::PlaneData_Spectral &o_h_pert,	///< prognostic variables
-/////		sweet::PlaneData_Spectral &o_u,	///< prognostic variables
-/////		sweet::PlaneData_Spectral &o_v,	///< prognostic variables
 
 		const sweet::PlaneData_Spectral &i_h_pert_SP,		///< prognostic variables
 		const sweet::PlaneData_Spectral &i_u_SP,		///< prognostic variables
@@ -123,13 +116,6 @@ bool SWE_Plane_Mori_Zwanzig_TS_l_exp::shackRegistration(
 }
 
 void SWE_Plane_Mori_Zwanzig_TS_l_exp::run_timestep_real(
-//		const sweet::PlaneData_Spectral &i_h_pert,	///< prognostic variables
-//		const sweet::PlaneData_Spectral &i_u,		///< prognostic variables
-//		const sweet::PlaneData_Spectral &i_v,		///< prognostic variables
-//
-//		sweet::PlaneData_Spectral &o_h_pert,	///< prognostic variables
-//		sweet::PlaneData_Spectral &o_u,			///< prognostic variables
-//		sweet::PlaneData_Spectral &o_v,			///< prognostic variables
 
 		const sweet::PlaneData_Spectral &i_h_pert_SP,		///< prognostic variables
 		const sweet::PlaneData_Spectral &i_u_SP,		///< prognostic variables

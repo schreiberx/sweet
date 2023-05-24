@@ -18,7 +18,6 @@ bool SWE_Plane_Mori_Zwanzig_TS_l_direct::shackRegistration(
 )
 {
 
-	/////normal_modes.shackRegistration(*io_shackDict);
 	PDESWEPlaneMoriZwanzigTS_BaseInterface::shackRegistration(io_shackDict);
 
 	return true;
@@ -39,8 +38,6 @@ bool SWE_Plane_Mori_Zwanzig_TS_l_direct::setup(
 
 	expFunctions.setup(i_function_name);
 	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(expFunctions);
-
-	////this->normal_modes.setup();
 
 	this->normal_modes.setup(
 					shackPDESWEPlane->plane_rotating_f0,
@@ -64,9 +61,6 @@ bool SWE_Plane_Mori_Zwanzig_TS_l_direct::setup(
 
 
 void SWE_Plane_Mori_Zwanzig_TS_l_direct::runTimestep(
-///		sweet::PlaneData_Spectral &io_h_pert,	///< prognostic variables
-///		sweet::PlaneData_Spectral &io_u,	///< prognostic variables
-///		sweet::PlaneData_Spectral &io_v,	///< prognostic variables
 
 		sweet::PlaneData_Spectral &io_h_pert_SP,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_u_SP,	///< prognostic variables
@@ -106,9 +100,6 @@ void SWE_Plane_Mori_Zwanzig_TS_l_direct::runTimestep(
  * Computation of analytical solution on staggered grid
  */
 void SWE_Plane_Mori_Zwanzig_TS_l_direct::run_timestep_cgrid(
-///		sweet::PlaneData_Spectral &io_h_pert,	///< prognostic variables
-///		sweet::PlaneData_Spectral &io_u,		///< prognostic variables
-///		sweet::PlaneData_Spectral &io_v,		///< prognostic variables
 
 		sweet::PlaneData_Spectral &io_h_pert_SP,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_u_SP,	///< prognostic variables
@@ -159,11 +150,6 @@ void SWE_Plane_Mori_Zwanzig_TS_l_direct::run_timestep_cgrid(
 	t_u_SP_spec.loadPlaneDataPhysical(t_u_FQ);
 	t_v_SP_spec.loadPlaneDataPhysical(t_v_FQ);
 
-	////run_timestep_agrid(
-	////		io_h_pert, t_u_spec, t_v_spec,
-	////		i_dt, i_simulation_timestamp
-	////);
-
 	run_timestep_agrid(
 					io_h_pert_SP, t_u_SP_spec, t_v_SP_spec,
 					io_h_pert_SQ, t_u_SQ_spec, t_v_SQ_spec,
@@ -191,9 +177,6 @@ void SWE_Plane_Mori_Zwanzig_TS_l_direct::run_timestep_cgrid(
 
 
 void SWE_Plane_Mori_Zwanzig_TS_l_direct::run_timestep_agrid(
-////		sweet::PlaneData_Spectral &io_h_pert,	///< prognostic variables
-////		sweet::PlaneData_Spectral &io_u,	///< prognostic variables
-////		sweet::PlaneData_Spectral &io_v,	///< prognostic variables
 
 		sweet::PlaneData_Spectral &io_h_pert_SP,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_u_SP,	///< prognostic variables
@@ -232,9 +215,6 @@ void SWE_Plane_Mori_Zwanzig_TS_l_direct::run_timestep_agrid(
  * for the dimension full formulation.
  */
 void SWE_Plane_Mori_Zwanzig_TS_l_direct::run_timestep_agrid_planedata(
-////		sweet::PlaneData_Spectral &io_h_pert,	///< prognostic variables
-////		sweet::PlaneData_Spectral &io_u,	///< prognostic variables
-////		sweet::PlaneData_Spectral &io_v,	///< prognostic variables
 
 		sweet::PlaneData_Spectral &io_h_pert_SP,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_u_SP,	///< prognostic variables
@@ -283,43 +263,10 @@ void SWE_Plane_Mori_Zwanzig_TS_l_direct::run_timestep_agrid_planedata(
 
 			T k0 = (T)ik0;
 
-
+			// get eigenvectors matrix, its inverse and eigenvalues
 			normal_modes.eigendecomposition(k0, k1, eigenvalues, eigenvectors, eigenvectors_inv);
 
-			//////*
-			///// * Invert Eigenvalue matrix
-			///// */
-			/////complex eigenvectors_inv[3][3];
 
-			/////eigenvectors_inv[0][0] =  (eigenvectors[1][1]*eigenvectors[2][2] - eigenvectors[1][2]*eigenvectors[2][1]);
-			/////eigenvectors_inv[0][1] = -(eigenvectors[0][1]*eigenvectors[2][2] - eigenvectors[0][2]*eigenvectors[2][1]);
-			/////eigenvectors_inv[0][2] =  (eigenvectors[0][1]*eigenvectors[1][2] - eigenvectors[0][2]*eigenvectors[1][1]);
-
-			/////eigenvectors_inv[1][0] = -(eigenvectors[1][0]*eigenvectors[2][2] - eigenvectors[1][2]*eigenvectors[2][0]);
-			/////eigenvectors_inv[1][1] =  (eigenvectors[0][0]*eigenvectors[2][2] - eigenvectors[0][2]*eigenvectors[2][0]);
-			/////eigenvectors_inv[1][2] = -(eigenvectors[0][0]*eigenvectors[1][2] - eigenvectors[0][2]*eigenvectors[1][0]);
-
-			/////eigenvectors_inv[2][0] =  (eigenvectors[1][0]*eigenvectors[2][1] - eigenvectors[1][1]*eigenvectors[2][0]);
-			/////eigenvectors_inv[2][1] = -(eigenvectors[0][0]*eigenvectors[2][1] - eigenvectors[0][1]*eigenvectors[2][0]);
-			/////eigenvectors_inv[2][2] =  (eigenvectors[0][0]*eigenvectors[1][1] - eigenvectors[0][1]*eigenvectors[1][0]);
-
-			/////complex s = eigenvectors[0][0]*eigenvectors_inv[0][0] + eigenvectors[0][1]*eigenvectors_inv[1][0] + eigenvectors[0][2]*eigenvectors_inv[2][0];
-
-			/////for (int j = 0; j < 3; j++)
-			/////	for (int i = 0; i < 3; i++)
-			/////		eigenvectors_inv[j][i] /= s;
-
-			// Compute Q * phin(Dt * Lambda)
-			complex v_lambda[3][3];
-			for (int i = 0; i < 3; i++)
-			{
-
-				std::complex<T> &lam = eigenvalues[i];
-
-				std::complex<T> K = expFunctions.eval(lam*dt);
-				for (int j = 0; j < 3; j++)
-					v_lambda[j][i] = eigenvectors[j][i] * K;
-			}
 
 			complex U_SP[3];
 			complex U_FQ[3];
@@ -330,30 +277,39 @@ void SWE_Plane_Mori_Zwanzig_TS_l_direct::run_timestep_agrid_planedata(
 			U_FQ[1] = io_u_FQ.spectral_get(ik1, ik0);
 			U_FQ[2] = io_v_FQ.spectral_get(ik1, ik0);
 
-			complex U_SP_copy[3];
-			complex U_FQ_copy[3];
+			// Compute Qinv * U
+			complex UEV_SP[3] = {0., 0., 0.};
+			complex UEV_FQ[3] = {0., 0., 0.};
+			for (int k = 0; k < 3; k++)
+				for (int j = 0; j < 3; j++)
+				{
+					UEV_SP[k] += eigenvectors_inv[k][j] * U_SP[j];
+					UEV_FQ[k] += eigenvectors_inv[k][j] * U_FQ[j];
+				}
+
+			// Compute phin(Dt * Lambda) * [Qinv * U]
 			for (int k = 0; k < 3; k++)
 			{
-				U_SP_copy[k] = U_SP[k];
-				U_FQ_copy[k] = U_FQ[k];
-				U_SP[k] = 0.0;
-				U_FQ[k] = 0.0;
+				std::complex<T> &lam = eigenvalues[k];
+
+				std::complex<T> K = expFunctions.eval(lam*dt);
+
+				UEV_SP[k] = K * UEV_SP[k];
+				UEV_FQ[k] = K * UEV_FQ[k];
 			}
 
-
-			// Compute  [Q*phin(Dt*Lambda)]*Q^{-1}
-			for (int j = 0; j < 3; j++)
+			// Compute Q * [phin * Qinv * U]
+			for (int k = 0; k < 3; k++)
 			{
-				for (int i = 0; i < 3; i++)
-				{
-					std::complex<double> d = 0.;
-					for (int k = 0; k < 3; k++)
-						d += v_lambda[j][k] * eigenvectors_inv[k][i];
-
-					U_SP[j] += d * U_SP_copy[j];
-					U_FQ[j] += d * U_FQ_copy[j];
-				}
+				U_SP[k] = 0.;
+				U_FQ[k] = 0.;
 			}
+			for (int k = 0; k < 3; k++)
+				for (int j = 0; j < 3; j++)
+				{
+					U_SP[k] += eigenvectors[k][j] * UEV_SP[j];
+					U_FQ[k] += eigenvectors[k][j] * UEV_FQ[j];
+				}
 
 #if SWEET_QUADMATH
 			std::complex<double> tmp0(U_SP[0].real(), U_SP[0].imag());

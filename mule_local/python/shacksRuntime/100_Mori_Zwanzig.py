@@ -35,50 +35,49 @@ class Mori_Zwanzig:
     ):
         uniqueIDStr = ''
         if not 'runtime.mori_zwanzig' in filter_list:
-            if self.xbraid_enabled:
-                uniqueIDStr += '_MZ'
-                if self.MZ_S_geostrophic_min != None:
-                    uniqueIDStr += '_MZ_S_min_geostr'+str(self.MZ_S_geostrophic_min)
-                if self.MZ_S_geostrophic_max != None:
-                    uniqueIDStr += '_MZ_S_max_geostr'+str(self.MZ_S_geostrophic_max)
-                if self.MZ_S_gravity_west_min != None:
-                    uniqueIDStr += '_MZ_S_min_gw'+str(self.MZ_S_gravity_west_min)
-                if self.MZ_S_gravity_west_max != None:
-                    uniqueIDStr += '_MZ_S_max_gw'+str(self.MZ_S_gravity_west_max)
-                if self.MZ_S_gravity_east_min != None:
-                    uniqueIDStr += '_MZ_S_min_ge'+str(self.MZ_S_gravity_east_min)
-                if self.MZ_S_gravity_east_max != None:
-                    uniqueIDStr += '_MZ_S_max_ge'+str(self.MZ_S_gravity_east_max)
+            uniqueIDStr += '_MZ'
+            if self.MZ_S_geostrophic_min != None:
+                uniqueIDStr += '_MZ_S_min_geostr'+str(self.MZ_S_geostrophic_min)
+            if self.MZ_S_geostrophic_max != None:
+                uniqueIDStr += '_MZ_S_max_geostr'+str(self.MZ_S_geostrophic_max)
+            if self.MZ_S_gravity_west_min != None:
+                uniqueIDStr += '_MZ_S_min_gw'+str(self.MZ_S_gravity_west_min)
+            if self.MZ_S_gravity_west_max != None:
+                uniqueIDStr += '_MZ_S_max_gw'+str(self.MZ_S_gravity_west_max)
+            if self.MZ_S_gravity_east_min != None:
+                uniqueIDStr += '_MZ_S_min_ge'+str(self.MZ_S_gravity_east_min)
+            if self.MZ_S_gravity_east_max != None:
+                uniqueIDStr += '_MZ_S_max_ge'+str(self.MZ_S_gravity_east_max)
 
-                if self.MZ_F_geostrophic_min != None:
-                    uniqueIDStr += '_MZ_F_min_geostr'+str(self.MZ_F_geostrophic_min)
-                if self.MZ_F_geostrophic_max != None:
-                    uniqueIDStr += '_MZ_F_max_geostr'+str(self.MZ_F_geostrophic_max)
-                if self.MZ_F_gravity_west_min != None:
-                    uniqueIDStr += '_MZ_F_min_gw'+str(self.MZ_F_gravity_west_min)
-                if self.MZ_F_gravity_west_max != None:
-                    uniqueIDStr += '_MZ_F_max_gw'+str(self.MZ_F_gravity_west_max)
-                if self.MZ_F_gravity_east_min != None:
-                    uniqueIDStr += '_MZ_F_min_ge'+str(self.MZ_F_gravity_east_min)
-                if self.MZ_F_gravity_east_max != None:
-                    uniqueIDStr += '_MZ_F_max_ge'+str(self.MZ_F_gravity_east_max)
+            if self.MZ_F_geostrophic_min != None:
+                uniqueIDStr += '_MZ_F_min_geostr'+str(self.MZ_F_geostrophic_min)
+            if self.MZ_F_geostrophic_max != None:
+                uniqueIDStr += '_MZ_F_max_geostr'+str(self.MZ_F_geostrophic_max)
+            if self.MZ_F_gravity_west_min != None:
+                uniqueIDStr += '_MZ_F_min_gw'+str(self.MZ_F_gravity_west_min)
+            if self.MZ_F_gravity_west_max != None:
+                uniqueIDStr += '_MZ_F_max_gw'+str(self.MZ_F_gravity_west_max)
+            if self.MZ_F_gravity_east_min != None:
+                uniqueIDStr += '_MZ_F_min_ge'+str(self.MZ_F_gravity_east_min)
+            if self.MZ_F_gravity_east_max != None:
+                uniqueIDStr += '_MZ_F_max_ge'+str(self.MZ_F_gravity_east_max)
 
-                if self.MZ_epsilon != None:
-                    uniqueIDStr += '_MZ_epsilon'+str(self.MZ_epsilon)
-                if self.MZ_F != None:
-                    uniqueIDStr += '_MZ_F'+str(self.MZ_F)
-                if self.MZ_timestepping_method_P != None:
-                    uniqueIDStr += '_MZ_tsm_P'+str(self.MZ_timestepping_method_P)
-                if self.MZ_timestepping_method_Q != None:
-                    uniqueIDStr += '_MZ_tsm_Q'+str(self.MZ_timestepping_method_Q)
-                if self.MZ_timestepping_order_P != None:
-                    uniqueIDStr += '_MZ_tso_P'+str(self.MZ_timestepping_order_P)
-                if self.MZ_timestepping_order_Q != None:
-                    uniqueIDStr += '_MZ_tso_Q'+str(self.MZ_timestepping_order_Q)
-                if self.MZ_timestepping_order2_P != None:
-                    uniqueIDStr += '_MZ_tso2_P'+str(self.MZ_timestepping_order2_P)
-                if self.MZ_timestepping_order2_Q != None:
-                    uniqueIDStr += '_MZ_tso2_Q'+str(self.MZ_timestepping_order2_Q)
+            if self.MZ_epsilon != None:
+                uniqueIDStr += '_MZ_epsilon'+str(self.MZ_epsilon)
+            if self.MZ_F != None:
+                uniqueIDStr += '_MZ_F'+str(self.MZ_F)
+            if self.MZ_timestepping_method_P != None:
+                uniqueIDStr += '_MZ_tsm_P'+str(self.MZ_timestepping_method_P)
+            if self.MZ_timestepping_method_Q != None:
+                uniqueIDStr += '_MZ_tsm_Q'+str(self.MZ_timestepping_method_Q)
+            if self.MZ_timestepping_order_P != None:
+                uniqueIDStr += '_MZ_tso_P'+str(self.MZ_timestepping_order_P)
+            if self.MZ_timestepping_order_Q != None:
+                uniqueIDStr += '_MZ_tso_Q'+str(self.MZ_timestepping_order_Q)
+            if self.MZ_timestepping_order2_P != None:
+                uniqueIDStr += '_MZ_tso2_P'+str(self.MZ_timestepping_order2_P)
+            if self.MZ_timestepping_order2_Q != None:
+                uniqueIDStr += '_MZ_tso2_Q'+str(self.MZ_timestepping_order2_Q)
 
         return uniqueIDStr
 

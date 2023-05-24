@@ -95,7 +95,7 @@ public:
 		{
 			timestepper = static_cast<PDESWEPlaneMoriZwanzigTS_BaseInterface*>(new SWE_Plane_Mori_Zwanzig_TS_l_exp_n_erk);
 		}
-		if (timestepping_method == "l_irk_n_erk")
+		else if (timestepping_method == "l_irk_n_erk")
 		{
 			timestepper = static_cast<PDESWEPlaneMoriZwanzigTS_BaseInterface*>(new SWE_Plane_Mori_Zwanzig_TS_l_irk_n_erk);
 		}
