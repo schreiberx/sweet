@@ -1,0 +1,15 @@
+-->Numerical simulations of the paper
+	"Parallel-in-time integration of the shallow water equations on the rotating sphere using Parareal and MGRIT"
+	by J. G. Caldas Steinstraesser, P. da Silva Peixoto and Martin Schreiber
+	submitted to the Journal of Computational Physics
+
+--> Test cases:
+	:: Three Gaussian bumps
+	:: Unstable jet (Galewsky)
+
+--> Run:
+	source 0_configure
+	./1_run_everything
+
+--> TODO:
+	:: rewrite postprocessing scripts using MULE scripts

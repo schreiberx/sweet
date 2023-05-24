@@ -1,0 +1,8 @@
+#!/bin/bash
+
+for t in {0000.00000000,0036.00000000}; do
+	for extent in full; do
+		plot_script_paper $t prog_phi job_bench_COMP_plspec_pldeal_spspec_spdeal_fft_mpi_thomp_debug_RT_bthree_gaussian_bumps_phi_pint_g09.81_h01000_1b0d4e03104824b274f8c984bed6bc9b  map $extent 0 1 1
+		plot_script_paper $t prog_phi job_bench_COMP_plspec_pldeal_spspec_spdeal_fft_mpi_thomp_debug_RT_bthree_gaussian_bumps_phi_pint_g09.81_h01000_1b0d4e03104824b274f8c984bed6bc9b  map $extent 2 1 0
+	done
+done

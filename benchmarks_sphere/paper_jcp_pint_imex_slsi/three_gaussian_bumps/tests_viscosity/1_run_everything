@@ -1,0 +1,15 @@
+#!/bin/bash
+
+cd tests_order_coefficient
+./1_create_jobs
+./2_copy_plan
+./3_submit_xbraid_jobs
+./4_postprocessing
+cd ../
+
+cd plot_solution
+./1_create_jobs
+./2_copy_plan
+./3_submit_xbraid_jobs
+./4_postprocessing
+cd ../

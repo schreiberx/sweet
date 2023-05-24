@@ -1,0 +1,10 @@
+#!/bin/bash
+
+## compute errors relative to reference solution (M = 512)
+python3 compute_error_NEW.py
+
+## plot kinetic energy spectra
+python3 plot_spectrum.py
+
+## plot physical solution
+./plot_script

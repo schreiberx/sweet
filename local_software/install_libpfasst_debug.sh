@@ -32,9 +32,9 @@ if [[ $? -eq 0 ]]; then
 	echo "$MULE_MPIF90 seems to support -fallow-argument-mismatch, using this per default"
 	echo "FFLAGS += -fallow-argument-mismatch" >> Makefile.local
 fi
-#Comment the next line when installing on linux cluster
-rm -rf "${TMPDIR}"
 
+# DO NOT UNCOMMENT THIS, since linux cluster reuses the TMPDIR for creating a temporary file
+#rm -rf "${TMPDIR}"
 
 # Disable LTO since this doesn't work on all platforms
 echo "LDFLAGS += -fno-lto" >> Makefile.local
@@ -59,8 +59,8 @@ echo "LDFLAGS += -I$INCDIR -I$INCDIR_LIBPFASST" >> Makefile.local
 
 # Set to true to get Debug version
 if true; then
-	TMPFILE=$(mktemp)
-	cp Makefile.local "${TMPFILE}"
+	TMPFILE=$(mktemp) || exit 1
+	cp Makefile.local "${TMPFILE}" || exit 1
 	echo "DEBUG = TRUE" > Makefile.local
 	echo "" >> Makefile.local
 	cat "${TMPFILE}" >> Makefile.local

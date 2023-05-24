@@ -164,36 +164,14 @@ public:
 		o_ostream << i_prefix << "TODO" << std::endl;
 	}
 
-#if 0
 
 /*
  * Martin@Joao Please let's discuss this.
  */
 // needed for parareal (instead of using directly shackDict.disc.timestepping_method)
-protected:
-	std::string timestepping_method;
-	int timestepping_order;
-	int timestepping_order2;
-
-public:
-
-	/*
-	 * Timestepping interface used by main timestepping loop
-	 */
-	virtual void runTimestep(
-			sweet::SphereData_Spectral &io_h,
-			sweet::SphereData_Spectral &io_u,
-			sweet::SphereData_Spectral &io_v,
-
-			double i_fixed_dt,
-			double i_simulation_timestamp
-	) = 0;
-
-	virtual ~PDESWESphereTS_BaseInterface() {}
-
 #if (SWEET_PARAREAL && SWEET_PARAREAL_SPHERE) || (SWEET_XBRAID && SWEET_XBRAID_SPHERE)
 	void runTimestep(
-			Parareal_GenericData* io_data,
+			sweet::Parareal_GenericData* io_data,
 
 			double i_dt,		///< time step size
 			double i_sim_timestamp
@@ -215,7 +193,6 @@ public:
 	}
 
 
-
 	// for parareal SL
 	virtual void set_previous_solution(
 				sweet::SphereData_Spectral &i_phi_prev,
@@ -227,7 +204,7 @@ public:
 
 	// for parareal SL
 	void set_previous_solution(
-			Parareal_GenericData* i_data
+			sweet::Parareal_GenericData* i_data
 	)
 	{
 		sweet::SphereData_Spectral phi_prev = *i_data->get_pointer_to_data_SphereData_Spectral()->simfields[0];
@@ -236,7 +213,6 @@ public:
 
 		set_previous_solution(phi_prev, vrt_prev, div_prev);
 	};
-#endif
 
 #endif
 };

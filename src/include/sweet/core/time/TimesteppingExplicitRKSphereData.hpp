@@ -852,7 +852,7 @@ public:
 
 			// STAGE 3
 			(i_baseClass->*i_compute_euler_timestep_update)(
-					io_h	+ i_dt*( a3[0]*(*RK_prog0_stage_t[0]) + a3[1]*(*RK_prog0_stage_t[1]) ),
+					io_h	+ i_dt*( a3[1]*(*RK_prog0_stage_t[1]) ),
 					*RK_prog0_stage_t[2],
 					i_dt,
 					i_simulation_time + c[1]*i_dt

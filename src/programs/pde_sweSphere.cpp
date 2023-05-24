@@ -3,6 +3,7 @@
  *
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/pde_sweSphere/
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/pde_sweSphere/time
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/pde_sweSphere/timeTree
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/pde_sweSphere/benchmarks
  *
  * MULE_SCONS_OPTIONS: --sphere-spectral-space=enable

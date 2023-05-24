@@ -758,14 +758,14 @@ public:
 		if (shtns == nullptr)
 			return;
 
-		fftw_free(lat);
-		lat = nullptr;
+		fftw_free(lat_cogaussian);
+		lat_cogaussian = nullptr;
 
 		fftw_free(lat_gaussian);
 		lat_gaussian = nullptr;
 
-		fftw_free(lat_cogaussian);
-		lat_cogaussian = nullptr;
+		fftw_free(lat);
+		lat = nullptr;
 
 		shtns_unset_grid(shtns);
 		shtns_destroy(shtns);

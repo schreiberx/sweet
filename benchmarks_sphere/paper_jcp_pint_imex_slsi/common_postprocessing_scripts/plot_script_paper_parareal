@@ -1,0 +1,17 @@
+#!/bin/bash
+
+date=$1
+iter=$2
+var=$3
+ref_job=$4
+plot_type=$5         ## map, contour, both
+extent=$6            ## full, paper, zoom2
+compare_solution=$7  ## 0, 1, 2
+roll=$8              ## + 180^o in longitude
+ref_type=$9          ## ref, fine
+lim_ref=${10}        ## colobar range = min max of reference solution
+input_lim=${11}      ## fixed colorbar range
+
+for f in job_*; do
+    plot_spheredata_paper.py $f/output_"$var"_t0000000"$date"_iter"$iter".csv sphere $plot_type $extent $compare_solution $ref_job/output_"$var"_t0000000"$date".csv $roll $ref_type $lim_ref $input_lim
+done

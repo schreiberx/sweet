@@ -9,23 +9,27 @@ from mule.postprocessing.SphereData import *
 
 class SphereDataNormsPhysicalSpace:
 
-    def __init__(self, filename_a = None, filename_b = None, i_output_file = None):
+    def __init__(self, filename_a = None, filename_b = None, i_output_file = None, physical_output = False):
 
         if filename_b != None:
-            self.compute_diff(filename_a, filename_b)
+            self.compute_diff(filename_a, filename_b, physical_output)
 
         if i_output_file is not None:
             self.write_file(i_output_pickle_file)
-
 
 
     def compute_diff(
             self,
             filename_a,
             filename_b,
+            physical_output
         ):
-        file_a = SphereData(filename_a, setup_physical=True)
-        file_b = SphereData(filename_b, setup_physical=True)
+        if physical_output:
+            file_a = SphereData(filename_a, setup_physical = False)
+            file_b = SphereData(filename_b, setup_physical = False)
+        else:
+            file_a = SphereData(filename_a, setup_physical=True)
+            file_b = SphereData(filename_b, setup_physical=True)
 
         self.norm_l1_value = 0.0
         self.norm_l2_value = 0.0

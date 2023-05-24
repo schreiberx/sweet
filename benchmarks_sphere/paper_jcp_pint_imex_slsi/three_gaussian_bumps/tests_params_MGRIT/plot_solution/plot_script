@@ -1,0 +1,5 @@
+#!/bin/bash
+
+for iter in {000,005,007,010}; do
+	plot_script_paper_parareal 0036.00000000 $iter prog_phi job_bench_COMP_plspec_pldeal_spspec_spdeal_fft_mpi_thomp_debug_RT_bthree_gaussian_bumps_phi_pint_g09.81_h01000_47578e2c524acfe7364ffd71cc0f7b46 map full 2 1 fine 0 ##0.25
+done

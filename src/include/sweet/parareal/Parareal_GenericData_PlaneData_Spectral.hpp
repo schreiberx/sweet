@@ -14,29 +14,29 @@
 
 template <int N>
 class Parareal_GenericData_PlaneData_Spectral :
-		public Parareal_GenericData
+		public sweet::Parareal_GenericData
 {
 	class DataContainer_PlaneData_Spectral:
-			public Parareal_GenericData::DataContainer<PlaneData_Spectral*>
+			public sweet::Parareal_GenericData::DataContainer<sweet::PlaneData_Spectral*>
 	{
 
 
 	public:
 
-		DataContainer_PlaneData_Spectral(PlaneDataConfig* i_planeDataConfig)
+		DataContainer_PlaneData_Spectral(sweet::PlaneData_Config* i_planeDataConfig)
 		{
 			this->nb_fields = N;
-			this->simfields = new PlaneData_Spectral*[N];
+			this->simfields = new sweet::PlaneData_Spectral*[N];
 			for (int i = 0; i < N; i++)
-				this->simfields[i] = new PlaneData_Spectral(i_planeDataConfig);
+				this->simfields[i] = new sweet::PlaneData_Spectral(i_planeDataConfig);
 		};
 
 		DataContainer_PlaneData_Spectral(
-				PlaneData_Spectral* i_simfields[N]
+				sweet::PlaneData_Spectral* i_simfields[N]
 		)
 		{
 			this->nb_fields = N;
-			this->simfields = new PlaneData_Spectral*[N];
+			this->simfields = new sweet::PlaneData_Spectral*[N];
 			for (int i = 0; i < N; i++)
 				*(this->simfields[i]) = *(i_simfields[i]);
 		};
@@ -45,7 +45,7 @@ class Parareal_GenericData_PlaneData_Spectral :
 		{
 			this->nb_fields = N;
 			this->level = i_data.level;
-			this->simfields = new PlaneData_Spectral*[N];
+			this->simfields = new sweet::PlaneData_Spectral*[N];
 			for (int i = 0; i < N; i++)
 				*(this->simfields[i]) = *(i_data.simfields[i]);
 		};
@@ -72,10 +72,10 @@ class Parareal_GenericData_PlaneData_Spectral :
 
 public:
 
-	DataContainer<PlaneData_Spectral*>* data = nullptr;
+	DataContainer<sweet::PlaneData_Spectral*>* data = nullptr;
 
 public:
-	DataContainer<PlaneData_Spectral*>* get_pointer_to_data_PlaneData_Spectral() const override
+	DataContainer<sweet::PlaneData_Spectral*>* get_pointer_to_data_PlaneData_Spectral() const override
 	{
 		return this->data;
 	};
@@ -83,7 +83,7 @@ public:
 public:
 
 	Parareal_GenericData_PlaneData_Spectral():
-		Parareal_GenericData()
+		sweet::Parareal_GenericData()
 	{
 		////this->allocate_data();
 	}
@@ -137,7 +137,7 @@ public:
 	 * Setup data
 	 */
 	void setup(
-				PlaneData_Spectral* i_simfields[N]
+				sweet::PlaneData_Spectral* i_simfields[N]
 	)
 	{
 		this->get_pointer_to_data_PlaneData_Spectral()->simfields = i_simfields;
@@ -225,7 +225,7 @@ public:
 
 		for (int i = 0; i < N; i++)
 		{
-			PlaneData_Physical data_phys = this->data->simfields[i]->toPhys();
+			sweet::PlaneData_Physical data_phys = this->data->simfields[i]->toPhys();
 			if (!found_nan)
 			{
 				for (int ix = 0; ix < physical_size_x; ++ix)
@@ -303,10 +303,10 @@ public:
 
 	void dataArrays_to_GenericData_PlaneData_Spectral(
 	#if SWEET_PARAREAL_PLANE_SWE || SWEET_XBRAID_PLANE_SWE
-								PlaneData_Spectral &h,
+								sweet::PlaneData_Spectral &h,
 	#endif
-								PlaneData_Spectral &u,
-								PlaneData_Spectral &v
+								sweet::PlaneData_Spectral &u,
+								sweet::PlaneData_Spectral &v
 							) override
 	{
 	#if SWEET_PARAREAL_PLANE_SWE || SWEET_XBRAID_PLANE_SWE
@@ -321,10 +321,10 @@ public:
 
 	void GenericData_PlaneData_Spectral_to_dataArrays(
 	#if SWEET_PARAREAL_PLANE_SWE || SWEET_XBRAID_PLANE_SWE
-								PlaneData_Spectral &h,
+								sweet::PlaneData_Spectral &h,
 	#endif
-								PlaneData_Spectral &u,
-								PlaneData_Spectral &v
+								sweet::PlaneData_Spectral &u,
+								sweet::PlaneData_Spectral &v
 							) override
 	{
 	#if SWEET_PARAREAL_PLANE_SWE || SWEET_XBRAID_PLANE_SWE
