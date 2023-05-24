@@ -1,0 +1,15 @@
+#!/bin/bash
+
+cd convergence_time_ref
+./1_create_jobs
+./2_submit_jobs
+./3_postprocessing
+cd ../
+
+cd tests_params_MGRIT
+./1_run_everything
+cd ../
+
+cd tests_performance
+./1_run_everything
+cd ../

@@ -8,6 +8,9 @@
 
 #include <sweet/core/defaultPrecompilerValues.hpp>
 
+#include <sweet/core/ErrorBase.hpp>
+#include <sweet/core/shacksShared/ShackIOData.hpp>
+
 /*
  * Contains functions used by both Parareal and Xbraid (and possibly PFASST?) implementations in SWEET,
  * mostly error computation and file output functions.
@@ -16,14 +19,19 @@
 #ifndef SRC_INCLUDE_PINT_COMMON_HPP_
 #define SRC_INCLUDE_PINT_COMMON_HPP_
 
-#include <sweet/core/SimulationVariables.hpp>
+/////#include <sweet/core/SimulationVariables.hpp>
 #include <sweet/parareal/Parareal_GenericData.hpp>
 #if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
 	#include <sweet/parareal/Parareal_GenericData_Scalar.hpp>
 #elif SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
+	#include <sweet/core/plane/PlaneOperators.hpp>
 	#include <sweet/parareal/Parareal_GenericData_PlaneData_Spectral.hpp>
+	#include <sweet/core/shacksShared/ShackPlaneDataOps.hpp>
+	#include <sweet/core/plane/PlaneDataGridMapping.hpp>
 #elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
 	#include <sweet/parareal/Parareal_GenericData_SphereData_Spectral.hpp>
+	#include <sweet/core/shacksShared/ShackSphereDataOps.hpp>
+	#include "src/programs/pde_sweSphere/ShackPDESWESphere.hpp"
 #endif
 
 #include <map>
@@ -32,21 +40,33 @@ class PInT_Common
 {
 
 protected:
-	SimulationVariables* simVars = nullptr;
+	///SimulationVariables* simVars = nullptr;
+
+	sweet::ErrorBase error;
+
+	sweet::ShackIOData* shackIOData;
 
 #if SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
 	// Grid Mapping (staggered grid)
-	PlaneDataGridMapping gridMapping;
+	sweet::PlaneDataGridMapping gridMapping;
 #endif
 
 	// Operators and DataConfig
 #if SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
-	std::vector<PlaneOperators*> op_plane;
-	std::vector<PlaneDataConfig*> planeDataConfig;
+	sweet::PlaneOperators* base_op_plane;
+	sweet::PlaneData_Config* base_planeDataConfig;
+	std::vector<sweet::PlaneOperators*> op_plane;
+	std::vector<sweet::PlaneData_Config*> planeDataConfig;
+	sweet::ShackPlaneDataOps* shackPlaneDataOps;
 #elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
-	std::vector<SphereOperators*> op_sphere;
-	std::vector<SphereOperators*> op_sphere_nodealiasing;
-	std::vector<SphereData_Config*> sphereDataConfig;
+	sweet::SphereOperators* base_op_sphere;
+	sweet::SphereOperators* base_op_sphere_nodealiasing;
+	sweet::SphereData_Config* base_sphereDataConfig;
+	std::vector<sweet::SphereOperators*> op_sphere;
+	std::vector<sweet::SphereOperators*> op_sphere_nodealiasing;
+	std::vector<sweet::SphereData_Config*> sphereDataConfig;
+	sweet::ShackSphereDataOps* shackSphereDataOps;
+	ShackPDESWESphere* shackPDESWESphere;
 #endif
 
 	// list of SL schemes
@@ -95,9 +115,24 @@ public:
 
 	void setup(
 			///SimulationVariables* i_simVars
+			sweet::ShackIOData* i_shackIOData
+#if SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
+			,
+			sweet::ShackPlaneDataOps* i_shackPlaneDataOps
+#elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
+			,
+			sweet::ShackSphereDataOps* i_shackSphereDataOps
+#endif
 	)
 	{
 		////this->simVars = i_simVars;
+
+		this->shackIOData = i_shackIOData;
+#if SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
+		this->shackPlaneDataOps = i_shackPlaneDataOps;
+#elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
+		this->shackSphereDataOps = i_shackSphereDataOps;
+#endif
 
 	#if SWEET_PARAREAL_PLANE_SWE || SWEET_XBRAID_PLANE_SWE
 		this->SL_tsm = { "l_cn_na_sl_nd_settls",
@@ -150,7 +185,7 @@ public:
 
 
 	void output_data_file(
-			Parareal_GenericData* i_data,
+			sweet::Parareal_GenericData* i_data,
 			int iteration_id,
 			int time_slice_id,
 			double t
@@ -161,7 +196,7 @@ public:
 		i_data->GenericData_Scalar_to_dataArrays(u_out);
 
 		// Dump  data in csv, if output filename is not empty
-		if (simVars->iodata.output_file_name.size() > 0)
+		if (this->shackIOData->output_file_name.size() > 0)
 		{
 			std::string output_filenames = "";
 			output_filenames = write_file_pint_scalar(u_out, "prog_u", iteration_id, t);
@@ -170,13 +205,13 @@ public:
 #elif SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
 	#if SWEET_PARAREAL_PLANE_BURGERS || SWEET_XBRAID_PLANE_BURGERS
 
-		PlaneData_Spectral dummy(this->planeDataConfig[0]);
-		PlaneData_Spectral u_out(this->planeDataConfig[0]);
-		PlaneData_Spectral v_out(this->planeDataConfig[0]);
+		sweet::PlaneData_Spectral dummy(this->planeDataConfig[0]);
+		sweet::PlaneData_Spectral u_out(this->planeDataConfig[0]);
+		sweet::PlaneData_Spectral v_out(this->planeDataConfig[0]);
 		i_data->GenericData_PlaneData_Spectral_to_dataArrays(u_out, v_out);
 
-		PlaneData_Physical u_out_phys = u_out.toPhys();
-		PlaneData_Physical v_out_phys = v_out.toPhys();
+		sweet::PlaneData_Physical u_out_phys = u_out.toPhys();
+		sweet::PlaneData_Physical v_out_phys = v_out.toPhys();
 
 		/*
 		 * File output
@@ -184,10 +219,10 @@ public:
 		 * We write everything in non-staggered output
 		 */
 		// For output, variables need to be on unstaggered A-grid
-		PlaneData_Physical t_u(planeDataConfig[0]);
-		PlaneData_Physical t_v(planeDataConfig[0]);
+		sweet::PlaneData_Physical t_u(planeDataConfig[0]);
+		sweet::PlaneData_Physical t_v(planeDataConfig[0]);
 
-		if (simVars->disc.space_grid_use_c_staggering) // Remap in case of C-grid
+		if (this->shackPlaneDataOps->space_grid_use_c_staggering) // Remap in case of C-grid
 		{
 			gridMapping.mapCtoA_u(u_out_phys, t_u);
 			gridMapping.mapCtoA_v(v_out_phys, t_v);
@@ -199,7 +234,7 @@ public:
 		}
 
 		// Dump  data in csv, if output filename is not empty
-		if (simVars->iodata.output_file_name.size() > 0)
+		if (this->shackIOData->output_file_name.size() > 0)
 		{
 			std::string output_filenames = "";
 
@@ -215,7 +250,7 @@ public:
 
 		if (simVars->misc.compute_errors)
 		{
-			PlaneData_Spectral ana = compute_errors2(u_out, v_out);
+			sweet::PlaneData_Spectral ana = compute_errors2(u_out, v_out);
 
 			write_file_pint_plane(ana.toPhys(),"analytical",iteration_id, t);
 			write_file_spec_amp_phase_pint_plane(ana.toPhys(), "analytical", iteration_id, t);
@@ -223,14 +258,14 @@ public:
 
 	#elif SWEET_PARAREAL_PLANE_SWE || SWEET_XBRAID_PLANE_SWE
 
-		PlaneData_Spectral h_out(this->planeDataConfig[0]);
-		PlaneData_Spectral u_out(this->planeDataConfig[0]);
-		PlaneData_Spectral v_out(this->planeDataConfig[0]);
+		sweet::PlaneData_Spectral h_out(this->planeDataConfig[0]);
+		sweet::PlaneData_Spectral u_out(this->planeDataConfig[0]);
+		sweet::PlaneData_Spectral v_out(this->planeDataConfig[0]);
 		i_data->GenericData_PlaneData_Spectral_to_dataArrays(h_out, u_out, v_out);
 
-		PlaneData_Physical h_out_phys = h_out.toPhys();
-		PlaneData_Physical u_out_phys = u_out.toPhys();
-		PlaneData_Physical v_out_phys = v_out.toPhys();
+		sweet::PlaneData_Physical h_out_phys = h_out.toPhys();
+		sweet::PlaneData_Physical u_out_phys = u_out.toPhys();
+		sweet::PlaneData_Physical v_out_phys = v_out.toPhys();
 
 		// Save .vtk files for visualizing in paraview
 		std::ostringstream ss2;
@@ -244,11 +279,11 @@ public:
 		 * We write everything in non-staggered output
 		 */
 		// For output, variables need to be on unstaggered A-grid
-		PlaneData_Physical t_h(planeDataConfig[0]);
-		PlaneData_Physical t_u(planeDataConfig[0]);
-		PlaneData_Physical t_v(planeDataConfig[0]);
+		sweet::PlaneData_Physical t_h(planeDataConfig[0]);
+		sweet::PlaneData_Physical t_u(planeDataConfig[0]);
+		sweet::PlaneData_Physical t_v(planeDataConfig[0]);
 
-		if (simVars->disc.space_grid_use_c_staggering) // Remap in case of C-grid
+		if (this->shackPlaneDataOps->space_grid_use_c_staggering) // Remap in case of C-grid
 		{
 			t_h = h_out_phys;
 			gridMapping.mapCtoA_u(u_out_phys, t_u);
@@ -262,7 +297,7 @@ public:
 		}
 
 		// Dump  data in csv, if output filename is not empty
-		if (simVars->iodata.output_file_name.size() > 0)
+		if (this->shackIOData->output_file_name.size() > 0)
 		{
 			std::string output_filenames = "";
 
@@ -294,14 +329,14 @@ public:
 
 #elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
 
-		SphereData_Spectral phi_out(this->sphereDataConfig[0]);
-		SphereData_Spectral vrt_out(this->sphereDataConfig[0]);
-		SphereData_Spectral div_out(this->sphereDataConfig[0]);
+		sweet::SphereData_Spectral phi_out(this->sphereDataConfig[0]);
+		sweet::SphereData_Spectral vrt_out(this->sphereDataConfig[0]);
+		sweet::SphereData_Spectral div_out(this->sphereDataConfig[0]);
 		i_data->GenericData_SphereData_Spectral_to_dataArrays(phi_out, vrt_out, div_out);
 
-		SphereData_Physical phi_out_phys = phi_out.toPhys();
-		SphereData_Physical vrt_out_phys = vrt_out.toPhys();
-		SphereData_Physical div_out_phys = div_out.toPhys();
+		sweet::SphereData_Physical phi_out_phys = phi_out.toPhys();
+		sweet::SphereData_Physical vrt_out_phys = vrt_out.toPhys();
+		sweet::SphereData_Physical div_out_phys = div_out.toPhys();
 
 		///////////////// Save .vtk files for visualizing in paraview
 		///////////////std::ostringstream ss2;
@@ -318,28 +353,28 @@ public:
 		 * We write everything in non-staggered output
 		 */
 		// Dump  data in csv, if output filename is not empty
-		if (simVars->iodata.output_file_name.size() > 0)
+		if (this->shackIOData->output_file_name.size() > 0)
 		{
-			if (simVars->iodata.output_file_mode == "csv")
+			if (this->shackIOData->output_file_mode == "csv")
 			{
 				std::string output_filename;
-	
-				SphereData_Spectral h = phi_out_phys*(1.0/simVars->sim.gravitation);
-				h += simVars->sim.h0;
-	
+
+				sweet::SphereData_Spectral h = phi_out_phys*(1.0/this->shackPDESWESphere->gravitation);
+				h += this->shackPDESWESphere->h0;
+
 				output_filename = write_file_csv_pint_sphere(h, t, "prog_h", iteration_id);
 				//std::cout << " + " << output_filename << " (min: " << h.toPhys().physical_reduce_min() << ", max: " << h.toPhys().physical_reduce_max() << ")" << std::endl;
 
-				SphereData_Physical phi_phys = h.toPhys() * this->simVars->sim.gravitation;
-				SphereData_Spectral phi(sphereDataConfig[0]);
+				sweet::SphereData_Physical phi_phys = h.toPhys() * this->shackPDESWESphere->gravitation;
+				sweet::SphereData_Spectral phi(sphereDataConfig[0]);
 				phi.loadSphereDataPhysical(phi_phys);
 				output_filename = write_file_csv_pint_sphere(phi, t, "prog_phi", iteration_id);
 
 				output_filename = write_file_csv_pint_sphere(phi_out, t, "prog_phi_pert", iteration_id);
 				//std::cout << " + " << output_filename << " (min: " << phi_out_phys.physical_reduce_min() << ", max: " << phi_out_phys.physical_reduce_max() << ")" << std::endl;
 	
-				SphereData_Physical u(sphereDataConfig[0]);
-				SphereData_Physical v(sphereDataConfig[0]);
+				sweet::SphereData_Physical u(sphereDataConfig[0]);
+				sweet::SphereData_Physical v(sphereDataConfig[0]);
 	
 				op_sphere[0]->vrtdiv_to_uv(vrt_out_phys, div_out_phys, u, v);
 	
@@ -355,7 +390,7 @@ public:
 				output_filename = write_file_csv_pint_sphere(div_out, t, "prog_div", iteration_id);
 				//std::cout << " + " << output_filename << std::endl;
 	
-				SphereData_Spectral potvrt = (phi_out/simVars->sim.gravitation)*vrt_out;
+				sweet::SphereData_Spectral potvrt = (phi_out / this->shackPDESWESphere->gravitation)*vrt_out;
 	
 				output_filename = write_file_csv_pint_sphere(potvrt, t, "prog_potvrt", iteration_id);
 				//std::cout << " + " << output_filename << std::endl;
@@ -364,27 +399,27 @@ public:
 				////output_filename = write_file_csv_pint_sphere_spec(phi_out, t, "prog_phi_pert", iteration_id);
 
 			}
-			else if (simVars->iodata.output_file_mode == "bin")
+			else if (this->shackIOData->output_file_mode == "bin")
 			{
 				std::string output_filename;
 	
 				{
 					output_filename = write_file_bin_pint_sphere(phi_out, t, "prog_phi_pert", iteration_id);
-					SphereData_Physical prog_phys = phi_out.toPhys();
+					sweet::SphereData_Physical prog_phys = phi_out.toPhys();
 	
 					//std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
 				}
 	
 				{
 					output_filename = write_file_bin_pint_sphere(vrt_out, t, "prog_vrt", iteration_id);
-					SphereData_Physical prog_phys = vrt_out.toPhys();
+					sweet::SphereData_Physical prog_phys = vrt_out.toPhys();
 	
 					//std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
 				}
 	
 				{
 					output_filename = write_file_bin_pint_sphere(div_out, t, "prog_div", iteration_id);
-					SphereData_Physical prog_phys = div_out.toPhys();
+					sweet::SphereData_Physical prog_phys = div_out.toPhys();
 	
 					//std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
 				}
@@ -399,9 +434,9 @@ public:
 
 #if SWEET_PARAREAL_PLANE_BURGERS || SWEET_XBRAID_PLANE_BURGERS
 	// For Burgers
-	PlaneData_Spectral compute_errors2(
-         const PlaneData_Spectral &i_planeData_u,
-         const PlaneData_Spectral &i_planeData_v
+	sweet:PlaneData_Spectral compute_errors2(
+						const sweet::PlaneData_Spectral &i_planeData_u,
+						const sweet::PlaneData_Spectral &i_planeData_v
 	)
 	{
 
@@ -423,17 +458,17 @@ public:
 
 
 		// Necessary to circumvent FFTW transformations on i_planeData_u and i_planeData_v, which would lead to errors
-		PlaneData_Physical u = i_planeData_u.toPhys();
-		PlaneData_Physical v = i_planeData_v.toPhys();
+		sweet::PlaneData_Physical u = i_planeData_u.toPhys();
+		sweet::PlaneData_Physical v = i_planeData_v.toPhys();
 
 		///// Analytical solution at current time on original grid
 		///PlaneData_Spectral ts_u = t0_prog_u;
 		///PlaneData_Spectral ts_v = t0_prog_v;
 
-		PlaneData_Spectral ts_u(planeDataConfig[0]);
-		PlaneData_Spectral ts_v(planeDataConfig[0]);
-		PlaneData_Physical ts_u_phys(planeDataConfig[0]);
-		PlaneData_Physical ts_v_phys(planeDataConfig[0]);
+		sweet::PlaneData_Spectral ts_u(planeDataConfig[0]);
+		sweet::PlaneData_Spectral ts_v(planeDataConfig[0]);
+		sweet::PlaneData_Physical ts_u_phys(planeDataConfig[0]);
+		sweet::PlaneData_Physical ts_v_phys(planeDataConfig[0]);
 
 		if (simVars->misc.compute_errors)
 		{
@@ -563,7 +598,7 @@ public:
 	 * Write physical data to file and return string of file name (parareal)
 	 */
 	std::string write_file_csv_pint_sphere(
-			const SphereData_Spectral &i_sphereData,
+			const sweet::SphereData_Spectral &i_sphereData,
 			double t,
 			const char* i_name,	///< name of output variable
 			int iteration_id,
@@ -573,10 +608,10 @@ public:
 		char buffer[1024];
 
 		// create copy
-		SphereData_Physical sphereData = i_sphereData.toPhys();
+		sweet::SphereData_Physical sphereData = i_sphereData.toPhys();
 
 		const char* filename_template = "output_%s_t%020.8f_iter%03d.csv";
-		sprintf(buffer, filename_template, i_name, t * simVars->iodata.output_time_scale, iteration_id);
+		sprintf(buffer, filename_template, i_name, t * this->shackIOData->output_time_scale, iteration_id);
 
 		if (i_phi_shifted)
 			sphereData.physical_file_write_lon_pi_shifted(buffer, "vorticity, lon pi shifted");
@@ -611,7 +646,7 @@ public:
 	 * Write spectral data to file and return string of file name
 	 */
 	std::string write_file_bin_pint_sphere(
-			const SphereData_Spectral &i_sphereData,
+			const sweet::SphereData_Spectral &i_sphereData,
 			double t,
 			const char* i_name,
 			int iteration_id
@@ -619,10 +654,10 @@ public:
 	{
 		char buffer[1024];
 
-		SphereData_Spectral sphereData(i_sphereData);
+		sweet::SphereData_Spectral sphereData(i_sphereData);
 		//const char* filename_template = simVars.iodata.output_file_name.c_str();
 		const char* filename_template = "output_%s_t%020.8f_iter%03d.sweet";
-		sprintf(buffer, filename_template, i_name, t * simVars->iodata.output_time_scale, iteration_id);
+		sprintf(buffer, filename_template, i_name, t * this->shackIOData->output_time_scale, iteration_id);
 		sphereData.file_write_binary_spectral(buffer);
 
 		return buffer;
@@ -635,7 +670,7 @@ public:
 	 * Write file to data and return string of file name (parareal)
 	 */
 	std::string write_file_pint_plane(
-			const PlaneData_Physical &i_planeData,
+			const sweet::PlaneData_Physical &i_planeData,
 			const char* i_name,	///< name of output variable
 			int iteration_id,
 			double t
@@ -653,7 +688,7 @@ public:
 	 * Write spectrum info to data and return string of file name (parareal)
 	 */
 	std::string write_file_spec_pint_plane(
-			const PlaneData_Spectral &i_planeData,
+			const sweet::PlaneData_Spectral &i_planeData,
 			const char* i_name,	///< name of output variable
 			int iteration_id,
 			double t
@@ -672,7 +707,7 @@ public:
 	 * Write spectrum info to data and return string of file name (parareal)
 	 */
 	std::string write_file_spec_amp_phase_pint_plane(
-			const PlaneData_Spectral &i_planeData,
+			const sweet::PlaneData_Spectral &i_planeData,
 			const char* i_name,	///< name of output variable
 			int iteration_id,
 			double t
@@ -703,8 +738,8 @@ public:
 	 * Compute and store parareal errors during simulation
 	 */
 	void store_pint_error(
-			Parareal_GenericData* i_data,
-			Parareal_GenericData* pint_data_ref,
+			sweet::Parareal_GenericData* i_data,
+			sweet::Parareal_GenericData* pint_data_ref,
 			int nvar,
 			int iteration_id,
 			int time_slice_id,
@@ -722,7 +757,7 @@ public:
 			// load ref file
 			char buffer[1024];
 			std::string i_name = "prog_u";
-			const char* filename_template = simVars->iodata.output_file_name.c_str();
+			const char* filename_template = this->shackIOData->output_file_name.c_str();
 			///sprintf(buffer, filename_template, i_name.c_str(), timeframe_end);
 			sprintf(buffer, filename_template, i_name.c_str(), t);
 			std::string buffer2 = path_ref + "/" + std::string(buffer);
@@ -768,9 +803,9 @@ public:
 		}
 
 #elif SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
-		PlaneData_Spectral ref_data[] = { PlaneData_Spectral(this->planeDataConfig[0]),
-				                  PlaneData_Spectral(this->planeDataConfig[0]),
-				                  PlaneData_Spectral(this->planeDataConfig[0])};
+		sweet::PlaneData_Spectral ref_data[] = { sweet::PlaneData_Spectral(this->planeDataConfig[0]),
+					                 sweet::PlaneData_Spectral(this->planeDataConfig[0]),
+					                 sweet::PlaneData_Spectral(this->planeDataConfig[0])};
 
 		for (int ivar = 0; ivar < nvar; ivar++)
 		{
@@ -796,10 +831,10 @@ public:
 			{
 				// load ref file
 				char buffer[1024];
-				const char* filename_template = simVars->iodata.output_file_name.c_str();
+				const char* filename_template = this->shackIOData->output_file_name.c_str();
 				sprintf(buffer, filename_template, i_name.c_str(), t);
 				std::string buffer2 = path_ref + "/" + std::string(buffer);
-                                PlaneData_Physical tmp(this->planeDataConfig[0]);
+				sweet::PlaneData_Physical tmp(this->planeDataConfig[0]);
 				tmp.file_physical_loadRefData_Parareal(buffer2.c_str());
 				ref_data[ivar].loadPlaneDataPhysical(tmp);
 
@@ -840,9 +875,9 @@ public:
 			}
 
 #elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
-		SphereData_Spectral ref_data[] = { SphereData_Spectral(this->sphereDataConfig[0]),
-				                   SphereData_Spectral(this->sphereDataConfig[0]),
-				                   SphereData_Spectral(this->sphereDataConfig[0])};
+		sweet::SphereData_Spectral ref_data[] = { sweet::SphereData_Spectral(this->sphereDataConfig[0]),
+					                  sweet::SphereData_Spectral(this->sphereDataConfig[0]),
+					                  sweet::SphereData_Spectral(this->sphereDataConfig[0])};
 
 		for (int ivar = 0; ivar < nvar; ivar++)
 		{
@@ -854,16 +889,16 @@ public:
 			else if (ivar == 2)
 				i_name = "prog_div";
 
-			if (simVars->iodata.output_file_mode == "csv")
+			if (this->shackIOData->output_file_mode == "csv")
 			{
 				if (iteration_id == 0)
 				{
 					// load ref file
 					char buffer[1024];
-					const char* filename_template = simVars->iodata.output_file_name.c_str();
-					sprintf(buffer, filename_template, i_name.c_str(), t * simVars->iodata.output_time_scale);
+					const char* filename_template = this->shackIOData->output_file_name.c_str();
+					sprintf(buffer, filename_template, i_name.c_str(), t * this->shackIOData->output_time_scale);
 					std::string buffer2 = path_ref + "/" + std::string(buffer);
-					SphereData_Physical tmp(this->sphereDataConfig[0]);
+					sweet::SphereData_Physical tmp(this->sphereDataConfig[0]);
 					tmp.file_physical_loadRefData_Parareal(buffer2.c_str());
 					ref_data[ivar].loadSphereDataPhysical(tmp);
 
@@ -896,15 +931,15 @@ public:
 					pint_data_ref->dataArrays_to_GenericData_SphereData_Spectral(ref_data[0], ref_data[1], ref_data[2]);
 				}
 			}
-			else if (simVars->iodata.output_file_mode == "bin")
+			else if (this->shackIOData->output_file_mode == "bin")
 			{
 
 				if (iteration_id == 0)
 				{
 					// load ref file
 					char buffer[1024];
-					const char* filename_template = simVars->iodata.output_file_name.c_str();
-					sprintf(buffer, filename_template, i_name.c_str(), t * simVars->iodata.output_time_scale);
+					const char* filename_template = this->shackIOData->output_file_name.c_str();
+					sprintf(buffer, filename_template, i_name.c_str(), t * this->shackIOData->output_time_scale);
 					std::string buffer2 = path_ref + "/" + std::string(buffer);
 					ref_data[ivar].file_read_binary_spectral(buffer2);
 
@@ -977,10 +1012,10 @@ public:
 			resx_data = this->planeDataConfig[0]->physical_res[0];
 			resy_data = this->planeDataConfig[0]->physical_res[1];
 
-			PlaneData_Spectral diff_spectral = *i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[ivar]
-                                                           - *pint_data_ref->get_pointer_to_data_PlaneData_Spectral()->simfields[ivar];
-			PlaneData_Physical diff = i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[ivar]->toPhys() -
-                                                  pint_data_ref->get_pointer_to_data_PlaneData_Spectral()->simfields[ivar]->toPhys();
+			sweet::PlaneData_Spectral diff_spectral = *i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[ivar]
+                                                                - *pint_data_ref->get_pointer_to_data_PlaneData_Spectral()->simfields[ivar];
+			sweet::PlaneData_Physical diff = i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[ivar]->toPhys() -
+                                                         pint_data_ref->get_pointer_to_data_PlaneData_Spectral()->simfields[ivar]->toPhys();
 			err_L1 = diff.physical_reduce_norm1() / (resx_data * resy_data);
 			err_L2 = diff.physical_reduce_norm2() / std::sqrt(resx_data * resy_data);
 			err_Linf = diff.physical_reduce_max_abs();
@@ -1009,10 +1044,10 @@ public:
 			resx_data = this->sphereDataConfig[0]->physical_num_lon;
 			resy_data = this->sphereDataConfig[0]->physical_num_lat;
 
-			SphereData_Spectral diff_spectral = *i_data->get_pointer_to_data_SphereData_Spectral()->simfields[ivar]
-                                                           - *pint_data_ref->get_pointer_to_data_SphereData_Spectral()->simfields[ivar];
-			SphereData_Physical diff = i_data->get_pointer_to_data_SphereData_Spectral()->simfields[ivar]->toPhys() -
-                                                  pint_data_ref->get_pointer_to_data_SphereData_Spectral()->simfields[ivar]->toPhys();
+			sweet::SphereData_Spectral diff_spectral = *i_data->get_pointer_to_data_SphereData_Spectral()->simfields[ivar]
+                                                                 - *pint_data_ref->get_pointer_to_data_SphereData_Spectral()->simfields[ivar];
+			sweet::SphereData_Physical diff = i_data->get_pointer_to_data_SphereData_Spectral()->simfields[ivar]->toPhys() -
+                                                          pint_data_ref->get_pointer_to_data_SphereData_Spectral()->simfields[ivar]->toPhys();
 			err_L1 = diff.physical_reduce_norm1() / (resx_data * resy_data);
 			err_L2 = diff.physical_reduce_norm2() / std::sqrt(resx_data * resy_data);
 			err_Linf = diff.physical_reduce_max_abs();
@@ -1038,7 +1073,7 @@ public:
 			///const char* filename_template_out = "parareal_error_%s_%s_t%020.8f_iter%03d.csv";
 			std::string str = pint_type + "_error_%s_%s_t%020.8f_iter%03d.csv";
 			const char* filename_template_out = str.c_str();
-			sprintf(buffer_out, filename_template_out, base_solution.c_str(), i_name.c_str(), t * simVars->iodata.output_time_scale, iteration_id);
+			sprintf(buffer_out, filename_template_out, base_solution.c_str(), i_name.c_str(), t * this->shackIOData->output_time_scale, iteration_id);
 
 			std::ofstream file(buffer_out, std::ios_base::trunc);
 			file << std::setprecision(i_precision);
@@ -1047,7 +1082,7 @@ public:
 			file << "#VAR " << i_name << std::endl;
 			file << "#ITERATION " << iteration_id << std::endl;
 			file << "#TIMESLICE " << time_slice_id << std::endl;
-			file << "#TIMEFRAMEEND " << t  * simVars->iodata.output_time_scale << std::endl;
+			file << "#TIMEFRAMEEND " << t  * this->shackIOData->output_time_scale << std::endl;
 			file << "errL1 " << err_L1 << std::endl;
 			file << "errL2 " << err_L2 << std::endl;
 			file << "errLinf " << err_Linf << std::endl;
@@ -1061,7 +1096,7 @@ public:
 
 			std::string str2 = pint_type + "_error_spec_%s_%s_t%020.8f_iter%03d.csv";
 			const char* filename_template_out_spec = str2.c_str();
-			sprintf(buffer_out_spec, filename_template_out_spec, base_solution.c_str(), i_name.c_str(), t * simVars->iodata.output_time_scale, iteration_id);
+			sprintf(buffer_out_spec, filename_template_out_spec, base_solution.c_str(), i_name.c_str(), t * this->shackIOData->output_time_scale, iteration_id);
 
 			std::ofstream file_spec(buffer_out_spec, std::ios_base::trunc);
 			file_spec << std::setprecision(i_precision);
@@ -1070,7 +1105,7 @@ public:
 			file_spec << "#VAR " << i_name << std::endl;
 			file_spec << "#ITERATION " << iteration_id << std::endl;
 			file_spec << "#TIMESLICE " << time_slice_id << std::endl;
-			file_spec << "#TIMEFRAMEEND " << t  * simVars->iodata.output_time_scale << std::endl;
+			file_spec << "#TIMEFRAMEEND " << t  * this->shackIOData->output_time_scale << std::endl;
 			for (std::vector<std::size_t>::iterator it = rnorms.begin(); it != rnorms.end(); it++)
 				file_spec << "errLinf " << *it + 1 << " " << err_Linf_spectral.at(*it) << std::endl;
 

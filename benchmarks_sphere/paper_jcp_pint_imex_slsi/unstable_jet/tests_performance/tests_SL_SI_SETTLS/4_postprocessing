@@ -1,0 +1,12 @@
+#!/bin/bash
+
+## In the simulations run in this folder, no error output is produced (for measuring only the execution time)
+## Since we want to plot times and speedups vs error, we need to read the erros from previous executed simulations (in folders test_params_MGRIT and tests_viscosity)
+## The postprocessing python script finds the corresponding simulations and copy the errors results
+
+## Create symbolic links to simulations containing errors
+ln -s ../../tests_params_MGRIT/tests_convergence/job_bench* .
+ln -s ../../tests_viscosity/tests_order_coefficient/job_bench* .
+
+## run postprocessing
+python compute_times.py

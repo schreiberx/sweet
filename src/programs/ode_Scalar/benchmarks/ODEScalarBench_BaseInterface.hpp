@@ -9,6 +9,7 @@
 #include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/shacksShared/ShackTimestepControl.hpp>
 #include "ShackODEScalarBenchmarks.hpp"
+#include "../ShackODEScalar.hpp"
 
 class ODEScalarBench_BaseInterface
 {
@@ -17,18 +18,30 @@ public:
 
 	sweet::ShackDictionary *shackDict;
 	sweet::ShackTimestepControl *shackTimestepControl;
+	ShackODEScalar *shackODEScalar;
 	ShackODEScalarBenchmarks *shackBenchmarks;
 
-	bool shackRegistration(
+	ODEScalarBench_BaseInterface() :
+		shackDict(nullptr),
+		shackTimestepControl(nullptr),
+		shackODEScalar(nullptr),
+		shackBenchmarks(nullptr)
+	{
+	}
+
+	virtual bool shackRegistration(
 			sweet::ShackDictionary *io_shackDict
 	)
 	{
 		shackDict = io_shackDict;
 
 		shackTimestepControl = io_shackDict->getAutoRegistration<sweet::ShackTimestepControl>();
+		shackODEScalar = io_shackDict->getAutoRegistration<ShackODEScalar>();
 		shackBenchmarks = io_shackDict->getAutoRegistration<ShackODEScalarBenchmarks>();
 
 		ERROR_FORWARD_ALWAYS_RETURN_BOOLEAN(*io_shackDict);
+
+		return true;
 	}
 
 	virtual bool setup(
@@ -44,3 +57,4 @@ public:
 
 
 #endif
+

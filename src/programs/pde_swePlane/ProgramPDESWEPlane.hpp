@@ -646,6 +646,8 @@ public:
 	{
 		shackTimestepControl->timestepHelperStart();
 
+		std::cout << "AAA " << shackTimestepControl->current_simulation_time << " " << dataAndOps.prog_h_pert.spectral_reduce_max_abs() << " " << dataAndOps.prog_h_pert.toPhys().physical_reduce_max_abs() << std::endl;
+
 		pdeSWEPlaneTimeSteppers.timestepper->runTimestep(
 				dataAndOps.prog_h_pert, dataAndOps.prog_u, dataAndOps.prog_v,
 				shackTimestepControl->current_timestep_size,

@@ -23,7 +23,7 @@ public:
 public:
 	ODEScalarTS_ln_erk();
 
-	~ODEScalarTS_ln_erk();
+	virtual ~ODEScalarTS_ln_erk();
 
 	bool setup();
 

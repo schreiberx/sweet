@@ -31,6 +31,7 @@ public:
 
 		return
 			i_benchmark_name == "three_gaussian_bumps"	||
+			i_benchmark_name == "three_gaussian_bumps_phi_pint"	||
 			false
 		;
 	}
@@ -46,7 +47,10 @@ public:
 		shackPDESWESphere->sphere_rotating_coriolis_omega = 7.292e-5;
 		shackPDESWESphere->gravitation = 9.80616;
 		shackSphereDataOps->sphere_radius = 6.37122e6;
-		shackPDESWESphere->h0 = 29400.0/shackPDESWESphere->gravitation;
+		if (benchmark_name == "three_gaussian_bumps_phi_pint")
+			shackPDESWESphere->h0 = 29400.0;
+		else
+			shackPDESWESphere->h0 = 29400.0/shackPDESWESphere->gravitation;
 
 #if 0
 		// Scale geopotential to make NL influencing the stiffness stronger
@@ -111,10 +115,17 @@ public:
 	)
 	{
 
+		double phi_scale;
+		if (benchmark_name == "three_gaussian_bumps_phi_pint")
+			phi_scale = 6000. * shackPDESWESphere->gravitation;
+		else
+			phi_scale = .1 * shackPDESWESphere->h0;
+
+
 		o_phi_pert.spectral_set_zero();
-		o_phi_pert += get_gaussian_bump(2.0*M_PI*0.1, M_PI/3, 20.0)*0.1*shackPDESWESphere->h0;
-		o_phi_pert += get_gaussian_bump(2.0*M_PI*0.6, M_PI/5.0, 80.0)*0.1*shackPDESWESphere->h0;
-		o_phi_pert += get_gaussian_bump(2.0*M_PI*0.8, -M_PI/4, 360.0)*0.1*shackPDESWESphere->h0;
+		o_phi_pert += get_gaussian_bump(2.0*M_PI*0.1, M_PI/3, 20.0)*0.1*phi_scale;
+		o_phi_pert += get_gaussian_bump(2.0*M_PI*0.6, M_PI/5.0, 80.0)*0.1*phi_scale;
+		o_phi_pert += get_gaussian_bump(2.0*M_PI*0.8, -M_PI/4, 360.0)*0.1*phi_scale;
 
 		o_vrt.spectral_set_zero();
 		o_div.spectral_set_zero();

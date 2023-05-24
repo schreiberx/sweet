@@ -24,13 +24,13 @@ public:
 	sweet::ErrorBase error;
 
 	ODEScalarTS_ln_erk *ln_erk;
-	ODEScalarTS_BaseInterface *master;
+	ODEScalarTS_BaseInterface *timestepper;
 
 	ShackODEScalarTimeDiscretization *shackTimeDisc;
 
 	ODEScalarTimeSteppers()	:
 		ln_erk(nullptr),
-		master(nullptr),
+		timestepper(nullptr),
 		shackTimeDisc(nullptr)
 	{
 	}
@@ -43,7 +43,7 @@ public:
 			ln_erk = nullptr;
 		}
 
-		master = nullptr;
+		timestepper = nullptr;
 
 		shackTimeDisc = nullptr;
 	}
@@ -75,7 +75,7 @@ public:
 
 			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*ln_erk);
 
-			master = static_cast<ODEScalarTS_BaseInterface*>(ln_erk);
+			timestepper = static_cast<ODEScalarTS_BaseInterface*>(ln_erk);
 			return true;
 		}
 

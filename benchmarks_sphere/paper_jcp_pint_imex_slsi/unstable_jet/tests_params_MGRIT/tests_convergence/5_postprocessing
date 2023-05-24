@@ -1,0 +1,3 @@
+#!/bin/bash
+
+python compute_error_NEW.py
