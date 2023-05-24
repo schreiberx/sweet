@@ -88,47 +88,6 @@ ts.storeJobsDetails([
 common_plot_attributes = ["color", "marker"];
 
 
-#################### plot times and speedups along iterations
-##################filter_vars = [
-##################                "runtime.xbraid_timestepping_method_coarse",
-##################                "runtime.xbraid_pt"
-##################             ];
-##################all_filter_vals = [
-##################                   ["l_irk_n_erk", 1],
-##################                   ["l_irk_n_erk", 2],
-##################                   ["l_irk_n_erk", 4],
-##################                   ["l_irk_n_erk", 8],
-##################                   ["l_irk_n_erk", 16],
-##################                 ];
-##################
-##################for filter_vals in all_filter_vals:
-##################
-##################    for plot_type in ["times", "speedups"]:
-##################
-##################        plot_legend = True
-##################
-##################        legend_vars = [
-##################                        "runtime.xbraid_max_levels",
-##################                        "runtime.xbraid_cfactor",
-##################                        "runtime.xbraid_nrelax",
-##################                        "runtime.xbraid_spatial_coarsening",
-##################                        "runtime.xbraid_viscosity_coefficient_coarse1",
-##################                        "runtime.xbraid_viscosity_coefficient_coarse2",
-##################                      ];
-##################
-##################        ts.plotTimesSpeedupsAlongIterations(   dirname = "times_speedups",
-##################                                               plot_type = plot_type,
-##################                                               legend_vars = legend_vars,
-##################                                               groups_vars = legend_vars,
-##################                                               common_plot_attributes = common_plot_attributes,
-##################                                               filter_vars = filter_vars,
-##################                                               filter_vals = filter_vals,
-##################                                               max_iter = 10,
-##################                                               plot_legend = plot_legend,
-##################                                               ncol_legend = 2
-##################                                               ###ncol_legend = 2
-##################                                            );
-
 
 ## plot times and speedups in function of error
 filter_vars = [
@@ -143,19 +102,8 @@ all_filter_vals = [
                  ];
 
 exclude_vars = [
-                "runtime.xbraid_timestepping_method_coarse",
-                "runtime.xbraid_max_levels",
-                "runtime.xbraid_cfactor",
-                "runtime.xbraid_nrelax",
-                "runtime.xbraid_spatial_coarsening",
-                "runtime.xbraid_viscosity_coefficient_coarse1",
-                "runtime.xbraid_viscosity_coefficient_coarse2"
              ];
 exclude_vals = [
-                   ["l_irk_na_sl_nr_settls_uv_only", 2, 2, 0, 128, 1e7, "--"],
-                   ["l_irk_na_sl_nr_settls_uv_only", 2, 4, 0, 128, 1e7, "--"],
-                   ["l_irk_na_sl_nr_settls_uv_only", 3, 2, 0, 128, 1e7, 1e7],
-                   ["l_irk_na_sl_nr_settls_uv_only", 3, 4, 0, 128, 1e7, 1e7],
                  ];
 
 

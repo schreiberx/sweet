@@ -10,3 +10,6 @@
 --> Run:
 	source 0_configure
 	./1_run_everything
+
+--> TODO:
+	:: rewrite postprocessing scripts using MULE scripts

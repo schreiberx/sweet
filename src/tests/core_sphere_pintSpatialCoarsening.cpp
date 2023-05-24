@@ -93,7 +93,7 @@ public:
 		sphereDataConfig = i_sphereDataConfig;
 		ops = i_ops;
 
-		data = new sweet::Parareal_GenericData_SphereData_Spectral<3>;
+		data = new Parareal_GenericData_SphereData_Spectral<3>;
 		data->setup_data_config(sphereDataConfig);
 		data->allocate_data();
 		sweet::SphereData_Spectral* phi_pert = data->get_pointer_to_data_SphereData_Spectral()->simfields[0];
@@ -247,8 +247,8 @@ int main(int i_argc, char *i_argv[])
 			data_L_to_H_to_L.setup_3_data(&sphereDataConfig_L, &ops_L);
 
 			// Error storage
-			sweet::Parareal_GenericData* error_H = new sweet::Parareal_GenericData_SphereData_Spectral<3>;
-			sweet::Parareal_GenericData* error_L = new sweet::Parareal_GenericData_SphereData_Spectral<3>;
+			sweet::Parareal_GenericData* error_H = new Parareal_GenericData_SphereData_Spectral<3>;
+			sweet::Parareal_GenericData* error_L = new Parareal_GenericData_SphereData_Spectral<3>;
 			error_H->setup_data_config(&sphereDataConfig_H);
 			error_L->setup_data_config(&sphereDataConfig_L);
 			error_H->allocate_data();

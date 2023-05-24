@@ -1,8 +1,5 @@
 #!/bin/bash
 
-export PATH=$(pwd)/../common_postprocessing_scripts:$PATH
-export PYTHONPATH=$(pwd)/../common_postprocessing_scripts:$PYTHONPATH
-
 cd convergence_time_ref
 ./1_create_jobs
 ./2_submit_jobs

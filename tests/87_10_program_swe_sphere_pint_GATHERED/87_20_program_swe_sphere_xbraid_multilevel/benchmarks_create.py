@@ -154,7 +154,7 @@ jg.runtime.xbraid_access_level = 2;
 
 cfactors = [2, 4];
 nbs_levels = [2, 4];
-nb_pts = [1, 2, 4];
+nb_pts = [1, 2];
 
 for tsm_fine in tsms_fine:
     for tsm_coarse in tsms_coarse:

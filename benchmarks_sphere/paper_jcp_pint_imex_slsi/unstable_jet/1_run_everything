@@ -1,15 +1,15 @@
 #!/bin/bash
 
-cd dummy_crate_plan
+cd convergence_time_ref
 ./1_create_jobs
 ./2_submit_jobs
-./3_save_plans
+./3_postprocessing
 cd ../
 
-cd three_gaussian_bumps
+cd tests_params_MGRIT
 ./1_run_everything
 cd ../
 
-cd unstable_jet
+cd tests_performance
 ./1_run_everything
 cd ../

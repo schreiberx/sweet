@@ -102,20 +102,8 @@ all_filter_vals = [
                  ];
 
 exclude_vars = [
-                "runtime.xbraid_timestepping_method_coarse",
-                "runtime.xbraid_max_levels",
-                "runtime.xbraid_cfactor",
-                "runtime.xbraid_nrelax",
-                "runtime.xbraid_spatial_coarsening",
-                "runtime.xbraid_viscosity_coefficient_coarse1",
-                "runtime.xbraid_viscosity_coefficient_coarse2"
              ];
 exclude_vals = [
-                   ["l_irk_n_erk", 2, 2, 0, 51, 1e6, "--"],
-                   ["l_irk_n_erk", 2, 4, 0, 51, 1e6, "--"],
-                   ["l_irk_n_erk", 2, 4, 0, 128, 1e6, "--"],
-                   ["l_irk_n_erk", 3, 2, 0, 128, 1e6, 1e6],
-                   ["l_irk_n_erk", 3, 2, 0, 128, 1e16, 1e17],
                  ];
 
 
