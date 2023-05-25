@@ -761,24 +761,53 @@ public:
 		{
 			output_filenames = "";
 
-			output_filenames = write_file(t_h, "prog_h_pert");
-			output_filenames += ";" + write_file(t_u, "prog_u");
-			output_filenames += ";" + write_file(t_v, "prog_v");
+/////			output_filenames = write_file(t_h, "prog_h_pert");
+/////			output_filenames += ";" + write_file(t_u, "prog_u");
+/////			output_filenames += ";" + write_file(t_v, "prog_v");
+/////
+/////			output_filenames += ";" + write_file(dataAndOps.ops.ke(t_u,t_v),"diag_ke");
+/////
+/////#if SWEET_USE_PLANE_SPECTRAL_SPACE
+/////			output_filenames += ";" + write_file_spec(dataAndOps.ops.ke(t_u,t_v),"diag_ke_spec");
+/////
+/////			output_filenames += ";" + write_file_spec(t_h, "prog_h_pert_spec");
+/////			output_filenames += ";" + write_file_spec(t_u, "prog_u_spec");
+/////			output_filenames += ";" + write_file_spec(t_v, "prog_v_spec");
+/////
+/////			output_filenames += ";" + write_file_spec(dataAndOps.ops.ke(t_u,t_v).toPhys(), "diag_ke_spec");
+/////#endif
+/////
+/////			output_filenames += ";" + write_file(dataAndOps.ops.vort(t_u, t_v), "diag_vort");
+/////			output_filenames += ";" + write_file(dataAndOps.ops.div(t_u, t_v), "diag_div");
 
-			output_filenames += ";" + write_file(dataAndOps.ops.ke(t_u,t_v),"diag_ke");
+			if (this->shackIOData->output_file_mode == "csv")
+			{
+				output_filenames = write_file(t_h, "prog_h_pert");
+				output_filenames += ";" + write_file(t_u, "prog_u");
+				output_filenames += ";" + write_file(t_v, "prog_v");
+				output_filenames += ";" + write_file(t_h + shackPDESWEPlane->h0, "prog_h");
 
+				///output_filenames += ";" + write_file(dataAndOps.ops.vort(t_u, t_v), "diag_vort");
+				///output_filenames += ";" + write_file(dataAndOps.ops.div(t_u, t_v), "diag_div");
+
+				///output_filenames += ";" + write_file(dataAndOps.ops.ke(t_u,t_v),"diag_ke");
+			}
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-			output_filenames += ";" + write_file_spec(dataAndOps.ops.ke(t_u,t_v),"diag_ke_spec");
+			else
+			{
+				output_filenames = write_file_spec(t_h, "prog_h_pert_spec");
+				output_filenames += ";" + write_file_spec(t_u, "prog_u_spec");
+				output_filenames += ";" + write_file_spec(t_v, "prog_v_spec");
 
-			output_filenames += ";" + write_file_spec(t_h, "prog_h_pert_spec");
-			output_filenames += ";" + write_file_spec(t_u, "prog_u_spec");
-			output_filenames += ";" + write_file_spec(t_v, "prog_v_spec");
+				output_filenames += ";" + write_file_spec(dataAndOps.ops.vort(t_u, t_v), "diag_vort_spec");
+				output_filenames += ";" + write_file_spec(dataAndOps.ops.div(t_u, t_v), "diag_div_spec");
 
-			output_filenames += ";" + write_file_spec(dataAndOps.ops.ke(t_u,t_v).toPhys(), "diag_ke_spec");
+				output_filenames += ";" + write_file_spec(dataAndOps.ops.ke(t_u,t_v).toPhys(), "diag_ke_spec");
+			}
 #endif
 
-			output_filenames += ";" + write_file(dataAndOps.ops.vort(t_u, t_v), "diag_vort");
-			output_filenames += ";" + write_file(dataAndOps.ops.div(t_u, t_v), "diag_div");
+
+
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 			if (compute_normal_modes){

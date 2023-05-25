@@ -101,6 +101,7 @@ def JobsData_GroupsCleanupPostprocessed(
 
             # Get list of reference files
             ref_output_files = mule.postprocessing.utils.get_job_output_files(job_data)
+            print("AAAAAAAA",ref_output_files)
 
             # Iterate over all reference files
             for ref_output_file in ref_output_files:

@@ -260,11 +260,18 @@ public:
 		/////}
 #endif
 		///else if (shackPDESWEPlaneBenchmarks->benchmark_name == "gaussian_bump" || shackPDESWEPlaneBenchmarks->benchmark_name == "gaussian_bump_phi_pint")
-		if (shackPDESWEPlaneBenchmarks->benchmark_name == "gaussian_bump" || shackPDESWEPlaneBenchmarks->benchmark_name == "gaussian_bump_phi_pint")
+		if (
+			shackPDESWEPlaneBenchmarks->benchmark_name == "gaussian_bump" ||
+			shackPDESWEPlaneBenchmarks->benchmark_name == "gaussian_bump_phi_pint" ||
+			shackPDESWEPlaneBenchmarks->benchmark_name == "gaussian_bump_MZ"
+		)
 		{
+			double scale = 1.;
+			if (shackPDESWEPlaneBenchmarks->benchmark_name == "gaussian_bump_MZ")
+				scale = .1 * shackPDESWEPlane->h0;
 			PDESWEPlaneMoriZwanzigBench_GaussianBump swe_gaussian_bump;
 			swe_gaussian_bump.shackRegistration(shackDict);
-			swe_gaussian_bump.setup(io_ops, io_planeDataConfig);
+			swe_gaussian_bump.setup(io_ops, io_planeDataConfig, scale);
 			swe_gaussian_bump.setupBenchmark(
 					o_h_pert,
 					o_u,

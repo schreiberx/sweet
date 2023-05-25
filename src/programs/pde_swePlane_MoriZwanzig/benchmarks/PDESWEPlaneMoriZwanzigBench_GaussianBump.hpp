@@ -23,6 +23,8 @@ class PDESWEPlaneMoriZwanzigBench_GaussianBump	:
 		public PDESWEPlaneMoriZwanzigBench_BaseInterface
 {
 
+	double scale;
+
 public:
 	bool setupBenchmark(
 			sweet::PlaneData_Spectral &o_h_pert,
@@ -53,7 +55,7 @@ public:
 				dx /= radius;
 				dy /= radius;
 
-				io_data = std::exp(-50.0*(dx*dx + dy*dy));
+				io_data = std::exp(-50.0*(dx*dx + dy*dy)) * this->scale;
 			}
 		);
 
@@ -77,6 +79,21 @@ public:
 
 		return true;
 	}
+
+	bool setup(
+		sweet::PlaneOperators *io_ops,
+		sweet::PlaneData_Config *i_planeDataConfig,
+		double i_scale
+	)
+	{
+		PDESWEPlaneMoriZwanzigBench_BaseInterface::setup(io_ops, i_planeDataConfig);
+
+		this->scale = i_scale;
+
+		return true;
+	}
+
+
 };
 
 

@@ -24,6 +24,7 @@ class SphereDataNormsPhysicalSpace:
             filename_b,
             physical_output
         ):
+
         if physical_output:
             file_a = SphereData(filename_a, setup_physical = False)
             file_b = SphereData(filename_b, setup_physical = False)

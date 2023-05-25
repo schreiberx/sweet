@@ -162,7 +162,6 @@ public:
 
 #endif
 
-
 		// treat negative values
 		for (int i = 0; i < 2; i++)
 			for (int wave_type = 0; wave_type < 3; wave_type++)
@@ -170,13 +169,10 @@ public:
 					if (this->modes[i][wave_type][j] < 0)
 						this->modes[i][wave_type][j] = 0;
 
-		std::cout << "DEFINITION OF S AND F" << std::endl;
-		for (int i = 0; i < 2; i++)
-			for (int wave_type = 0; wave_type < 3; wave_type++)
-				std::cout << i << " " << wave_type << " " << modes[i][wave_type][0] << " " << modes[i][wave_type][1] << std::endl;
-
 		std::vector<std::string> strs = {"S", "F"};
 		std::vector<std::string> strw = {"geostrophic", "gravity west", "gravity east"};
+
+
 		// Check if S and F overlap
 		for (int i = 0; i < 2; i++)
 		{
@@ -190,10 +186,10 @@ public:
 					int max2 = this->modes[j][wave_type][1];
 
 					if (
-						min2 < max1 && max2 > max1 ||
-						min2 < min1 && max2 > min1 ||
-						min1 < max2 && max1 > max2 ||
-						min1 < max2 && max1 > max2
+						(min2 < max1 && max2 > max1) ||
+						(min2 < min1 && max2 > min1) ||
+						(min1 < max2 && max1 > max2) ||
+						(min1 < max2 && max1 > max2)
 					)
 						SWEETError("Regions " + strs[i] + " and " + strs[j] + " overlap in " + strw[wave_type] + " waves!");
 				}
@@ -214,7 +210,7 @@ public:
 			if (!zero_ok)
 				SWEETError(strw[wave_type] + " waves are not fully covered by S and F!");
 
-			// sum modes to check if they ara all taken into account
+			// sum modes to check if they are all taken into account
 			int sum = 0;
 			for (int i = 0; i < 2; i++)
 			{
@@ -225,6 +221,12 @@ public:
 			if (sum != (i_planeDataConfig->spectral_data_size[1] - 1) * i_planeDataConfig->spectral_data_size[1] / 2)
 				SWEETError(strw[wave_type] + " waves are not fully covered by S and F!");
 		}
+
+		std::cout << "DEFINITION OF S AND F" << std::endl;
+		for (int i = 0; i < 2; i++)
+			for (int wave_type = 0; wave_type < 3; wave_type++)
+				std::cout << strs[i] << ", " << strw[wave_type] << ": " << modes[i][wave_type][0] << " <= n < " << modes[i][wave_type][1] << std::endl;
+
 
 		return true;
 	}
@@ -247,7 +249,6 @@ public:
 		else
 			SWEETError("Wrong projection type: " + projection_type );
 
-		///complex eigenvalues[3];
 		complex eigenvectors[3][3];
 
 		sweet::PlaneData_Spectral h_copy = io_h_pert;
@@ -258,12 +259,9 @@ public:
 		io_u.spectral_set_zero();
 		io_v.spectral_set_zero();
 
-		// get min and max K from all wave types
+		// get min and max K from all wave types (GEO, GW, GE)
 		int Kmin = std::min(std::min(this->modes[idx][0][0], this->modes[idx][1][0]), this->modes[idx][2][0]);
 		int Kmax = std::max(std::max(this->modes[idx][0][1], this->modes[idx][1][1]), this->modes[idx][2][1]);
-
-		int wave_type_min = 0;
-		int wave_type_max = 2;
 
 		for (int k1 = Kmin; k1 < Kmax; k1++)
 		{
@@ -278,7 +276,7 @@ public:
 				complex U_proj[3] = {0., 0., 0.};
 				normal_modes.eigendecomposition(k1, k2, eigenvectors);
 
-				for (int wave_type = wave_type_min; wave_type <= wave_type_max; wave_type++)
+				for (int wave_type = 0; wave_type < 3 ; wave_type++)
 				{
 
 					int kmin = this->modes[idx][wave_type][0];
@@ -303,6 +301,9 @@ public:
 			}
 		}
 
+		io_h_pert.spectral_zeroAliasingModes();
+		io_u.spectral_zeroAliasingModes();
+		io_v.spectral_zeroAliasingModes();
 
 	}
 

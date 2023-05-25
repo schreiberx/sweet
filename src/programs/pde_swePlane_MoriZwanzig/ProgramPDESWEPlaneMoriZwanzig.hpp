@@ -125,6 +125,7 @@ public:
 	};
 
 	// Simulation data
+	SimDataAndOps dataAndOps_full;		// full solution
 	SimDataAndOps dataAndOps_SP;		// U_S^P
 	SimDataAndOps dataAndOps_SQ;		// U_S^Q
 	SimDataAndOps dataAndOps_FQ;		// U_F^Q
@@ -355,6 +356,7 @@ public:
 		/*
 		 * Setup Plane Data Config & Operators
 		 */
+		dataAndOps_full.setup(shackPlaneDataOps);
 		dataAndOps_SP.setup(shackPlaneDataOps);
 		dataAndOps_SQ.setup(shackPlaneDataOps);
 		dataAndOps_FQ.setup(shackPlaneDataOps);
@@ -365,6 +367,7 @@ public:
 		dataAndOps_F.setup(shackPlaneDataOps);
 		dataAndOps_SF.setup(shackPlaneDataOps);
 		dataAndOps_dummy.setup(shackPlaneDataOps);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(dataAndOps_full);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(dataAndOps_SP);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(dataAndOps_SQ);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(dataAndOps_FQ);
@@ -389,27 +392,31 @@ public:
 		std::cout << "Printing shack information:" << std::endl;
 		shackProgArgDict.printShackData();
 
+		// set full initial solution
 		planeBenchmarksCombined.setupInitialConditions(
-				dataAndOps_SP.prog_h_pert,
-				dataAndOps_SP.prog_u,
-				dataAndOps_SP.prog_v,
-				&dataAndOps_SP.ops,
-				&dataAndOps_SP.planeDataConfig
+				dataAndOps_full.prog_h_pert,
+				dataAndOps_full.prog_u,
+				dataAndOps_full.prog_v,
+				&dataAndOps_full.ops,
+				&dataAndOps_full.planeDataConfig
 			);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(planeBenchmarksCombined);
 
 		projection.setup(dataAndOps_SP.ops.planeDataConfig);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(projection);
 
-		// copy and project initial solutions
-		// SP = SQ = S = proj_S
-		// FQ = F = proj_F
-		dataAndOps_SQ.prog_h_pert = dataAndOps_SP.prog_h_pert;
-		dataAndOps_SQ.prog_u = dataAndOps_SP.prog_u;
-		dataAndOps_SQ.prog_v = dataAndOps_SP.prog_v;
-		dataAndOps_FQ.prog_h_pert = dataAndOps_SP.prog_h_pert;
-		dataAndOps_FQ.prog_u = dataAndOps_SP.prog_u;
-		dataAndOps_FQ.prog_v = dataAndOps_SP.prog_v;
+		// copy and project all initial solutions
+		// SP = SQ = S = proj_S(U)
+		// FQ = F = proj_F(U)
+		dataAndOps_SP.prog_h_pert = dataAndOps_full.prog_h_pert;
+		dataAndOps_SP.prog_u = dataAndOps_full.prog_u;
+		dataAndOps_SP.prog_v = dataAndOps_full.prog_v;
+		dataAndOps_SQ.prog_h_pert = dataAndOps_full.prog_h_pert;
+		dataAndOps_SQ.prog_u = dataAndOps_full.prog_u;
+		dataAndOps_SQ.prog_v = dataAndOps_full.prog_v;
+		dataAndOps_FQ.prog_h_pert = dataAndOps_full.prog_h_pert;
+		dataAndOps_FQ.prog_u = dataAndOps_full.prog_u;
+		dataAndOps_FQ.prog_v = dataAndOps_full.prog_v;
 
 		sweet::PlaneData_Spectral h_orig = dataAndOps_SP.prog_h_pert;
 
@@ -417,26 +424,32 @@ public:
 		projection.project_S(dataAndOps_SQ.prog_h_pert, dataAndOps_SQ.prog_u, dataAndOps_SQ.prog_v);
 		projection.project_F(dataAndOps_FQ.prog_h_pert, dataAndOps_FQ.prog_u, dataAndOps_FQ.prog_v);
 
+		// MZ_S = SP + SQ - SP(0)
 		dataAndOps_MZ_S.prog_h_pert = dataAndOps_SP.prog_h_pert;
 		dataAndOps_MZ_S.prog_u = dataAndOps_SP.prog_u;
 		dataAndOps_MZ_S.prog_v = dataAndOps_SP.prog_v;
 
+		// MZ_F = FQ
 		dataAndOps_MZ_F.prog_h_pert = dataAndOps_FQ.prog_h_pert;
 		dataAndOps_MZ_F.prog_u = dataAndOps_FQ.prog_u;
 		dataAndOps_MZ_F.prog_v = dataAndOps_FQ.prog_v;
 
+		// MZ = MZ_S + MZ_F
 		dataAndOps_MZ.prog_h_pert = dataAndOps_MZ_S.prog_h_pert + dataAndOps_MZ_F.prog_h_pert;
 		dataAndOps_MZ.prog_u = dataAndOps_MZ_S.prog_u + dataAndOps_MZ_F.prog_u;
 		dataAndOps_MZ.prog_v = dataAndOps_MZ_S.prog_v + dataAndOps_MZ_F.prog_v;
 
+		// S = proj_S(U)
 		dataAndOps_S.prog_h_pert = dataAndOps_SP.prog_h_pert;
 		dataAndOps_S.prog_u = dataAndOps_SP.prog_u;
 		dataAndOps_S.prog_v = dataAndOps_SP.prog_v;
 
+		// F = proj_F(U)
 		dataAndOps_F.prog_h_pert = dataAndOps_FQ.prog_h_pert;
 		dataAndOps_F.prog_u = dataAndOps_FQ.prog_u;
 		dataAndOps_F.prog_v = dataAndOps_FQ.prog_v;
 
+		// SF = S + F
 		dataAndOps_SF.prog_h_pert = dataAndOps_S.prog_h_pert + dataAndOps_F.prog_h_pert;
 		dataAndOps_SF.prog_u = dataAndOps_S.prog_u + dataAndOps_F.prog_u;
 		dataAndOps_SF.prog_v = dataAndOps_S.prog_v + dataAndOps_F.prog_v;
@@ -787,16 +800,19 @@ public:
 
 		SimDataAndOps* dataAndOps;
 
-		std::vector<std::string> sol_cases = {"SP", "SQ", "FQ", "MZ_S", "MZ_F", "MZ", "S", "F", "SF"};
+		output_filenames = "";
+		std::vector<std::string> sol_cases = {"full", "MZ_SP", "MZ_SQ", "MZ_FQ", "MZ_S", "MZ_F", "MZ", "S", "F", "SF"};
 		for (std::vector<std::string>::iterator it = sol_cases.begin(); it != sol_cases.end(); it++)
 		{
 			std::string sol_case = *it;
 
-			if (sol_case == "SP")
+			if (sol_case == "full")
+				dataAndOps = &dataAndOps_full;
+			else if (sol_case == "MZ_SP")
 				dataAndOps = &dataAndOps_SP;
-			else if (sol_case == "SQ")
+			else if (sol_case == "MZ_SQ")
 				dataAndOps = &dataAndOps_SQ;
-			else if (sol_case == "FQ")
+			else if (sol_case == "MZ_FQ")
 				dataAndOps = &dataAndOps_FQ;
 			else if (sol_case == "MZ_S")
 				dataAndOps = &dataAndOps_MZ_S;
@@ -829,15 +845,39 @@ public:
 			// Dump  data in csv, if output filename is not empty
 			if (shackIOData->output_file_name.size() > 0)
 			{
-				output_filenames = "";
 
-				output_filenames = write_file(t_h, ("prog_h_pert_" + sol_case).c_str());
-				output_filenames += ";" + write_file(t_u, ("prog_u_" + sol_case).c_str());
-				output_filenames += ";" + write_file(t_v, ("prog_v_" + sol_case).c_str());
+				if (this->shackIOData->output_file_mode == "csv")
+				{
+					if (it == sol_cases.begin())
+						output_filenames = write_file(t_h, ("prog_h_pert_" + sol_case).c_str());
+					else
+						output_filenames += ";" + write_file(t_h, ("prog_h_pert_" + sol_case).c_str());
+					output_filenames += ";" + write_file(t_u, ("prog_u_" + sol_case).c_str());
+					output_filenames += ";" + write_file(t_v, ("prog_v_" + sol_case).c_str());
+					output_filenames += ";" + write_file(t_h + shackPDESWEPlane->h0, ("prog_h_" + sol_case).c_str());
 
-				output_filenames += ";" + write_file(dataAndOps->ops.ke(t_u,t_v), ("diag_ke_" + sol_case).c_str());
+					////output_filenames += ";" + write_file(dataAndOps->ops.ke(t_u,t_v), ("diag_ke_" + sol_case).c_str());
+
+					////output_filenames += ";" + write_file(dataAndOps->ops.vort(t_u, t_v), ("diag_vort_" + sol_case).c_str());
+					////output_filenames += ";" + write_file(dataAndOps->ops.div(t_u, t_v), ("diag_div_" + sol_case).c_str());
+				}
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
+				else
+				{
+					if (it == sol_cases.begin())
+						output_filenames = write_file_spec(t_h, ("prog_h_pert_spec" + sol_case).c_str());
+					else
+						output_filenames += ";" + write_file_spec(t_h, ("prog_h_pert_spec" + sol_case).c_str());
+					output_filenames += ";" + write_file_spec(t_u, ("prog_u_spec" + sol_case).c_str());
+					output_filenames += ";" + write_file_spec(t_v, ("prog_v_spec" + sol_case).c_str());
+
+					output_filenames += ";" + write_file_spec(dataAndOps->ops.ke(t_u,t_v), ("diag_ke_spec" + sol_case).c_str());
+
+					output_filenames += ";" + write_file_spec(dataAndOps->ops.vort(t_u, t_v), ("diag_vort_spec" + sol_case).c_str());
+					output_filenames += ";" + write_file_spec(dataAndOps->ops.div(t_u, t_v), ("diag_div_spec" + sol_case).c_str());
+
+				}
 				////////output_filenames += ";" + write_file_spec(dataAndOps->ops.ke(t_u,t_v), ("diag_ke_" + sol_case + "_spec").c_str());
 
 				////////output_filenames += ";" + write_file_spec(t_h, ("prog_h_pert_" + sol_case + "_spec").c_str());
@@ -847,8 +887,6 @@ public:
 				////////output_filenames += ";" + write_file_spec(dataAndOps->ops.ke(t_u,t_v).toPhys(), ("diag_ke_" + sol_case + "_spec").c_str());
 #endif
 
-				output_filenames += ";" + write_file(dataAndOps->ops.vort(t_u, t_v), ("diag_vort_" + sol_case).c_str());
-				output_filenames += ";" + write_file(dataAndOps->ops.div(t_u, t_v), ("diag_div_" + sol_case).c_str());
 
 ////////////
 ////////#if SWEET_USE_PLANE_SPECTRAL_SPACE

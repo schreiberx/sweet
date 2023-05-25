@@ -31,6 +31,7 @@ class PlaneData:
             self._read_file_sweet(filename)
 
         elif filename.endswith(".csv"):
+            print("AAAAAAAAA", filename)
             self._read_file_csv(filename)
 
         else:
