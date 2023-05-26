@@ -528,8 +528,6 @@ public:
 		std::complex<T> &o_retval
 	)
 	{
-		std::complex<T> K = i_K;
-
 		switch(function_id)
 		{
 		case PHI0:

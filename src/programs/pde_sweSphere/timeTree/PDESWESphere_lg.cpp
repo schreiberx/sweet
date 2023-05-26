@@ -148,11 +148,14 @@ void PDESWESphere_lg::eval_exponential(
 			std::complex<double> l0 = -sqrt_DG/(2*G) * i_phi + 0.5*i_div;
 			std::complex<double> l1 = +sqrt_DG/(2*G) * i_phi + 0.5*i_div;
 
-			l0 = expFunction.eval(_dt*(-sqrt_DG))*l0;
-			l1 = expFunction.eval(_dt*sqrt_DG)*l1;
+			std::complex<double> tmp;
+			expFunction.eval(-_dt*sqrt_DG, tmp);
+			l0 *= tmp;
 
+			expFunction.eval(_dt*sqrt_DG, tmp);
+			l1 *= tmp;
 
-			o_phi = -G/sqrt_DG * l0 + G/sqrt_DG* l1;
+			o_phi = G/sqrt_DG * (l1 - l0);
 			o_div = l0 + l1;
 
 			idx++;
