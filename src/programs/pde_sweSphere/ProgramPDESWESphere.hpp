@@ -116,6 +116,7 @@ public:
 			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(ops);
 
 			prog.setup(&sphereDataConfig);
+			progTmp.setup(&sphereDataConfig);
 
 #if SWEET_GUI
 			sweet::ShackPlaneDataOps shackPlaneDataOps;
@@ -284,6 +285,7 @@ public:
 		shackProgArgDict.clear();
 	}
 
+
 	bool setup_2_processArguments()
 	{
 		/*
@@ -305,6 +307,7 @@ public:
 	{
 		shackProgArgDict.clear();
 	}
+
 
 	bool setup_3_dataAndOps(bool i_setup_spectral_transforms = true)
 	{
@@ -345,9 +348,7 @@ public:
 
 			timeSteppersNewTS.timeIntegrator->setTimeStepSize(shackTimestepControl->current_timestep_size);
 
-
 			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(timeSteppersNewTS);
-		
 		}
 		else
 		{
@@ -509,7 +510,7 @@ public:
 
 		if (useNewTimeSteppers)
 		{
-			timeSteppersNewTS.timeIntegrator->eval_timeIntegration(
+			timeSteppersNewTS.timeIntegrator->eval_integration(
 					dataConfigOps.prog,
 					dataConfigOps.progTmp,
 					shackTimestepControl->current_simulation_time

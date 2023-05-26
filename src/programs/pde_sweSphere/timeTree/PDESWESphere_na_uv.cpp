@@ -9,6 +9,7 @@ PDESWESphere_na_uv::PDESWESphere_na_uv()	:
 	ops(nullptr),
 	dt(-1)
 {
+	setEvalAvailable("tendencies");
 }
 
 PDESWESphere_na_uv::~PDESWESphere_na_uv()

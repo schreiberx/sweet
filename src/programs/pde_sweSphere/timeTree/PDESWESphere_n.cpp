@@ -9,6 +9,7 @@ PDESWESphere_n::PDESWESphere_n()	:
 	ops(nullptr),
 	dt(-1)
 {
+	setEvalAvailable("tendencies");
 }
 
 PDESWESphere_n::~PDESWESphere_n()

@@ -14,7 +14,7 @@ namespace sweet
 /*
  * Negate a PDE term (put a minus sign in front of the tendencies)
  */
-class DESolver_TimeStepper_NegDETerms	:
+class DESolver_TimeStepper_NegTendencies	:
 		public sweet::DESolver_TimeTreeNode_Base
 {
 private:
@@ -28,12 +28,13 @@ private:
 	std::vector<sweet::DESolver_DataContainer_Base*> _tmpDataContainer;
 
 public:
-	DESolver_TimeStepper_NegDETerms()	:
+	DESolver_TimeStepper_NegTendencies()	:
 		_timestep_size(-1)
 	{
+		setEvalAvailable("tendencies");
 	}
 
-	~DESolver_TimeStepper_NegDETerms()
+	~DESolver_TimeStepper_NegTendencies()
 	{
 		clear();
 	}
@@ -67,8 +68,8 @@ public:
 
 		for (auto &i : _timeTreeNode)
 		{
-			if (!i->isEvalAvailable("eval_tendencies"))
-				return error.set("eval_eulerBackward not available in DE term");
+			if (!i->isEvalAvailable("tendencies"))
+				return error.set("tendencies not available in DE term");
 		}
 
 		return true;
@@ -135,8 +136,6 @@ public:
 			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*i);
 		}
 
-		clear();
-
 		_tmpDataContainer.resize(1);
 		for (std::size_t i = 0; i < _tmpDataContainer.size(); i++)
 			_tmpDataContainer[i] = i_deConfig.getNewDataContainerInstance();
@@ -154,7 +153,7 @@ public:
 
 	std::shared_ptr<DESolver_TimeTreeNode_Base> getNewInstance()	override
 	{
-		return std::shared_ptr<DESolver_TimeTreeNode_Base>(new DESolver_TimeStepper_NegDETerms);
+		return std::shared_ptr<DESolver_TimeTreeNode_Base>(new DESolver_TimeStepper_NegTendencies);
 	}
 
 	void setTimeStepSize(double i_dt)	override

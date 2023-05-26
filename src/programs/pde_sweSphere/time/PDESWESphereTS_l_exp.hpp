@@ -91,6 +91,8 @@ public:
 
 
 public:
+	bool shackRegistration(sweet::ShackDictionary *io_shackDict) override;
+
 	bool implementsTimesteppingMethod(const std::string &i_timestepping_method) override;
 	std::string getIDString() override;
 

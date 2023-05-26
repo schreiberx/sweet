@@ -671,6 +671,12 @@ public:
 
 
 public:
+	bool isSetup()
+	{
+		return sphereDataConfig != nullptr;
+	}
+
+public:
 	bool setup(
 		const SphereData_Config &i_sphereDataConfig
 	)

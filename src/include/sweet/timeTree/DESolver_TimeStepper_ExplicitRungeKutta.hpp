@@ -60,6 +60,7 @@ public:
 		_method("std"),
 		_rkNumStages(-1)
 	{
+		setEvalAvailable("integration");
 	}
 
 	~DESolver_TimeStepper_ExplicitRungeKutta()
@@ -92,8 +93,8 @@ public:
 		if (_timeTreeNode == nullptr)
 			return error.set("Some time node term needs to be given"+getNewLineDebugMessage());
 
-		if (!_timeTreeNode->isEvalAvailable("eval_tendencies"))
-			return error.set("eval_tendencies not available in DE term");
+		if (!_timeTreeNode->isEvalAvailable("tendencies"))
+			return error.set("'tendencies' not available in DE term for explicit RK");
 
 		_rkMethodID = INVALID;
 		_rkNumStages = -1;
@@ -240,8 +241,6 @@ public:
 		_timeTreeNode->setupConfig(i_deConfig);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*_timeTreeNode);
 
-		clear();
-
 		/*
 		 * Setup buffers for RK stage solutions
 		 */
@@ -287,7 +286,7 @@ public:
 		_timeTreeNode->setTimeStepSize(i_dt);
 	}
 
-	void eval_timeIntegration(
+	void eval_integration(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulation_time

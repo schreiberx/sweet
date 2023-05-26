@@ -9,6 +9,7 @@
 #include <complex>
 #include <typeinfo>
 #include <sweet/core/ErrorBase.hpp>
+#include <sweet/core/openmp_helper.hpp>
 #include <sweet/libmath/DQStuff.hpp>
 
 #define EXP_FUNCTIONS_MAX_ITERS_DEFAULT 20
@@ -518,6 +519,79 @@ public:
 		}
 
 		return K;
+	}
+
+
+	SWEET_OMP_DECLARE_SIMD
+	void eval(
+		const std::complex<T> &i_K,
+		std::complex<T> &o_retval
+	)
+	{
+		std::complex<T> K = i_K;
+
+		switch(function_id)
+		{
+		case PHI0:
+			o_retval = phiN(0, i_K);
+			return;
+
+		case PHI1:
+			o_retval = phiN(1, i_K);
+			return;
+
+		case PHI2:
+			o_retval = phiN(2, i_K);
+			return;
+
+		case PHI3:
+			o_retval = phiN(3, i_K);
+			return;
+
+		case PHI4:
+			o_retval = phiN(4, i_K);
+			return;
+
+		case PHI5:
+			o_retval = phiN(5, i_K);
+			return;
+
+
+
+		case UPS1:
+			o_retval = upsN(1, i_K);
+			return;
+
+		case UPS2:
+			o_retval = upsN(2, i_K);
+			return;
+
+		case UPS3:
+			o_retval = upsN(3, i_K);
+			return;
+
+
+
+		case PSI1:
+			o_retval = psiN(1, i_K);
+			return;
+
+		case PSI2:
+			o_retval = psiN(2, i_K);
+			return;
+
+		case PSI3:
+			o_retval = psiN(3, i_K);
+			return;
+
+		default:
+			{
+				std::ostringstream ss;
+				ss << "The phi function with id '" << function_id << "' is not supported!";
+				error.set(ss.str());
+				SWEETError(ss.str().c_str());
+			}
+		}
 	}
 
 };

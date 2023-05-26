@@ -95,7 +95,6 @@ int main_mpi(int i_argc, char *i_argv[])
 				std::cout << "TIMESTEPPING FINISHED" << std::endl;
 
 			StopwatchBox::getInstance().main_timestepping.stop();
-		
 		}
 
 		if (isMPIRoot())

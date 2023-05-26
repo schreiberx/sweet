@@ -21,7 +21,6 @@ public:
 	 * Just a pointer to an existing data container
 	 */
 	const PDESWESphere_DataContainer *myDataContainer;
-
 	sweet::SphereOperators *ops;
 
 	/*

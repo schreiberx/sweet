@@ -46,6 +46,7 @@ bool PDESWESphereTS_lg_exp_direct::setup_main(
 )
 {
 	ops = io_ops;
+	sphereDataConfig = ops->sphereDataConfig;
 
 	function_name = i_function_name;
 	expFunctions.setup(i_function_name);
@@ -101,6 +102,8 @@ void PDESWESphereTS_lg_exp_direct::runTimestep(
 	double i_simulation_timestamp
 )
 {
+	assert(shackSphereDataOps != nullptr);
+
 	#if SWEET_BENCHMARK_TIMINGS
 		StopwatchBox::getInstance().rexi.start();
 		StopwatchBox::getInstance().rexi_timestepping.start();

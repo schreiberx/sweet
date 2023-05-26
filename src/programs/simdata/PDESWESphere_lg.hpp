@@ -21,13 +21,13 @@ private:
 	ShackPDESWESphere *shackPDESWESphere;
 	const sweet::SphereOperators *ops;
 
-	double dt;
+	double _dt;
 
 public:
 	PDESWESphere_lg()	:
 		shackPDESWESphere(nullptr),
 		ops(nullptr),
-		dt(-1)
+		_dt(-1)
 	{
 	}
 
@@ -95,7 +95,7 @@ private:
 
 	void setTimeStepSize(double i_dt) override
 	{
-		dt = i_dt;
+		_dt = i_dt;
 	}
 
 	void clear() override

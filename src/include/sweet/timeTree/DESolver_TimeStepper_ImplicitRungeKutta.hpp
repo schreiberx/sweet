@@ -55,6 +55,7 @@ public:
 		_method("std"),
 		_rkNumStages(-1)
 	{
+		setEvalAvailable("integration");
 	}
 
 	~DESolver_TimeStepper_ImplicitRungeKutta()
@@ -116,12 +117,12 @@ public:
 			return error.set("Unknown method '"+_method+"'");
 		}
 
-		if (!_timeTreeNode->isEvalAvailable("eval_eulerBackward"))
-			return error.set("eval_eulerBackward not available");
+		if (!_timeTreeNode->isEvalAvailable("eulerBackward"))
+			return error.set("'eulerBackward' not available");
 
 		if (_order == 2)
-			if (!_timeTreeNode->isEvalAvailable("eval_tendencies"))
-				return error.set("eval_tendencies not available");
+			if (!_timeTreeNode->isEvalAvailable("tendencies"))
+				return error.set("'tendencies' not available");
 
 
 		if (_rkMethodID == INVALID)
@@ -219,8 +220,6 @@ public:
 		_timeTreeNode->setupConfig(i_deConfig);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*_timeTreeNode);
 
-		clear();
-
 		/*
 		 * Setup temporary buffers
 		 */
@@ -263,7 +262,7 @@ public:
 
 	}
 
-	void eval_timeIntegration(
+	void eval_integration(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulation_time

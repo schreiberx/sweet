@@ -9,6 +9,7 @@ PDESWESphere_ln::PDESWESphere_ln()	:
 	ops(nullptr),
 	dt(-1)
 {
+	setEvalAvailable("tendencies");
 }
 
 PDESWESphere_ln::~PDESWESphere_ln()

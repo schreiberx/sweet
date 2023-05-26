@@ -105,14 +105,25 @@ bool PDESWESphereTS_l_exp_direct_special::shackRegistration(
 	PDESWESphereTS_BaseInterface::shackRegistration(io_shackDict);
 
 	timestepping_lg_exp_phi0.shackRegistration(io_shackDict);
+	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(timestepping_lg_exp_phi0);
+
 	timestepping_lg_exp_phi1.shackRegistration(io_shackDict);
+	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(timestepping_lg_exp_phi1);
+
 	timestepping_lg_exp_phi2.shackRegistration(io_shackDict);
+	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(timestepping_lg_exp_phi2);
 
 	timestepping_lg_exp_ups1.shackRegistration(io_shackDict);
+	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(timestepping_lg_exp_ups1);
+
 	timestepping_lg_exp_ups2.shackRegistration(io_shackDict);
+	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(timestepping_lg_exp_ups2);
+
 	timestepping_lg_exp_ups3.shackRegistration(io_shackDict);
+	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(timestepping_lg_exp_ups3);
 
 	timestepping_lc_erk.shackRegistration(io_shackDict);
+	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(timestepping_lc_erk);
 	return true;
 }
 

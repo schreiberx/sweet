@@ -37,6 +37,13 @@ class DESolver_TimeTreeNode_Base
 public:
 	sweet::ErrorBase error;
 
+	/*
+	 * Keep track of a list of implemented evaluation functions
+	 */
+private:
+	std::vector<std::string> existingEvalFunctions;
+
+public:
 	DESolver_TimeTreeNode_Base()
 	{
 	}
@@ -89,11 +96,13 @@ public:
 		const sweet::DESolver_Config_Base &i_deTermConfig
 	) = 0;
 
+
 	/*
 	 * Cleanup internal data structures
 	 */
 	virtual
 	void clear() = 0;
+
 
 	/*
 	 * Set the time step size Dt.
@@ -105,10 +114,43 @@ public:
 
 
 	/*
+	 * Return true if an evaluation function exists.
+	 */
+	bool isEvalAvailable(const std::string &i_evalFunction)
+	{
+		for (auto &e: existingEvalFunctions)
+		{
+			if (e == i_evalFunction)
+				return true;
+		}
+
+		return false;
+	}
+
+
+	/*
+	 * Set an evaluation function to be available
+	 */
+	void setEvalAvailable(const std::string &i_evalFunction)
+	{
+		if (
+			i_evalFunction != "integration" &&
+			i_evalFunction != "tendencies" &&
+			i_evalFunction != "eulerForward" &&
+			i_evalFunction != "eulerBackward" &&
+			i_evalFunction != "exponential"
+		)
+			SWEETError("Evaluation function '"+i_evalFunction+"' doesn't exist");
+
+		existingEvalFunctions.push_back(i_evalFunction);
+	}
+
+
+	/*
 	 * Return the time integration
 	 */
 	virtual
-	void eval_timeIntegration(
+	void eval_integration(
 			const DESolver_DataContainer_Base &i_U,
 			DESolver_DataContainer_Base &o_U,
 			double i_simulation_time
@@ -167,7 +209,7 @@ public:
 			double i_time_stamp
 		){};
 
-
+#if 0
 	/**
 	 * Check whether some evaluation is available.
 	 *
@@ -190,34 +232,34 @@ public:
 		#pragma GCC diagnostic ignored "-Wpmf-conversions"
 
 
-		if (i_functionName == "eval_tendencies")
+		if (i_functionName == "tendencies")
 		{
 			void *a = (void*)(this->*(&DESolver_TimeTreeNode_Base::eval_tendencies));
 			void *b = (void*)&DESolver_TimeTreeNode_Base::eval_tendencies;
 			return a != b;
 		}
-		if (i_functionName == "eval_eulerForward")
+		if (i_functionName == "eulerForward")
 		{
 			void *a = (void*)(this->*(&DESolver_TimeTreeNode_Base::eval_eulerForward));
 			void *b = (void*)&DESolver_TimeTreeNode_Base::eval_eulerForward;
 			return a != b;
 		}
-		if (i_functionName == "eval_eulerBackward")
+		if (i_functionName == "eulerBackward")
 		{
 			void *a = (void*)(this->*(&DESolver_TimeTreeNode_Base::eval_eulerBackward));
 			void *b = (void*)&DESolver_TimeTreeNode_Base::eval_eulerBackward;
 			return a != b;
 		}
-		if (i_functionName == "eval_exponential")
+		if (i_functionName == "exponential")
 		{
 			void *a = (void*)(this->*(&DESolver_TimeTreeNode_Base::eval_exponential));
 			void *b = (void*)&DESolver_TimeTreeNode_Base::eval_exponential;
 			return a != b;
 		}
-		if (i_functionName == "eval_timeIntegration")
+		if (i_functionName == "timeIntegration")
 		{
-			void *a = (void*)(this->*(&DESolver_TimeTreeNode_Base::eval_timeIntegration));
-			void *b = (void*)&DESolver_TimeTreeNode_Base::eval_timeIntegration;
+			void *a = (void*)(this->*(&DESolver_TimeTreeNode_Base::eval_integration));
+			void *b = (void*)&DESolver_TimeTreeNode_Base::eval_integration;
 			return a != b;
 		}
 
@@ -246,25 +288,25 @@ public:
 		#pragma GCC diagnostic ignored "-Wpmf-conversions"
 
 
-		if (i_functionName == "eval_tendencies")
+		if (i_functionName == "tendencies")
 		{
 			void *a = (void*)(i_deTermBase.*(&DESolver_TimeTreeNode_Base::eval_tendencies));
 			void *b = (void*)&DESolver_TimeTreeNode_Base::eval_tendencies;
 			return a != b;
 		}
-		if (i_functionName == "eval_eulerForward")
+		if (i_functionName == "eulerForward")
 		{
 			void *a = (void*)(i_deTermBase.*(&DESolver_TimeTreeNode_Base::eval_eulerForward));
 			void *b = (void*)&DESolver_TimeTreeNode_Base::eval_eulerForward;
 			return a != b;
 		}
-		if (i_functionName == "eval_eulerBackward")
+		if (i_functionName == "eulerBackward")
 		{
 			void *a = (void*)(i_deTermBase.*(&DESolver_TimeTreeNode_Base::eval_eulerBackward));
 			void *b = (void*)&DESolver_TimeTreeNode_Base::eval_eulerBackward;
 			return a != b;
 		}
-		if (i_functionName == "eval_exponential")
+		if (i_functionName == "exponential")
 		{
 			void *a = (void*)(i_deTermBase.*(&DESolver_TimeTreeNode_Base::eval_exponential));
 			void *b = (void*)&DESolver_TimeTreeNode_Base::eval_exponential;
@@ -279,7 +321,7 @@ public:
 	#endif
 #endif
 	}
-
+#endif
 
 	std::string _debugMessage;
 

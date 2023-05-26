@@ -38,6 +38,15 @@
 #endif
 
 
+bool PDESWESphereTS_l_exp::shackRegistration(sweet::ShackDictionary *io_shackDict)
+{
+	PDESWESphereTS_BaseInterface::shackRegistration(io_shackDict);
+
+	timestepping_method_l_exp_direct_special.shackRegistration(shackDict);
+	timestepping_method_lg_exp_lc_exp.shackRegistration(shackDict);
+
+	return true;
+}
 
 bool PDESWESphereTS_l_exp::implementsTimesteppingMethod(const std::string &i_timestepping_method)
 {

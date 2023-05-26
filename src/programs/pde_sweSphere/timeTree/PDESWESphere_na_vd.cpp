@@ -9,6 +9,7 @@ PDESWESphere_na_vd::PDESWESphere_na_vd()	:
 	ops(nullptr),
 	dt(-1)
 {
+	setEvalAvailable("tendencies");
 }
 
 PDESWESphere_na_vd::~PDESWESphere_na_vd()
@@ -55,6 +56,7 @@ bool PDESWESphere_na_vd::setupConfig(
 
 	ug.setup(ops->sphereDataConfig);
 	vg.setup(ops->sphereDataConfig);
+
 
 	return true;
 }

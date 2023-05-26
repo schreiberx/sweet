@@ -10,6 +10,7 @@ bool PDESWESphereTS_lg_exp_lc_erk::setup_auto(
 		sweet::SphereOperators *io_ops
 )
 {
+	ops = io_ops;
 	timestepping_method = i_timestepping_method;
 
 	int version = 0;
