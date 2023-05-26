@@ -331,7 +331,7 @@ public:
 
 				}
 
-				////std::cout << "AAAAAA " << projection_type << " " << k2 << " " << k1 << " " << U_proj[0] << std::endl;
+				/////std::cout << "AAAAAA " << projection_type << " " << k2 << " " << k1 << " " << U_proj[0] << std::endl;
 				io_h_pert.spectral_set(k2, k1, U_proj[0]);
 				io_u.spectral_set(k2, k1, U_proj[1]);
 				io_v.spectral_set(k2, k1, U_proj[2]);

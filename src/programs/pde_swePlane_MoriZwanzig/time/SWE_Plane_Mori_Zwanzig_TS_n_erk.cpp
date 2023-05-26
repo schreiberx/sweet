@@ -301,9 +301,12 @@ void SWE_Plane_Mori_Zwanzig_TS_n_erk::runTimestep_P(
 
 	this->projection.project_S(h_N, u_N, v_N);
 
-	io_h_SP += h_N;
-	io_u_SP += u_N;
-	io_v_SP += v_N;
+	///io_h_SP += h_N;
+	///io_u_SP += u_N;
+	///io_v_SP += v_N;
+	io_h_SP = h_N;
+	io_u_SP = u_N;
+	io_v_SP = v_N;
 }
 
 
