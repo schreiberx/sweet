@@ -57,12 +57,14 @@ public:
 
 
 	// min and max wavenumber modes for each wave type
-	// modes[i][0] = [min_geostr, max_geostr]   --> min_geostr <= k < max_geostr
-	// modes[i][1] = [min_west, max_west]
-	// modes[i][2] = [min_east, max_east]
+	// modes[j][i][0] = [min_geostr, max_geostr]   --> min_geostr <= k < max_geostr
+	// modes[j][i][1] = [min_west, max_west]
+	// modes[j][i][2] = [min_east, max_east]
 	// i = 0 : S
 	// i = 1 : F
-	int modes[2][3][2];
+	// j = 0: direction 0 (half the spectral size + 1)
+	// j = 1: direction 1 (full spectral size)
+	int modes[2][2][3][2];
 
 	bool shackRegistration(sweet::ShackDictionary &io_dict)
 	{
@@ -132,45 +134,62 @@ public:
 		// set physical_size = (spectral_size * 3 + 1 ) / 2  then
 		// set spectral_size = physical_size
 
-		this->modes[0][0][0] = (this->shackPDESWEPlaneMZ->S_geostrophic_min  * 3 + 1 ) / 2;
-		this->modes[0][0][1] = (this->shackPDESWEPlaneMZ->S_geostrophic_max  * 3 + 1 ) / 2;
-		this->modes[0][1][0] = (this->shackPDESWEPlaneMZ->S_gravity_west_min * 3 + 1 ) / 2;
-		this->modes[0][1][1] = (this->shackPDESWEPlaneMZ->S_gravity_west_max * 3 + 1 ) / 2;
-		this->modes[0][2][0] = (this->shackPDESWEPlaneMZ->S_gravity_east_min * 3 + 1 ) / 2;
-		this->modes[0][2][1] = (this->shackPDESWEPlaneMZ->S_gravity_east_max * 3 + 1 ) / 2;
+		this->modes[1][0][0][0] = (this->shackPDESWEPlaneMZ->S_geostrophic_min  * 3 + 1 ) / 2;
+		this->modes[1][0][0][1] = (this->shackPDESWEPlaneMZ->S_geostrophic_max  * 3 + 1 ) / 2;
+		this->modes[1][0][1][0] = (this->shackPDESWEPlaneMZ->S_gravity_west_min * 3 + 1 ) / 2;
+		this->modes[1][0][1][1] = (this->shackPDESWEPlaneMZ->S_gravity_west_max * 3 + 1 ) / 2;
+		this->modes[1][0][2][0] = (this->shackPDESWEPlaneMZ->S_gravity_east_min * 3 + 1 ) / 2;
+		this->modes[1][0][2][1] = (this->shackPDESWEPlaneMZ->S_gravity_east_max * 3 + 1 ) / 2;
 
-		this->modes[1][0][0] = (this->shackPDESWEPlaneMZ->F_geostrophic_min  * 3 + 1 ) / 2 ;
-		this->modes[1][0][1] = (this->shackPDESWEPlaneMZ->F_geostrophic_max  * 3 + 1 ) / 2 ;
-		this->modes[1][1][0] = (this->shackPDESWEPlaneMZ->F_gravity_west_min * 3 + 1 ) / 2 ;
-		this->modes[1][1][1] = (this->shackPDESWEPlaneMZ->F_gravity_west_max * 3 + 1 ) / 2 ;
-		this->modes[1][2][0] = (this->shackPDESWEPlaneMZ->F_gravity_east_min * 3 + 1 ) / 2 ;
-		this->modes[1][2][1] = (this->shackPDESWEPlaneMZ->F_gravity_east_max * 3 + 1 ) / 2 ;
+		this->modes[1][1][0][0] = (this->shackPDESWEPlaneMZ->F_geostrophic_min  * 3 + 1 ) / 2 ;
+		this->modes[1][1][0][1] = (this->shackPDESWEPlaneMZ->F_geostrophic_max  * 3 + 1 ) / 2 ;
+		this->modes[1][1][1][0] = (this->shackPDESWEPlaneMZ->F_gravity_west_min * 3 + 1 ) / 2 ;
+		this->modes[1][1][1][1] = (this->shackPDESWEPlaneMZ->F_gravity_west_max * 3 + 1 ) / 2 ;
+		this->modes[1][1][2][0] = (this->shackPDESWEPlaneMZ->F_gravity_east_min * 3 + 1 ) / 2 ;
+		this->modes[1][1][2][1] = (this->shackPDESWEPlaneMZ->F_gravity_east_max * 3 + 1 ) / 2 ;
 #else
-		this->modes[0][0][0] = this->shackPDESWEPlaneMZ->S_geostrophic_min;
-		this->modes[0][0][1] = this->shackPDESWEPlaneMZ->S_geostrophic_max;
-		this->modes[0][1][0] = this->shackPDESWEPlaneMZ->S_gravity_west_min;
-		this->modes[0][1][1] = this->shackPDESWEPlaneMZ->S_gravity_west_max;
-		this->modes[0][2][0] = this->shackPDESWEPlaneMZ->S_gravity_east_min;
-		this->modes[0][2][1] = this->shackPDESWEPlaneMZ->S_gravity_east_max;
+		this->modes[1][0][0][0] = this->shackPDESWEPlaneMZ->S_geostrophic_min;
+		this->modes[1][0][0][1] = this->shackPDESWEPlaneMZ->S_geostrophic_max;
+		this->modes[1][0][1][0] = this->shackPDESWEPlaneMZ->S_gravity_west_min;
+		this->modes[1][0][1][1] = this->shackPDESWEPlaneMZ->S_gravity_west_max;
+		this->modes[1][0][2][0] = this->shackPDESWEPlaneMZ->S_gravity_east_min;
+		this->modes[1][0][2][1] = this->shackPDESWEPlaneMZ->S_gravity_east_max;
 
-		this->modes[1][0][0] = this->shackPDESWEPlaneMZ->F_geostrophic_min;
-		this->modes[1][0][1] = this->shackPDESWEPlaneMZ->F_geostrophic_max;
-		this->modes[1][1][0] = this->shackPDESWEPlaneMZ->F_gravity_west_min;
-		this->modes[1][1][1] = this->shackPDESWEPlaneMZ->F_gravity_west_max;
-		this->modes[1][2][0] = this->shackPDESWEPlaneMZ->F_gravity_east_min;
-		this->modes[1][2][1] = this->shackPDESWEPlaneMZ->F_gravity_east_max;
+		this->modes[1][1][0][0] = this->shackPDESWEPlaneMZ->F_geostrophic_min;
+		this->modes[1][1][0][1] = this->shackPDESWEPlaneMZ->F_geostrophic_max;
+		this->modes[1][1][1][0] = this->shackPDESWEPlaneMZ->F_gravity_west_min;
+		this->modes[1][1][1][1] = this->shackPDESWEPlaneMZ->F_gravity_west_max;
+		this->modes[1][1][2][0] = this->shackPDESWEPlaneMZ->F_gravity_east_min;
+		this->modes[1][1][2][1] = this->shackPDESWEPlaneMZ->F_gravity_east_max;
 
 #endif
+
 
 		// treat negative values
 		for (int i = 0; i < 2; i++)
 			for (int wave_type = 0; wave_type < 3; wave_type++)
 				for (int j = 0; j < 2; j++)
-					if (this->modes[i][wave_type][j] < 0)
-						this->modes[i][wave_type][j] = 0;
+					if (this->modes[1][i][wave_type][j] < 0)
+						this->modes[1][i][wave_type][j] = 0;
+
+		// modes in direction 1 (half the spectral size + 1)
+		for (int i = 0; i < 2; i++)
+			for (int wave_type = 0; wave_type < 3; wave_type++)
+				for (int j = 0; j < 2; j++)
+				{
+					if (this->modes[1][i][wave_type][j] == 0)
+						this->modes[0][i][wave_type][j] = 0;
+					else
+						this->modes[0][i][wave_type][j] = this->modes[1][i][wave_type][j] / 2 + 1;
+				}
 
 		std::vector<std::string> strs = {"S", "F"};
 		std::vector<std::string> strw = {"geostrophic", "gravity west", "gravity east"};
+
+		std::cout << "DEFINITION OF S AND F" << std::endl;
+		for (int i = 0; i < 2; i++)
+			for (int wave_type = 0; wave_type < 3; wave_type++)
+				std::cout << strs[i] << ", " << strw[wave_type] << ": " << modes[0][i][wave_type][0] << " <= k1 < " << modes[0][i][wave_type][1] << "; " << modes[1][i][wave_type][0] << " <= k2 < " << modes[1][i][wave_type][1] << std::endl;
 
 
 		// Check if S and F overlap
@@ -178,20 +197,23 @@ public:
 		{
 			for (int j = i + 1; j < 2; j++)
 			{
-				for (int wave_type = 0; wave_type < 3; wave_type++)
+				for (int k = 0; k < 2; k++)
 				{
-					int min1 = this->modes[i][wave_type][0];
-					int max1 = this->modes[i][wave_type][1];
-					int min2 = this->modes[j][wave_type][0];
-					int max2 = this->modes[j][wave_type][1];
+					for (int wave_type = 0; wave_type < 3; wave_type++)
+					{
+						int min1 = this->modes[k][i][wave_type][0];
+						int max1 = this->modes[k][i][wave_type][1];
+						int min2 = this->modes[k][j][wave_type][0];
+						int max2 = this->modes[k][j][wave_type][1];
 
-					if (
-						(min2 < max1 && max2 > max1) ||
-						(min2 < min1 && max2 > min1) ||
-						(min1 < max2 && max1 > max2) ||
-						(min1 < max2 && max1 > max2)
-					)
-						SWEETError("Regions " + strs[i] + " and " + strs[j] + " overlap in " + strw[wave_type] + " waves!");
+						if (
+							(min2 < max1 && max2 > max1) ||
+							(min2 < min1 && max2 > min1) ||
+							(min1 < max2 && max1 > max2) ||
+							(min1 < max2 && max1 > max2)
+						)
+							SWEETError("Regions " + strs[i] + " and " + strs[j] + " overlap in " + strw[wave_type] + " waves in direction " + std::to_string(k) + " !");
+					}
 				}
 			}
 		}
@@ -199,33 +221,32 @@ public:
 		// check if SP, SQ, FQ cover the entire spectral space
 		for (int wave_type = 0; wave_type < 3; wave_type++)
 		{
-			// check if there is a min = zero
-			bool zero_ok = false;
-			for (int i = 0; i < 2; i++)
-				if (this->modes[i][wave_type][0] == 0 && this->modes[i][wave_type][1] > 0)
-				{
-					zero_ok = true;
-					break;
-				}
-			if (!zero_ok)
-				SWEETError(strw[wave_type] + " waves are not fully covered by S and F!");
-
-			// sum modes to check if they are all taken into account
-			int sum = 0;
-			for (int i = 0; i < 2; i++)
+			for (int k = 0; k < 2; k++)
 			{
-				int min = this->modes[i][wave_type][0];
-				int max = this->modes[i][wave_type][1] - 1;
-				sum += (min + max) * (max - min + 1) / 2;
+				// check if there is a min = zero
+				bool zero_ok = false;
+				for (int i = 0; i < 2; i++)
+					if (this->modes[k][i][wave_type][0] == 0 && this->modes[k][i][wave_type][1] > 0)
+					{
+						zero_ok = true;
+						break;
+					}
+				if (!zero_ok)
+					SWEETError(strw[wave_type] + " waves are not fully covered by S and F in direction " + std::to_string(k) + " !");
+
+				// sum modes to check if they are all taken into account
+				int sum = 0;
+				for (int i = 0; i < 2; i++)
+				{
+					int min = this->modes[k][i][wave_type][0];
+					int max = this->modes[k][i][wave_type][1] - 1;
+					sum += (min + max) * (max - min + 1) / 2;
+				}
+				if (sum != (i_planeDataConfig->spectral_data_size[k] - 1) * i_planeDataConfig->spectral_data_size[k] / 2)
+					SWEETError(strw[wave_type] + " waves are not fully covered by S and F in direction " + std::to_string(k) + " !");
 			}
-			if (sum != (i_planeDataConfig->spectral_data_size[1] - 1) * i_planeDataConfig->spectral_data_size[1] / 2)
-				SWEETError(strw[wave_type] + " waves are not fully covered by S and F!");
 		}
 
-		std::cout << "DEFINITION OF S AND F" << std::endl;
-		for (int i = 0; i < 2; i++)
-			for (int wave_type = 0; wave_type < 3; wave_type++)
-				std::cout << strs[i] << ", " << strw[wave_type] << ": " << modes[i][wave_type][0] << " <= n < " << modes[i][wave_type][1] << std::endl;
 
 
 		return true;
@@ -260,41 +281,57 @@ public:
 		io_v.spectral_set_zero();
 
 		// get min and max K from all wave types (GEO, GW, GE)
-		int Kmin = std::min(std::min(this->modes[idx][0][0], this->modes[idx][1][0]), this->modes[idx][2][0]);
-		int Kmax = std::max(std::max(this->modes[idx][0][1], this->modes[idx][1][1]), this->modes[idx][2][1]);
+		int Kmin1 = std::min(std::min(this->modes[0][idx][0][0], this->modes[0][idx][1][0]), this->modes[0][idx][2][0]);
+		int Kmax1 = std::max(std::max(this->modes[0][idx][0][1], this->modes[0][idx][1][1]), this->modes[0][idx][2][1]);
+		int Kmin2 = std::min(std::min(this->modes[1][idx][0][0], this->modes[1][idx][1][0]), this->modes[1][idx][2][0]);
+		int Kmax2 = std::max(std::max(this->modes[1][idx][0][1], this->modes[1][idx][1][1]), this->modes[1][idx][2][1]);
 
-		for (int k1 = Kmin; k1 < Kmax; k1++)
+		for (int k1 = Kmin1; k1 < Kmax1; k1++)
 		{
 
-			// Only half of the modes are defined in k1 direction!!
-			if (k1 >= this->planeDataConfig->spectral_data_size[0])
-				continue;
+			////// Only half of the modes are defined in k1 direction!!
+			////if (k1 >= this->planeDataConfig->spectral_data_size[0])
+			////	continue;
 
-			for (int k2 = Kmin; k2 < Kmax; k2++)
+			for (int k2 = Kmin2; k2 < Kmax2; k2++)
 			{
 
 				complex U_proj[3] = {0., 0., 0.};
 				normal_modes.eigendecomposition(k1, k2, eigenvectors);
 
+				///////check if eigenvectors are orthonormal
+				/////for (int i = 0; i < 3; i++)
+				/////	for (int j = 0; j < 3; j++)
+				/////	{
+				/////		complex sum = 0.;
+				/////		for (int k = 0; k < 3; k++)
+				/////			sum += eigenvectors[k][i] * std::conj(eigenvectors[k][j]);
+				/////		std::cout << "AAAAAAAAA " << k1 << " " << k2 << " " << i << " " << j << " " << sum << std::endl;
+				/////	}
+				/////std::cout << std::endl;
+
 				for (int wave_type = 0; wave_type < 3 ; wave_type++)
 				{
 
-					int kmin = this->modes[idx][wave_type][0];
-					int kmax = this->modes[idx][wave_type][1];
+					int kmin1 = this->modes[0][idx][wave_type][0];
+					int kmax1 = this->modes[0][idx][wave_type][1];
+					int kmin2 = this->modes[1][idx][wave_type][0];
+					int kmax2 = this->modes[1][idx][wave_type][1];
 
-					if (k1 < kmin || k1 >= kmax || k2 < kmin || k2 >= kmax)
+					if (k1 < kmin1 || k1 >= kmax1 || k2 < kmin2 || k2 >= kmax2)
 						continue;
 
 					complex coef_proj = 0.;
-					coef_proj += eigenvectors[0][wave_type] * h_copy.spectral_get(k2, k1);
-					coef_proj += eigenvectors[1][wave_type] * u_copy.spectral_get(k2, k1);
-					coef_proj += eigenvectors[2][wave_type] * v_copy.spectral_get(k2, k1);
+					coef_proj += std::conj(eigenvectors[0][wave_type]) * h_copy.spectral_get(k2, k1);
+					coef_proj += std::conj(eigenvectors[1][wave_type]) * u_copy.spectral_get(k2, k1);
+					coef_proj += std::conj(eigenvectors[2][wave_type]) * v_copy.spectral_get(k2, k1);
 
 					for (int j = 0; j < 3; j++)
 						U_proj[j] += coef_proj * eigenvectors[j][wave_type];
 
 				}
 
+				////std::cout << "AAAAAA " << projection_type << " " << k2 << " " << k1 << " " << U_proj[0] << std::endl;
 				io_h_pert.spectral_set(k2, k1, U_proj[0]);
 				io_u.spectral_set(k2, k1, U_proj[1]);
 				io_v.spectral_set(k2, k1, U_proj[2]);

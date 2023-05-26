@@ -460,7 +460,9 @@ public:
 
 
 
-
+		/////for (int k1 = 0; k1 < dataAndOps_full.prog_h_pert.planeDataConfig->spectral_data_size[0]; k1++)
+		/////	for (int k2 = 0; k2 < dataAndOps_full.prog_h_pert.planeDataConfig->spectral_data_size[1]; k2++)
+		/////		std::cout << "BBBBBB " << k2 << " " << k1 << " " << dataAndOps_full.prog_h_pert.spectral_get(k2, k1) << std::endl;
 
 
 		/*
