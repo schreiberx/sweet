@@ -12,13 +12,15 @@
 #include <assert.h>
 #include <sweet/parareal/Parareal_GenericData.hpp>
 
+namespace sweet
+{
 
 template <int N>
 class Parareal_GenericData_Scalar :
-		public Parareal_GenericData
+		public sweet::Parareal_GenericData
 {
 	class DataContainer_Scalar :
-			public Parareal_GenericData::DataContainer<double>
+			public sweet::Parareal_GenericData::DataContainer<double>
 	{
 
 	public:
@@ -298,4 +300,6 @@ public:
 
 };
 
+
+}
 #endif

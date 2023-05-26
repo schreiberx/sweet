@@ -1,0 +1,5 @@
+#!/bin/bash
+
+for iter in {000,002,005,010}; do
+	plot_Script_paper_parareal 0144.00000000 $iter prog_potvrt job_bench_COMP_plspec_pldeal_spspec_spdeal_fft_mpi_thomp_debug_RT_bgalewsky_g09.81_h010000.000_f1.458400e-04_u_adc765c06fa1fc02168fc46fed7d0b73 contour zoom_unstable_jet_2 1 1 fine 0
+done

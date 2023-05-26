@@ -18,7 +18,7 @@
 #include "../ShackPDESWEPlane.hpp"
 
 
-#if SWEET_PARAREAL || SWEET_XBRAID
+#if SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
 #include <sweet/parareal/Parareal_GenericData.hpp>
 #endif
 
@@ -96,7 +96,7 @@ public:
 
 #if (SWEET_PARAREAL && SWEET_PARAREAL_PLANE) || (SWEET_XBRAID && SWEET_XBRAID_PLANE)
 	void runTimestep(
-			Parareal_GenericData* io_data,
+			sweet::Parareal_GenericData* io_data,
 
 			double i_dt,		///< time step size
 			double i_sim_timestamp
@@ -128,7 +128,7 @@ public:
 
 	// for parareal SL
 	void set_previous_solution(
-			Parareal_GenericData* i_data
+			sweet::Parareal_GenericData* i_data
 	)
 	{
 		sweet::PlaneData_Spectral h_prev = *i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[0];

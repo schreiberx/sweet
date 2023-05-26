@@ -18,11 +18,15 @@
 // Different shacks we need in this file
 #include <sweet/core/shacksShared/ShackIOData.hpp>
 
+#include <sweet/core/shacksShared/ShackParallelization.hpp>
+
 // Benchmarks
 #include "ODEScalarBenchmarksCombined.hpp"
 
 // Time steppers
 #include "ODEScalarTimeSteppers.hpp"
+
+#include "ODEScalar_FileOutput.hpp"
 
 class ProgramODEScalar
 #if SWEET_GUI
@@ -62,13 +66,20 @@ public:
 	// Handler to all benchmarks
 	ODEScalarBenchmarksCombined scalarBenchmarksCombined;
 
+	ODEScalar_FileOutput fileOutput;
+
 	/*
 	 * Shack directory and shacks to work with
 	 */
 	sweet::ShackProgArgDictionary shackProgArgDict;
 	sweet::ShackIOData *shackIOData;
 	sweet::ShackTimestepControl *shackTimestepControl;
+	sweet::ShackParallelization *shackParallelization;
+	ShackODEScalar *shackODEScalar;
 	ShackODEScalarTimeDiscretization *shackTimeDisc;
+	ShackODEScalarBenchmarks *shackBenchmarks;
+
+	int timestep_nr_last_output_simtime = -1;
 
 public:
 	ProgramODEScalar(
@@ -78,7 +89,10 @@ public:
 		shackProgArgDict(i_argc, i_argv),
 		shackIOData(nullptr),
 		shackTimestepControl(nullptr),
-		shackTimeDisc(nullptr)
+		shackParallelization(nullptr),
+		shackODEScalar(nullptr),
+		shackTimeDisc(nullptr),
+		shackBenchmarks(nullptr)
 	{
 		ERROR_CHECK_COND_RETURN(shackProgArgDict);
 	}
@@ -92,7 +106,10 @@ public:
 		 */
 		shackTimestepControl = shackProgArgDict.getAutoRegistration<sweet::ShackTimestepControl>();
 		shackIOData = shackProgArgDict.getAutoRegistration<sweet::ShackIOData>();
+		shackParallelization = shackProgArgDict.getAutoRegistration<sweet::ShackParallelization>();
+		shackODEScalar = shackProgArgDict.getAutoRegistration<ShackODEScalar>();
 		shackTimeDisc = shackProgArgDict.getAutoRegistration<ShackODEScalarTimeDiscretization>();
+		shackBenchmarks = shackProgArgDict.getAutoRegistration<ShackODEScalarBenchmarks>();
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		/*
@@ -112,9 +129,12 @@ public:
 
 	void clear_1_shackRegistration()
 	{
+		shackODEScalar = nullptr;
 		shackTimestepControl = nullptr;
 		shackIOData = nullptr;
+		shackParallelization = nullptr;
 		shackTimeDisc = nullptr;
+		shackBenchmarks = nullptr;
 
 		scalarBenchmarksCombined.clear();
 		timeSteppers.clear();
@@ -178,6 +198,8 @@ public:
 		shackProgArgDict.checkAllArgumentsProcessed();
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
+		fileOutput.setup(shackIOData, shackTimestepControl, shackODEScalar);
+
 		return true;
 	}
 	void clear_3_data()
@@ -185,6 +207,8 @@ public:
 #if SWEET_GUI
 		vis_plane_data.clear();
 #endif
+
+		fileOutput.clear();
 
 		timeSteppers.clear();
 
@@ -201,6 +225,12 @@ public:
 
 		if (!setup_3_data())
 			return false;
+
+		/*
+		 * Output data for the first time step as well if output of datafiels is requested
+		 */
+		if (shackIOData->output_each_sim_seconds >= 0)
+			_timestepDoOutput();
 
 		std::cout << "SETUP FINISHED" << std::endl;
 		return true;
@@ -240,7 +270,7 @@ public:
 	{
 		shackTimestepControl->timestepHelperStart();
 
-		timeSteppers.master->runTimestep(
+		timeSteppers.timestepper->runTimestep(
 				data.prog_u,
 				shackTimestepControl->current_timestep_size,
 				shackTimestepControl->current_simulation_time
@@ -257,6 +287,47 @@ public:
 		return true;
 	}
 
+
+	void _timestepDoOutput()
+	{
+
+		if (shackParallelization->isMPIRoot)
+		{
+			fileOutput.write_file_output(
+					data.prog_u
+			);
+		}
+
+		if (shackIOData->output_each_sim_seconds > 0)
+			while (shackIOData->output_next_sim_seconds <= shackTimestepControl->current_simulation_time)
+				shackIOData->output_next_sim_seconds += shackIOData->output_each_sim_seconds;
+	}
+
+public:
+	bool timestepHandleOutput()
+	{
+		if (shackIOData->output_each_sim_seconds < 0)
+			return false;
+
+		if (shackTimestepControl->current_simulation_time == timestep_nr_last_output_simtime)
+			return false;
+
+		timestep_nr_last_output_simtime = shackTimestepControl->current_simulation_time;
+
+		if (shackTimestepControl->current_simulation_time < shackTimestepControl->max_simulation_time - shackIOData->output_each_sim_seconds*1e-10)
+		{
+			if (shackIOData->output_next_sim_seconds > shackTimestepControl->current_simulation_time)
+				return false;
+		}
+
+		if (shackParallelization->isMPIRoot)
+			if (shackIOData->verbosity > 0)
+				std::cout << std::endl;
+
+		_timestepDoOutput();
+
+		return true;
+	}
 
 	bool should_quit()
 	{

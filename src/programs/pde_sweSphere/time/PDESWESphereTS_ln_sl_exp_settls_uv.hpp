@@ -117,8 +117,6 @@ public:
 				sweet::SphereData_Spectral &i_div_prev
 	) override
 	{
-		if (shackDict.misc.verbosity > 5)
-			std::cout << "set_previous_solution()" << std::endl;
 		U_phi_prev = i_phi_prev;
 		U_vrt_prev = i_vrt_prev;
 		U_div_prev = i_div_prev;

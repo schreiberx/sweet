@@ -14,8 +14,11 @@
  * This class may be inherited and specialized to each data type
  */
 
+#if SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
 #include <sweet/core/plane/PlaneData_Spectral.hpp>
+#elif SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
+#endif
 
 namespace sweet
 {
@@ -77,8 +80,11 @@ public:
 
 public:
 
+#if SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
 	PlaneData_Config* planeDataConfig = nullptr;
+#elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
 	SphereData_Config* sphereDataConfig = nullptr;
+#endif
 
 public:
 	// different interface functions to avoid template in Parareal_GenericData
@@ -160,15 +166,19 @@ public:
 
 #endif
 
+
+#if SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
 	void setup_data_config(PlaneData_Config* i_planeDataConfig)
 	{
 		this->planeDataConfig = i_planeDataConfig;
 	};
 
+#elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
 	void setup_data_config(SphereData_Config* i_sphereDataConfig)
 	{
 		this->sphereDataConfig = i_sphereDataConfig;
 	};
+#endif
 
 public:
 

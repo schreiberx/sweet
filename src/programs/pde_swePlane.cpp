@@ -323,6 +323,8 @@ int main_mpi(int i_argc, char *i_argv[])
 		}
 		else
 		{
+			simulation.timestep_do_output();
+
 			StopwatchBox::getInstance().main_timestepping.start();
 
 			while (!simulation.should_quit())

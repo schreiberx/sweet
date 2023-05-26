@@ -37,7 +37,7 @@ public:
 	bool validateNonStationaryODE()
 	{
 		if (ode_parameters[0] == 0 && ode_parameters[1] == 0)
-			return error.set("Both ODE parameters are 0, use --advection-velocity=...");
+			return error.set("Both ODE parameters are 0, use --param-a=... and --param-b=...");
 
 		return true;
 	}
@@ -57,11 +57,13 @@ public:
 	{
 		i_pa.getArgumentValueByKey("--benchmark-name", benchmark_name);
 
-		std::string tmp;
-		if (i_pa.getArgumentValueByKey("--ode-parameters", tmp))
-			StringSplit::split2double(tmp, &ode_parameters[0], &ode_parameters[1]);
+		///std::string tmp;
+		///if (i_pa.getArgumentValueByKey("--ode-parameters", tmp))
+		///	StringSplit::split2double(tmp, &ode_parameters[0], &ode_parameters[1]);
 
 		i_pa.getArgumentValueByKey("--u0", u0);
+		i_pa.getArgumentValueByKey("--param-a", ode_parameters[0]);
+		i_pa.getArgumentValueByKey("--param-b", ode_parameters[1]);
 
 		i_pa.getArgumentValueByKey("--benchmark-override-simvars", benchmark_override_simvars);
 

@@ -35,7 +35,6 @@ class JobsDataConsolidate(InfoError):
         self.verbosity = verbosity
 
 
-
     def create_groups(
         self,
         group_identifiers : list,
@@ -84,6 +83,8 @@ def JobsData_GroupsCleanupPostprocessed(
         job_groups,         # from JobsDataConsolidate.create_groups()
         tag_cleanup_info,
         pickle_file_default_prefix,
+        pint = False,
+        solution_type = "physical"
 ):
     """
     tag_cleanup_info: List of dictionary
@@ -104,6 +105,9 @@ def JobsData_GroupsCleanupPostprocessed(
             # Iterate over all reference files
             for ref_output_file in ref_output_files:
 
+                if solution_type == "physical" and "_spec" in ref_output_file and ".csv" in ref_output_file:
+                    continue
+
                 for ci in tag_cleanup_info:
                     ref_file_starts_with = ci['ref_file_starts_with']
                     tag_src = ci['tag_src']
@@ -121,9 +125,15 @@ def JobsData_GroupsCleanupPostprocessed(
                         jindex = f"{pickle_basename}.{tag_src}"
 
                         value = job_data[jindex]
+
+                        if pint:
+                            idx = jindex.find("_iter")
+                            niter = jindex[idx:idx + 8]
+                            tag_dst += niter
+
                         job_data[tag_dst] = value
 
-                        print(f"{tag_dst}: value")
+                        print(f"{tag_dst}: {value}")
 
 
 

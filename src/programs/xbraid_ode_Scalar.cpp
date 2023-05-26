@@ -7,59 +7,25 @@
  *
  */
 
-#if ! SWEET_MPI
-#error "MPI should be enabled"
-#endif
-
-#include "ode_Scalar/ProgramODEScalar.hpp"
+#include "ode_Scalar/ProgramXBraidODEScalar.hpp"
 
 int main(int i_argc, char *i_argv[])
 {
 
-
-	MPI_Init(&i_argc, &i_argv);
-
+#if SWEET_MPI
 	int mpi_rank;
+	MPI_Init(&i_argc, &i_argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+#endif
 
-
-	if (shackDict.xbraid.xbraid_enabled)
-	{
-
-		MPI_Comm comm = MPI_COMM_WORLD;
-		MPI_Comm comm_x, comm_t;
-
-		int nt = (int) (shackDict.timecontrol.max_simulation_time / shackDict.timecontrol.current_timestep_size);
-                if (nt * shackDict.timecontrol.current_timestep_size < shackDict.timecontrol.max_simulation_time - 1e-10)
-			nt++;
-		sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., shackDict.timecontrol.max_simulation_time, nt, &shackDict);
-
-		if ( shackDict.xbraid.xbraid_run_wrapper_tests)
-		{
-
-			app.setup();
-
-			BraidUtil braid_util;
-			int test = braid_util.TestAll(&app, comm, stdout, 0., shackDict.timecontrol.current_timestep_size, shackDict.timecontrol.current_timestep_size * 2);
-			if (test == 0)
-				SWEETError("Tests failed!");
-			else
-				std::cout << "Tests successful!" << std::endl;
-
-		}
-		else
-		{
-			BraidCore core(MPI_COMM_WORLD, &app);
-			app.setup(core);
-			// Run Simulation
-			core.Drive();
-		}
-
-	}
-
-
-
-	ProgramODEScalar simulation(i_argc, i_argv);
+	ProgramXBraidODEScalar simulation(
+						i_argc, i_argv
+#if SWEET_MPI
+						,
+						MPI_COMM_WORLD,
+						mpi_rank
+#endif
+			);
 	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
 
 	simulation.setup();
@@ -69,13 +35,18 @@ int main(int i_argc, char *i_argv[])
 		simulation.shackTimestepControl->validateMaxSimulationTimeOrTimestepNr();
 		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(*(simulation.shackTimestepControl));
 
-		while (!simulation.should_quit())
-			simulation.runTimestep();
+		simulation.runXBraid();
+
 	}
 
-	simulation.printSimulationErrors();
+	///simulation.printSimulationErrors();
 	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
 
 	std::cout << "FIN" << std::endl;
+
+#if SWEET_MPI
+	MPI_Finalize();
+#endif
+
 	return 0;
 }

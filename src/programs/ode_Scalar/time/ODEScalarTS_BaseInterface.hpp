@@ -10,6 +10,11 @@
 #include <sweet/core/shacksShared/ShackTimestepControl.hpp>
 #include "ShackODEScalarTimeDiscretization.hpp"
 #include "../benchmarks/ShackODEScalarBenchmarks.hpp"
+#include "../ShackODEScalar.hpp"
+
+#if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
+#include<sweet/parareal/Parareal_GenericData.hpp>
+#endif
 
 class ODEScalarTS_BaseInterface
 {
@@ -21,12 +26,14 @@ public:
 	 */
 	sweet::ShackDictionary *shackDict;
 	sweet::ShackTimestepControl *shackTimestepControl;
+	ShackODEScalar *shackODEScalar;
 	ShackODEScalarTimeDiscretization *shackODEScalarTimeDisc;
 	ShackODEScalarBenchmarks *shackODEScalarBenchmark;
 
 	ODEScalarTS_BaseInterface()	:
 		shackDict(nullptr),
 		shackTimestepControl(nullptr),
+		shackODEScalar(nullptr),
 		shackODEScalarTimeDisc(nullptr),
 		shackODEScalarBenchmark(nullptr)
 	{
@@ -40,6 +47,7 @@ public:
 		shackDict = io_shackDict;
 
 		shackTimestepControl = io_shackDict->getAutoRegistration<sweet::ShackTimestepControl>();
+		shackODEScalar = io_shackDict->getAutoRegistration<ShackODEScalar>();
 		shackODEScalarTimeDisc = io_shackDict->getAutoRegistration<ShackODEScalarTimeDiscretization>();
 		shackODEScalarBenchmark = io_shackDict->getAutoRegistration<ShackODEScalarBenchmarks>();
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*io_shackDict);
@@ -63,6 +71,53 @@ public:
 	) = 0;
 
 	~ODEScalarTS_BaseInterface() {}
+
+/*
+ * Martin@Joao Please let's discuss this.
+ */
+
+public:
+
+#if (SWEET_PARAREAL_SCALAR) || (SWEET_XBRAID_SCALAR)
+	void runTimestep(
+			sweet::Parareal_GenericData* io_data,
+
+			double i_dt,		///< time step size
+			double i_sim_timestamp
+	)
+	{
+		double u = io_data->get_pointer_to_data_Scalar()->simfields[0];
+
+		runTimestep(	u,
+				i_dt,
+				i_sim_timestamp
+			);
+
+		io_data->get_pointer_to_data_Scalar()->simfields[0] = u;
+
+	}
+
+
+
+	// for parareal SL
+	virtual void set_previous_solution(
+				double &i_u
+	)
+	{
+	};
+
+	// for parareal SL
+	void set_previous_solution(
+			sweet::Parareal_GenericData* i_data
+	)
+	{
+		double u = i_data->get_pointer_to_data_Scalar()->simfields[0];
+
+		set_previous_solution(u);
+	};
+#endif
+
+
 };
 
 

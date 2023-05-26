@@ -1,0 +1,5 @@
+#!/bin/bash
+
+python plot_spectrum.py
+
+./plot_script
