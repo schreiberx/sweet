@@ -96,7 +96,8 @@ public:
 						shackPDESWEPlaneMZ->h0,
 						shackPDESWEPlaneMZ->gravitation,
 						shackPlaneDataOps->plane_domain_size[0],
-						shackPlaneDataOps->plane_domain_size[1]
+						shackPlaneDataOps->plane_domain_size[1],
+						i_planeDataConfig
 					);
 
 		i_planeDataConfig->printInformation();
@@ -297,6 +298,7 @@ public:
 			{
 
 				complex U_proj[3] = {0., 0., 0.};
+
 				normal_modes.eigendecomposition(k1, k2, eigenvectors);
 
 				///////check if eigenvectors are orthonormal

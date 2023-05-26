@@ -43,32 +43,6 @@ void SWE_Plane_Mori_Zwanzig_TS_l_irk_n_erk::runTimestep(
 
 	sweet::PlaneData_Spectral dummy(io_u_SP.planeDataConfig);
 
-	//////sweet::PlaneData_Spectral h_linear_t1 = io_h;
-	//////sweet::PlaneData_Spectral u_linear_t1 = io_u;
-	//////sweet::PlaneData_Spectral v_linear_t1 = io_v;
-
-	//////ts_l_irk.runTimestep(
-	//////		h_linear_t1, u_linear_t1, v_linear_t1,
-	//////		i_dt,
-	//////		i_simulation_timestamp
-	//////	);
-
-	//////// compute non-linear tendencies at half time step
-	//////sweet::PlaneData_Spectral h_dt_nonlinear(ops->planeDataConfig);
-	//////sweet::PlaneData_Spectral u_dt_nonlinear(ops->planeDataConfig);
-	//////sweet::PlaneData_Spectral v_dt_nonlinear(ops->planeDataConfig);
-
-	//////// standard time stepping
-	//////euler_timestep_update_nonlinear(
-	//////		io_h, io_u, io_v,
-	//////		h_dt_nonlinear, u_dt_nonlinear, v_dt_nonlinear
-	//////	);
-
-	//////io_h = h_linear_t1 + h_dt_nonlinear*i_dt;
-	//////io_u = u_linear_t1 + u_dt_nonlinear*i_dt;
-	//////io_v = v_linear_t1 + v_dt_nonlinear*i_dt;
-
-
 	///////////////////////////
 	// solve equation for SP //
 	///////////////////////////
@@ -128,6 +102,22 @@ void SWE_Plane_Mori_Zwanzig_TS_l_irk_n_erk::runTimestep(
 		this->ts_n_erk.runTimestep_SF(
 				io_h_pert_SP, io_u_SP, io_v_SP,
 				io_h_pert_FQ, io_u_FQ, io_v_FQ,
+				i_dt,
+				i_simulation_timestamp
+			);
+	}
+	if (equation == "full")
+	{
+		this->ts_l_irk.runTimestep(
+				io_h_pert_SP, io_u_SP, io_v_SP,
+				dummy, dummy, dummy,
+				dummy, dummy, dummy,
+				i_dt,
+				i_simulation_timestamp
+			);
+
+		this->ts_n_erk.runTimestep_full(
+				io_h_pert_SP, io_u_SP, io_v_SP,
 				i_dt,
 				i_simulation_timestamp
 			);

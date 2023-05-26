@@ -38,7 +38,6 @@ class SWE_Plane_TS_l_direct	:
 	std::vector<std::vector<std::array<std::array<std::complex<T>, 3>, 3>>> Z;  // Z[k1][k2][0,1,2][0,1,2];
 	double dt_precompute_phin = 0.; // store dt for which Z has been precomputed in order to check if it is necessary to recompute it.
 
-
 public:
 
 	void runTimestep(

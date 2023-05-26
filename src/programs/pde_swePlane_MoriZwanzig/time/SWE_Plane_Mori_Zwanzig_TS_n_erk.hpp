@@ -178,6 +178,16 @@ public:
 			double i_simulation_timestamp = -1
 	);
 
+	void runTimestep_full(
+			sweet::PlaneData_Spectral &io_h_pert,	///< prognostic variables
+			sweet::PlaneData_Spectral &io_u,	///< prognostic variables
+			sweet::PlaneData_Spectral &io_v,	///< prognostic variables
+
+			double i_dt = 0,
+			double i_simulation_timestamp = -1
+	);
+
+
 private:
 	void runTimestep_Q_SF(
 			void (SWE_Plane_Mori_Zwanzig_TS_n_erk::*i_compute_euler_timestep_update)(

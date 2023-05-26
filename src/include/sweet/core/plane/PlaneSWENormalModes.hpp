@@ -25,6 +25,8 @@ public:
 
 	sweet::ExpFunctions<T> expFunctions;
 
+	sweet::PlaneData_Config* planeDataConfig = nullptr;
+
 	T s0;
 	T s1;
 
@@ -44,8 +46,9 @@ public:
 			double i_f,
 			double i_h,
 			double i_g,
-			int i_s0,
-			int i_s1
+			double i_s0,
+			double i_s1,
+			sweet::PlaneData_Config* i_planeDataConfig
 		)
 	{
 		this->f = (T)i_f;
@@ -56,12 +59,14 @@ public:
 
 		this->sqrt_h = expFunctions.l_sqrt(this->h);
 		this->sqrt_g = expFunctions.l_sqrt(this->g);
+
+		this->planeDataConfig = i_planeDataConfig;
 	}
 
 public:
 	void eigendecomposition(
-					T i_k0,
-					T i_k1,
+					int i_k0,
+					int i_k1,
 					complex o_eigenvectors[3][3]
 				)
 	{
@@ -79,8 +84,8 @@ public:
 
 public:
 	void eigendecomposition(
-					T i_k0,
-					T i_k1,
+					int i_k0,
+					int i_k1,
 					complex o_eigenvectors[3][3],
 					complex o_eigenvectors_inv[3][3]
 				)
@@ -98,8 +103,8 @@ public:
 
 public:
 	void eigendecomposition(
-					T i_k0,
-					T i_k1,
+					int i_k0,
+					int i_k1,
 					complex o_eigenvalues[3],
 					complex o_eigenvectors[3][3]
 				)
@@ -117,8 +122,8 @@ public:
 
 public:
 	void eigendecomposition(
-					T i_k0,
-					T i_k1,
+					int i_k0,
+					int i_k1,
 					complex o_eigenvalues[3],
 					complex o_eigenvectors[3][3],
 					complex o_eigenvectors_inv[3][3]
@@ -136,8 +141,8 @@ public:
 
 public:
 	void eigendecomposition(
-					T i_k0,
-					T i_k1,
+					int i_k0,
+					int i_k1,
 					bool i_compute_eigenvalues,
 					bool i_compute_inverse,
 					complex o_eigenvalues[3],
@@ -146,10 +151,19 @@ public:
 				)
 	{
 
+		double k1;
+		if (i_k1 < this->planeDataConfig->spectral_data_size[1]/2)
+			k1 = (T)i_k1;
+		else
+			k1 = (T)((int)i_k1-(int)this->planeDataConfig->spectral_data_size[1]);
+
+		double k0 = (T)i_k0;
+
+
 		complex I(0.0, 1.0);
 
-		complex b = -i_k0*I;	// d/dx exp(I*k0*x) = I*k0 exp(I*k0*x)
-		complex c = -i_k1*I;
+		complex b = -k0*I;	// d/dx exp(I*k0*x) = I*k0 exp(I*k0*x)
+		complex c = -k1*I;
 
 		b = b * this->expFunctions.pi2 / this->s0;
 		c = c * this->expFunctions.pi2 / this->s1;
@@ -355,6 +369,13 @@ public:
 						   ( -b*c*g*h + f*expFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h) );
 					v[2][2] = 1.0;
 
+					/////if (i_k0 == 6 && i_k1 == 11)
+					/////{
+					/////	std::cout << "AAAAA " << v[0][0] << " " << v[1][0] << " " << v[2][0] << " " << f << " " << b << " " << g << " " << this->expFunctions.pi2 << " " << this->s0 << std::endl;
+					/////	std::cout << "AAAAA " << v[0][1] << " " << v[1][1] << " " << v[2][1] << std::endl;
+					/////	std::cout << "AAAAA " << v[0][2] << " " << v[1][2] << " " << v[2][2] << std::endl;
+					/////}
+
 					if (i_compute_eigenvalues){
 						lambda[0] = 0.0;
 						lambda[1] = -expFunctions.l_sqrtcplx(b*b*g*h + c*c*g*h - f*f);
@@ -362,6 +383,7 @@ public:
 					}
 				}
 		}
+
 
 		/*
 		 *  Normalize eigenvectors
@@ -395,10 +417,12 @@ public:
 
 			complex s = v[0][0]*v_inv[0][0] + v[0][1]*v_inv[1][0] + v[0][2]*v_inv[2][0];
 
-			for (int j = 0; j < 3; j++)	{
+			for (int j = 0; j < 3; j++)
+			{
 				for (int i = 0; i < 3; i++)
 					v_inv[j][i] /= s;
 			}
+
 			//Return inverse matrix
 			for (int j = 0; j < 3; j++)	{
 				for (int i = 0; i < 3; i++)

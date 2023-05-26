@@ -37,6 +37,7 @@ class ExpIntegrators:
 
         # Parameters for direct exp. solver
         self.exp_direct_precompute_phin = 0
+        self.exp_direct_normalize_eigenvectors = 0
 
 
     def load_from_dict(self, d):
@@ -78,6 +79,8 @@ class ExpIntegrators:
         if 'exp_direct_precompute_phin' in d:
             self.exp_direct_precompute_phin = d['exp_direct_precompute_phin']
 
+        if 'exp_direct_normalize_eigenvectors' in d:
+            self.exp_direct_normalize_eigenvectors = d['exp_direct_normalize_eigenvectors']
 
 
     def getUniqueID(self,
@@ -145,6 +148,7 @@ class ExpIntegrators:
 
             if self.rexi_method == 'direct':
                 retval += ' --exp-direct-precompute-phin='+str(self.exp_direct_precompute_phin)
+                retval += ' --exp-direct-normalize-eigenvectors='+str(self.exp_direct_normalize_eigenvectors)
 
             else:
                 retval += ' --rexi-sphere-preallocation='+str(self.rexi_sphere_preallocation)

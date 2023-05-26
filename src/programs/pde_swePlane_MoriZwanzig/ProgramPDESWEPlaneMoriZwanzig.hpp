@@ -142,6 +142,7 @@ public:
 	PDESWEPlaneMoriZwanzigTimeSteppers pdeSWEPlaneMoriZwanzigTimeSteppers_P;
 	PDESWEPlaneMoriZwanzigTimeSteppers pdeSWEPlaneMoriZwanzigTimeSteppers_Q;
 	PDESWEPlaneMoriZwanzigTimeSteppers pdeSWEPlaneMoriZwanzigTimeSteppers_SF;
+	PDESWEPlaneMoriZwanzigTimeSteppers pdeSWEPlaneMoriZwanzigTimeSteppers_full;
 
 	// Handler to all benchmarks
 	PDESWEPlaneMoriZwanzigBenchmarksCombined planeBenchmarksCombined;
@@ -288,6 +289,9 @@ public:
 		pdeSWEPlaneMoriZwanzigTimeSteppers_SF.shackRegistration(shackProgArgDict);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(pdeSWEPlaneMoriZwanzigTimeSteppers_SF);
 
+		pdeSWEPlaneMoriZwanzigTimeSteppers_full.shackRegistration(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(pdeSWEPlaneMoriZwanzigTimeSteppers_full);
+
 		projection.shackRegistration(shackProgArgDict);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(projection);
 #if 0
@@ -320,6 +324,7 @@ public:
 		pdeSWEPlaneMoriZwanzigTimeSteppers_P.clear();
 		pdeSWEPlaneMoriZwanzigTimeSteppers_Q.clear();
 		pdeSWEPlaneMoriZwanzigTimeSteppers_SF.clear();
+		pdeSWEPlaneMoriZwanzigTimeSteppers_full.clear();
 		shackProgArgDict.clear();
 	}
 
@@ -388,6 +393,8 @@ public:
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(pdeSWEPlaneMoriZwanzigTimeSteppers_Q);
 		pdeSWEPlaneMoriZwanzigTimeSteppers_SF.setup(&dataAndOps_SP.ops, &shackProgArgDict, "SF");
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(pdeSWEPlaneMoriZwanzigTimeSteppers_SF);
+		pdeSWEPlaneMoriZwanzigTimeSteppers_full.setup(&dataAndOps_SP.ops, &shackProgArgDict, "full");
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(pdeSWEPlaneMoriZwanzigTimeSteppers_full);
 
 		std::cout << "Printing shack information:" << std::endl;
 		shackProgArgDict.printShackData();
@@ -553,6 +560,7 @@ public:
 		pdeSWEPlaneMoriZwanzigTimeSteppers_P.clear();
 		pdeSWEPlaneMoriZwanzigTimeSteppers_Q.clear();
 		pdeSWEPlaneMoriZwanzigTimeSteppers_SF.clear();
+		pdeSWEPlaneMoriZwanzigTimeSteppers_full.clear();
 
 		dataAndOps_SP.clear();
 		dataAndOps_SQ.clear();
@@ -563,6 +571,7 @@ public:
 		dataAndOps_S.clear();
 		dataAndOps_F.clear();
 		dataAndOps_SF.clear();
+		dataAndOps_full.clear();
 
 	}
 
@@ -666,14 +675,17 @@ public:
 
 		pdeSWEPlaneMoriZwanzigTimeSteppers_P.timestepper->runTimestep(
 				dataAndOps_SP.prog_h_pert, dataAndOps_SP.prog_u, dataAndOps_SP.prog_v,
-				dataAndOps_SQ.prog_h_pert, dataAndOps_SQ.prog_u, dataAndOps_SQ.prog_v,
-				dataAndOps_FQ.prog_h_pert, dataAndOps_FQ.prog_u, dataAndOps_FQ.prog_v,
+				///dataAndOps_SQ.prog_h_pert, dataAndOps_SQ.prog_u, dataAndOps_SQ.prog_v,
+				///dataAndOps_FQ.prog_h_pert, dataAndOps_FQ.prog_u, dataAndOps_FQ.prog_v,
+				dataAndOps_dummy.prog_h_pert, dataAndOps_dummy.prog_u, dataAndOps_dummy.prog_v,
+				dataAndOps_dummy.prog_h_pert, dataAndOps_dummy.prog_u, dataAndOps_dummy.prog_v,
 				shackTimestepControl->current_timestep_size,
 				shackTimestepControl->current_simulation_time
 			);
 
 		pdeSWEPlaneMoriZwanzigTimeSteppers_Q.timestepper->runTimestep(
-				dataAndOps_SP.prog_h_pert, dataAndOps_SP.prog_u, dataAndOps_SP.prog_v,
+				///dataAndOps_SP.prog_h_pert, dataAndOps_SP.prog_u, dataAndOps_SP.prog_v,
+				dataAndOps_dummy.prog_h_pert, dataAndOps_dummy.prog_u, dataAndOps_dummy.prog_v,
 				dataAndOps_SQ.prog_h_pert, dataAndOps_SQ.prog_u, dataAndOps_SQ.prog_v,
 				dataAndOps_FQ.prog_h_pert, dataAndOps_FQ.prog_u, dataAndOps_FQ.prog_v,
 				shackTimestepControl->current_timestep_size,
@@ -687,6 +699,15 @@ public:
 				shackTimestepControl->current_timestep_size,
 				shackTimestepControl->current_simulation_time
 			);
+
+		pdeSWEPlaneMoriZwanzigTimeSteppers_full.timestepper->runTimestep(
+				dataAndOps_full.prog_h_pert, dataAndOps_full.prog_u, dataAndOps_full.prog_v,
+				dataAndOps_dummy.prog_h_pert, dataAndOps_dummy.prog_u, dataAndOps_dummy.prog_v,
+				dataAndOps_dummy.prog_h_pert, dataAndOps_dummy.prog_u, dataAndOps_dummy.prog_v,
+				shackTimestepControl->current_timestep_size,
+				shackTimestepControl->current_simulation_time
+			);
+
 
 		dataAndOps_MZ_S.prog_h_pert = dataAndOps_SP.prog_h_pert + dataAndOps_SQ.prog_h_pert - dataAndOps_S.t0_prog_h_pert;
 		dataAndOps_MZ_S.prog_u = dataAndOps_SP.prog_u + dataAndOps_SQ.prog_u - dataAndOps_S.t0_prog_u;

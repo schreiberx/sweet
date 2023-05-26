@@ -135,6 +135,7 @@ public:
 	 * Direct EXP
 	 */
 	bool direct_precompute_phin = false;
+	bool direct_normalize_eigenvectors = false;
 
 
 	/*
@@ -252,6 +253,7 @@ public:
 		i_pa.getArgumentValueByKey("--rexi-ci-mu", ci_mu);
 
 		i_pa.getArgumentValueByKey("--exp-direct-precompute-phin", direct_precompute_phin);
+		i_pa.getArgumentValueByKey("--exp-direct-normalize-eigenvectors", direct_normalize_eigenvectors);
 		i_pa.getArgumentValueByKey("--exp-verbosity", verbosity);
 
 		if (rexi_files_given)
@@ -335,6 +337,7 @@ public:
 		std::cout << " + ci_mu: " << ci_mu << std::endl;
 		std::cout << " [EXP Direct]" << std::endl;
 		std::cout << " + exp_direct_precompute_phin: " << direct_precompute_phin << std::endl;
+		std::cout << " + exp_direct_normalize_eigenvectors: " << direct_normalize_eigenvectors << std::endl;
 		std::cout << std::endl;
 	}
 };

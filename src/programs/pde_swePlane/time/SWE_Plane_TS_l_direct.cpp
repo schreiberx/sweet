@@ -424,6 +424,17 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 					}
 				}
 
+				if (shackExpIntegration->direct_normalize_eigenvectors)
+					for (int i = 0; i < 3; i++)
+					{
+						double sum = 0.;
+						for (int j = 0; j < 3; j++)
+							sum += std::abs(v[j][i]) * std::abs(v[j][i]);
+						sum = std::sqrt(sum);
+						for (int j = 0; j < 3; j++)
+							v[j][i] /= sum;
+					}
+
 				/*
 				 * Invert Eigenvalue matrix
 				 */
@@ -447,53 +458,86 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 					for (int i = 0; i < 3; i++)
 						v_inv[j][i] /= s;
 
-				complex v_lambda[3][3];
 
-				for (int i = 0; i < 3; i++)
+
+				if (shackExpIntegration->direct_precompute_phin)
 				{
-					std::complex<T> &lam = lambda[i];
+					complex v_lambda[3][3];
 
-					std::complex<T> K = expFunctions.eval(lam*dt);
-					for (int j = 0; j < 3; j++)
-						v_lambda[j][i] = v[j][i] * K;
-				}
-
-				for (int j = 0; j < 3; j++)
 					for (int i = 0; i < 3; i++)
 					{
-						std::complex<double> d = 0.;
-						for (int k = 0; k < 3; k++)
-							d += v_lambda[j][k] * v_inv[k][i];
+						std::complex<T> &lam = lambda[i];
 
-						if (shackExpIntegration->direct_precompute_phin)
-							Z[ik1][ik0][j][i] = d;
-						else // light version
-							Z_single_wavenumber_pair[j][i] = d;
+						std::complex<T> K = expFunctions.eval(lam*dt);
+						for (int j = 0; j < 3; j++)
+							v_lambda[j][i] = v[j][i] * K;
 					}
 
+					for (int j = 0; j < 3; j++)
+						for (int i = 0; i < 3; i++)
+						{
+							std::complex<double> d = 0.;
+							for (int k = 0; k < 3; k++)
+								d += v_lambda[j][k] * v_inv[k][i];
+
+							if (shackExpIntegration->direct_precompute_phin)
+								Z[ik1][ik0][j][i] = d;
+							else // light version
+								Z_single_wavenumber_pair[j][i] = d;
+						}
+				}
+				else
+				{
+					// Compute Qinv * U
+					complex UEV[3] = {0., 0., 0.};
+					for (int k = 0; k < 3; k++)
+						for (int j = 0; j < 3; j++)
+							UEV[k] += v_inv[k][j] * U[j];
+
+					// Compute phin(Dt * Lambda) * [Qinv * U]
+					for (int k = 0; k < 3; k++)
+					{
+						std::complex<T> &lam = lambda[k];
+
+						std::complex<T> K = expFunctions.eval(lam*dt);
+
+						UEV[k] = K * UEV[k];
+					}
+
+					// Compute Q * [phin * Qinv * U]
+					for (int k = 0; k < 3; k++)
+						U[k] = 0.;
+					for (int k = 0; k < 3; k++)
+						for (int j = 0; j < 3; j++)
+							U[k] += v[k][j] * UEV[j];
+
+				}
+
 			}
 
-
-			complex U_copy[3];
-			for (int k = 0; k < 3; k++)
-			{
-				U_copy[k] = U[k];
-				U[k] = 0.0;
-			}
 
 			if (shackExpIntegration->direct_precompute_phin)
 			{
+				complex U_copy[3];
 				for (int k = 0; k < 3; k++)
-					for (int j = 0; j < 3; j++)
-						U[k] += Z[ik1][ik0][k][j] * U_copy[j];
-			}
-			else // light version
-			{
-				for (int k = 0; k < 3; k++)
-					for (int j = 0; j < 3; j++)
-						U[k] += Z_single_wavenumber_pair[k][j] * U_copy[j];
-			}
+				{
+					U_copy[k] = U[k];
+					U[k] = 0.0;
+				}
 
+				if (shackExpIntegration->direct_precompute_phin)
+				{
+					for (int k = 0; k < 3; k++)
+						for (int j = 0; j < 3; j++)
+							U[k] += Z[ik1][ik0][k][j] * U_copy[j];
+				}
+				else // light version
+				{
+					for (int k = 0; k < 3; k++)
+						for (int j = 0; j < 3; j++)
+							U[k] += Z_single_wavenumber_pair[k][j] * U_copy[j];
+				}
+			}
 
 #if SWEET_QUADMATH
 			std::complex<double> tmp0(U[0].real(), U[0].imag());

@@ -20,9 +20,6 @@ bool SWE_Plane_Mori_Zwanzig_TS_n_erk::shackRegistration(
 }
 
 
-/*
- * Main routine for method to be used in case of finite differences
- */
 void SWE_Plane_Mori_Zwanzig_TS_n_erk::euler_timestep_update_nonlinear_P(
 		const sweet::PlaneData_Spectral &i_h,	///< prognostic variables
 		const sweet::PlaneData_Spectral &i_u,	///< prognostic variables
@@ -53,9 +50,6 @@ void SWE_Plane_Mori_Zwanzig_TS_n_erk::euler_timestep_update_nonlinear_P(
 }
 
 
-/*
- * Main routine for method to be used in case of finite differences
- */
 void SWE_Plane_Mori_Zwanzig_TS_n_erk::euler_timestep_update_bilinear(
 		const sweet::PlaneData_Spectral &i_h_A,	///< prognostic variables
 		const sweet::PlaneData_Spectral &i_u_A,	///< prognostic variables
@@ -91,9 +85,6 @@ void SWE_Plane_Mori_Zwanzig_TS_n_erk::euler_timestep_update_bilinear(
 
 
 
-/*
- * Main routine for method to be used in case of finite differences
- */
 void SWE_Plane_Mori_Zwanzig_TS_n_erk::euler_timestep_update_nonlinear_Q(
 		const sweet::PlaneData_Spectral &i_h_SQ,	///< prognostic variables
 		const sweet::PlaneData_Spectral &i_u_SQ,	///< prognostic variables
@@ -266,6 +257,34 @@ void SWE_Plane_Mori_Zwanzig_TS_n_erk::euler_timestep_update_nonlinear_SF(
 		o_v_F_t = v_N_SS_2 + v_N_SF_2 + v_N_FF_2;
 }
 
+void SWE_Plane_Mori_Zwanzig_TS_n_erk::runTimestep_full(
+		sweet::PlaneData_Spectral &io_h,	///< prognostic variables
+		sweet::PlaneData_Spectral &io_u,	///< prognostic variables
+		sweet::PlaneData_Spectral &io_v,	///< prognostic variables
+
+		double i_dt,
+		double i_simulation_timestamp
+)
+{
+	if (i_dt <= 0)
+		SWEETError("SWE_Plane_TS_n_erk: Only constant time step size allowed");
+
+	///////////////////////////
+	// solve full equation   //
+	///////////////////////////
+	// should provide the same results as in pde_swePlane
+
+	timestepping_rk_P.runTimestep(
+			this,
+			&SWE_Plane_Mori_Zwanzig_TS_n_erk::euler_timestep_update_nonlinear_P,	///< pointer to function to compute euler time step updates
+			io_h, io_u, io_v,
+			i_dt,
+			timestepping_order_nonlinear_P,
+			i_simulation_timestamp
+		);
+}
+
+
 void SWE_Plane_Mori_Zwanzig_TS_n_erk::runTimestep_P(
 		sweet::PlaneData_Spectral &io_h_SP,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_u_SP,	///< prognostic variables
@@ -282,31 +301,17 @@ void SWE_Plane_Mori_Zwanzig_TS_n_erk::runTimestep_P(
 	// solve equation for SP //
 	///////////////////////////
 
-	sweet::PlaneData_Spectral h_N(io_h_SP.planeDataConfig);
-	sweet::PlaneData_Spectral u_N(io_u_SP.planeDataConfig);
-	sweet::PlaneData_Spectral v_N(io_v_SP.planeDataConfig);
-
-	h_N = io_h_SP;
-	u_N = io_u_SP;
-	v_N = io_v_SP;
-
 	timestepping_rk_P.runTimestep(
 			this,
 			&SWE_Plane_Mori_Zwanzig_TS_n_erk::euler_timestep_update_nonlinear_P,	///< pointer to function to compute euler time step updates
-			h_N, u_N, v_N,
+			io_h_SP, io_u_SP, io_v_SP,
 			i_dt,
 			timestepping_order_nonlinear_P,
 			i_simulation_timestamp
 		);
 
-	this->projection.project_S(h_N, u_N, v_N);
+	this->projection.project_S(io_h_SP, io_u_SP, io_v_SP);
 
-	///io_h_SP += h_N;
-	///io_u_SP += u_N;
-	///io_v_SP += v_N;
-	io_h_SP = h_N;
-	io_u_SP = u_N;
-	io_v_SP = v_N;
 }
 
 
@@ -355,7 +360,7 @@ void SWE_Plane_Mori_Zwanzig_TS_n_erk::runTimestep_SF(
 )
 {
 	this->runTimestep_Q_SF(
-					&SWE_Plane_Mori_Zwanzig_TS_n_erk::euler_timestep_update_nonlinear_Q,
+					&SWE_Plane_Mori_Zwanzig_TS_n_erk::euler_timestep_update_nonlinear_SF,
 
 					io_h_pert_S,
 					io_u_S,
@@ -699,34 +704,7 @@ void SWE_Plane_Mori_Zwanzig_TS_n_erk::runTimestep(
 		double i_simulation_timestamp
 )
 {
-
 	SWEETError("Don't use this function! Use instead run_Timestep_[P,Q,SF]");
-
-	////if (i_dt <= 0)
-	////	SWEETError("SWE_Plane_TS_n_erk: Only constant time step size allowed");
-
-	////this->runTimestep_P(
-	////			io_h_pert_SP,
-	////			io_u_SP,
-	////			io_v_SP,
-
-	////			i_dt,
-	////			i_simulation_timestamp
-	////	);
-
-	////this->runTimestep_Q(
-	////			io_h_pert_SQ,
-	////			io_u_SQ,
-	////			io_v_SQ,
-
-	////			io_h_pert_FQ,
-	////			io_u_FQ,
-	////			io_v_FQ,
-
-	////			i_dt,
-	////			i_simulation_timestamp
-	////	);
-
 }
 
 

@@ -44,7 +44,8 @@ bool SWE_Plane_Mori_Zwanzig_TS_l_direct::setup(
 					shackPDESWEPlane->h0,
 					shackPDESWEPlane->gravitation,
 					shackPlaneDataOps->plane_domain_size[0],
-					shackPlaneDataOps->plane_domain_size[1]
+					shackPlaneDataOps->plane_domain_size[1],
+					ops->planeDataConfig
 				);
 
 
@@ -255,18 +256,16 @@ void SWE_Plane_Mori_Zwanzig_TS_l_direct::run_timestep_agrid_planedata(
 			complex eigenvectors[3][3];
 			complex eigenvectors_inv[3][3];
 
-			T k1;
-			if (ik1 < io_h_pert_SP.planeDataConfig->spectral_data_size[1]/2)
-				k1 = (T)ik1;
-			else
-				k1 = (T)((int)ik1-(int)io_h_pert_SP.planeDataConfig->spectral_data_size[1]);
+			////T k1;
+			////if (ik1 < io_h_pert_SP.planeDataConfig->spectral_data_size[1]/2)
+			////	k1 = (T)ik1;
+			////else
+			////	k1 = (T)((int)ik1-(int)io_h_pert_SP.planeDataConfig->spectral_data_size[1]);
 
-			T k0 = (T)ik0;
+			////T k0 = (T)ik0;
 
 			// get eigenvectors matrix, its inverse and eigenvalues
-			normal_modes.eigendecomposition(k0, k1, eigenvalues, eigenvectors, eigenvectors_inv);
-
-
+			normal_modes.eigendecomposition(ik0, ik1, eigenvalues, eigenvectors, eigenvectors_inv);
 
 			complex U_SP[3];
 			complex U_FQ[3];
@@ -341,7 +340,7 @@ void SWE_Plane_Mori_Zwanzig_TS_l_direct::run_timestep_agrid_planedata(
 #endif
 		}
 	}
-	
+
 	io_h_pert_SP.spectral_zeroAliasingModes();
 	io_u_SP.spectral_zeroAliasingModes();
 	io_v_SP.spectral_zeroAliasingModes();

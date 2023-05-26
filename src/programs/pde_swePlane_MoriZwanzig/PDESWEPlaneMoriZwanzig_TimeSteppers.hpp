@@ -78,13 +78,13 @@ public:
 		assert(io_shackDict != nullptr);
 
 		equation = i_equation;
-		if (equation != "P" && equation != "Q" && equation != "SF")
+		if (equation != "P" && equation != "Q" && equation != "SF" && equation != "full")
 			SWEETError("Invalid equation: " + equation);
 
 		// TODO: different tsm for each equation
 		///const std::string &timestepping_method = shackPDESWEPlaneMoriZwanzigTimeDiscretization->timestepping_method;
 		std::string timestepping_method;
-		if (equation == "P")
+		if (equation == "P" || equation == "full")
 			timestepping_method = shackPDESWEPlaneMoriZwanzigTimeDiscretization->timestepping_method_P;
 		else
 			timestepping_method = shackPDESWEPlaneMoriZwanzigTimeDiscretization->timestepping_method_Q;
