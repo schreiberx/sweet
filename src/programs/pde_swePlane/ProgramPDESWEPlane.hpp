@@ -787,8 +787,8 @@ public:
 				output_filenames += ";" + write_file(t_v, "prog_v");
 				output_filenames += ";" + write_file(t_h + shackPDESWEPlane->h0, "prog_h");
 
-				///output_filenames += ";" + write_file(dataAndOps.ops.vort(t_u, t_v), "diag_vort");
-				///output_filenames += ";" + write_file(dataAndOps.ops.div(t_u, t_v), "diag_div");
+				output_filenames += ";" + write_file(dataAndOps.ops.vort(t_u, t_v), "diag_vrt");
+				output_filenames += ";" + write_file(dataAndOps.ops.div(t_u, t_v), "diag_div");
 
 				///output_filenames += ";" + write_file(dataAndOps.ops.ke(t_u,t_v),"diag_ke");
 			}

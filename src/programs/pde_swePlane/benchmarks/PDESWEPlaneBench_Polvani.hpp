@@ -194,6 +194,7 @@ public:
 		/*
 		 * update domain size
 		 */
+		ops->clear();
 		ops->setup(planeDataConfig, shackPlaneDataOps);
 
 

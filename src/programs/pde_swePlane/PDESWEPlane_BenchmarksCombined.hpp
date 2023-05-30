@@ -163,7 +163,10 @@ public:
 
 			return true;
 		}
-		else if (shackPDESWEPlaneBenchmarks->benchmark_name == "unstablejet_dimensionless")
+		else if (
+				shackPDESWEPlaneBenchmarks->benchmark_name == "unstablejet_dimensionless" ||
+				shackPDESWEPlaneBenchmarks->benchmark_name == "unstablejet_MZ"
+			)
 		{
 			PDESWEPlaneBench_UnstableJet swe_unstablejet;
 			swe_unstablejet.shackRegistration(shackDict);

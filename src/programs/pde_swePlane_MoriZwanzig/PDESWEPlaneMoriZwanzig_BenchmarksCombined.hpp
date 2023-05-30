@@ -24,6 +24,7 @@
 /////#include "benchmarks/PDESWEPlaneBench_UnstableJetFast.hpp"
 /////#include "benchmarks/PDESWEPlaneBench_UnstableJetAdv.hpp"
 #include "benchmarks/PDESWEPlaneMoriZwanzigBench_GaussianBump.hpp"
+#include "benchmarks/PDESWEPlaneMoriZwanzigBench_UnstableJet.hpp"
 
 
 ////#include "ShackPDESWEPlane.hpp"
@@ -171,31 +172,19 @@ public:
 
 		/////	return true;
 		/////}
-		/////else if (shackPDESWEPlaneBenchmarks->benchmark_name == "unstablejet")
-		/////{
-		/////	double r = 6.37122e6;
-		/////	shackPlaneDataOps->plane_domain_size[0] = 2.0*M_PI*r;
-		/////	shackPlaneDataOps->plane_domain_size[1] = 2.0*M_PI*r;
-		/////	shackPDESWEPlane->plane_rotating_f0 = 0.00014584;
-		/////	shackPDESWEPlane->gravitation = 9.80616;
-		/////	shackPDESWEPlane->h0 = 10000;
+		else if (shackPDESWEPlaneBenchmarks->benchmark_name == "unstablejet_MZ")
+		{
+			PDESWEPlaneMoriZwanzigBench_UnstableJet swe_unstablejet;
+			swe_unstablejet.shackRegistration(shackDict);
+			swe_unstablejet.setup(io_ops, io_planeDataConfig);
+			swe_unstablejet.setupBenchmark(
+					o_h_pert,
+					o_u,
+					o_v
+			);
 
-		/////	std::cout << "WARNING: OVERWRITING SIMULATION PARAMETERS FOR THIS BENCHMARK!" << std::endl;
-		/////	io_ops->clear();
-		/////	io_ops->setup(io_planeDataConfig, shackPlaneDataOps);
-
-
-		/////	PDESWEPlaneBench_UnstableJet swe_unstablejet;
-		/////	swe_unstablejet.shackRegistration(shackDict);
-		/////	swe_unstablejet.setup(io_ops, io_planeDataConfig);
-		/////	swe_unstablejet.setupBenchmark(
-		/////			o_h_pert,
-		/////			o_u,
-		/////			o_v
-		/////	);
-
-		/////	return true;
-		/////}
+			return true;
+		}
 		/////else if (shackPDESWEPlaneBenchmarks->benchmark_name == "unstablejet_nobump")
 		/////{
 		/////	double r = 6.37122e6;
@@ -260,7 +249,7 @@ public:
 		/////}
 #endif
 		///else if (shackPDESWEPlaneBenchmarks->benchmark_name == "gaussian_bump" || shackPDESWEPlaneBenchmarks->benchmark_name == "gaussian_bump_phi_pint")
-		if (
+		else if (
 			shackPDESWEPlaneBenchmarks->benchmark_name == "gaussian_bump" ||
 			shackPDESWEPlaneBenchmarks->benchmark_name == "gaussian_bump_phi_pint" ||
 			shackPDESWEPlaneBenchmarks->benchmark_name == "gaussian_bump_MZ"

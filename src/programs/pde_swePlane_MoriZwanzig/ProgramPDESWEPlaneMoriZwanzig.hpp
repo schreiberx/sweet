@@ -881,8 +881,8 @@ public:
 
 					////output_filenames += ";" + write_file(dataAndOps->ops.ke(t_u,t_v), ("diag_ke_" + sol_case).c_str());
 
-					////output_filenames += ";" + write_file(dataAndOps->ops.vort(t_u, t_v), ("diag_vort_" + sol_case).c_str());
-					////output_filenames += ";" + write_file(dataAndOps->ops.div(t_u, t_v), ("diag_div_" + sol_case).c_str());
+					output_filenames += ";" + write_file(dataAndOps->ops.vort(t_u, t_v), ("diag_vrt_" + sol_case).c_str());
+					output_filenames += ";" + write_file(dataAndOps->ops.div(t_u, t_v), ("diag_div_" + sol_case).c_str());
 				}
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
