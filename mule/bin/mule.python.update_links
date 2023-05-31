@@ -45,9 +45,9 @@ function create_links () {
 		if [[ "$file" == *__pycache__ ]]; then
 			continue
 		fi
-		if [[ "$file" == *__init__.py ]]; then
-			continue
-		fi
+		#if [[ "$file" == *__init__.py ]]; then
+		#	continue
+		#fi
 
 		local DIR=${file##*/}
 		if [[ -d "$file" ]]; then
