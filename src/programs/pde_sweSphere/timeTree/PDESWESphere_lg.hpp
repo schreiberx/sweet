@@ -49,18 +49,22 @@ public:
 	std::shared_ptr<sweet::DESolver_TimeTreeNode_Base> getNewInstance() override;
 
 	virtual
-	bool setupConfig(
-		const sweet::DESolver_Config_Base &i_deTermConfig
+	bool setupConfigAndGetTimeStepperEval(
+		const sweet::DESolver_Config_Base &i_deTermConfig,
+		const std::string &i_timeStepperEvalName,
+		DESolver_TimeTreeNode_Base::EvalFun &o_timeStepper
 	) override;
 
 	void setTimeStepSize(double i_dt) override;
 
 	void clear() override;
 
+
 	/*
 	 * Return the time tendencies of the PDE term
 	 */
-	void eval_tendencies(
+public:
+	void _eval_tendencies(
 			const sweet::DESolver_DataContainer_Base &i_u,
 			sweet::DESolver_DataContainer_Base &o_u,
 			double i_time_stamp
@@ -69,7 +73,8 @@ public:
 	/*
 	 * Compute an exponential integration for a given exp term
 	 */
-	void eval_exponential(
+private:
+	void _eval_exponential(
 			const sweet::DESolver_DataContainer_Base &i_u,
 			sweet::DESolver_DataContainer_Base &o_u,
 			double i_time_stamp

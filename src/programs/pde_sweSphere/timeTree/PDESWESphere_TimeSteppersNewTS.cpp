@@ -51,7 +51,7 @@ PDESWESphere_TimeSteppersNewTS::PDESWESphere_TimeSteppersNewTS()
 }
 
 bool PDESWESphere_TimeSteppersNewTS::setup_2_timestepper(
-		const std::string &i_timestepping_method,
+		const std::string &i_timestepping_method,	///< String with time stepping method such as SS(ERK(lg,order=4),ERK(lc,order=2),order=2)
 		sweet::ShackDictionary *i_shackDict,
 		sweet::SphereOperators *io_ops,
 		const PDESWESphere_DataContainer &i_U
@@ -84,19 +84,18 @@ bool PDESWESphere_TimeSteppersNewTS::setup_2_timestepper(
 
 	deSolver_Config.myDataContainer = &i_U;
 	deSolver_Config.ops = io_ops;
-	timeIntegrator->setupConfig(deSolver_Config);
+	timeIntegrator->setupConfigAndGetTimeStepperEval(deSolver_Config, "integrate", evalFun);
 	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*timeIntegrator);
-
-	/*
-	 * Set time step size
-	 */
-	timeIntegrator->setTimeStepSize(0.1);
 
 	return true;
 }
 
 void PDESWESphere_TimeSteppersNewTS::clear()
 {
+	pdeTerm_registry.clear();
+	timeStepper_registry.clear();
+
+	timeIntegrator.reset();
 }
 
 

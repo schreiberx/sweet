@@ -45,15 +45,32 @@ std::shared_ptr<sweet::DESolver_TimeTreeNode_Base> PDESWESphere_lg::getNewInstan
 }
 
 
-bool PDESWESphere_lg::setupConfig(
-	const sweet::DESolver_Config_Base &i_deTermConfig
+bool PDESWESphere_lg::setupConfigAndGetTimeStepperEval(
+	const sweet::DESolver_Config_Base &i_deTermConfig,
+	const std::string &i_timeStepperEvalName,
+	DESolver_TimeTreeNode_Base::EvalFun &o_timeStepper
 )
 {
 	const PDESWESphere_DESolver_Config& myConfig = cast(i_deTermConfig);
 
 	ops = myConfig.ops;
 
+
+	// default setup
+	DESolver_TimeTreeNode_Base::_helperSetupConfigAndGetTimeStepperEval(
+			i_timeStepperEvalName,
+			o_timeStepper
+		);
+	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*this);
+
+	if (i_timeStepperEvalName == "eulerBackward")
+	{
+		SWEETError("TODO: Setup implicit time stepping solver");
+		return true;
+	}
+
 	return true;
+	//return error.set("Time evaluation '"+i_timeStepperEvalName+"' not supported");
 }
 
 void PDESWESphere_lg::setTimeStepSize(double i_dt)
@@ -70,7 +87,7 @@ void PDESWESphere_lg::clear()
 /*
  * Return the time tendencies of the PDE term
  */
-void PDESWESphere_lg::eval_tendencies(
+void PDESWESphere_lg::_eval_tendencies(
 		const sweet::DESolver_DataContainer_Base &i_U_,
 		sweet::DESolver_DataContainer_Base &o_U_,
 		double i_time_stamp
@@ -95,7 +112,7 @@ void PDESWESphere_lg::eval_tendencies(
 /*
  * Evaluate exponential of linear term
  */
-void PDESWESphere_lg::eval_exponential(
+void PDESWESphere_lg::_eval_exponential(
 		const sweet::DESolver_DataContainer_Base &i_U_,
 		sweet::DESolver_DataContainer_Base &o_U_,
 		double i_time_stamp

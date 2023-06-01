@@ -12,12 +12,9 @@ namespace sweet
 {
 
 class DESolver_TimeStepper_ExplicitRungeKutta	:
-		public sweet::DESolver_TimeTreeNode_Base
+	public DESolver_TimeTreeNode_NodeInteriorHelper
 {
 private:
-	double _timestep_size;
-	double &dt = _timestep_size;
-
 	/*
 	 * We use an enum to identify different RK implementations
 	 */
@@ -35,9 +32,6 @@ private:
 	};
 	ERKMethod _rkMethodID;
 
-	// DE term to evaluate
-	std::shared_ptr<DESolver_TimeTreeNode_Base> _timeTreeNode;
-
 
 	// Order of Runge-Kutta method
 	int _order;
@@ -50,11 +44,9 @@ private:
 
 	// Number of stages to allocate buffers
 	std::vector<sweet::DESolver_DataContainer_Base*> _rkStageDataContainer;
-	std::vector<sweet::DESolver_DataContainer_Base*> _rkTmpDataContainer;
 
 public:
 	DESolver_TimeStepper_ExplicitRungeKutta()	:
-		_timestep_size(-1),
 		_rkMethodID(INVALID),
 		_order(-1),
 		_method("std"),
@@ -78,23 +70,10 @@ public:
 		return retval;
 	}
 
-	bool shackRegistration(
-			sweet::ShackDictionary *io_shackDict
-	)	override
-	{
-		_timeTreeNode->shackRegistration(io_shackDict);
-		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*_timeTreeNode);
-
-		return true;
-	}
-
 	bool _setupArgumentInternals()
 	{
-		if (_timeTreeNode == nullptr)
-			return error.set("Some time node term needs to be given"+getNewLineDebugMessage());
-
-		if (!_timeTreeNode->isEvalAvailable("tendencies"))
-			return error.set("'tendencies' not available in DE term for explicit RK");
+		if (_timeTreeNodes.size() != 1)
+			return error.set("Exactly one time node term needs to be given"+getNewLineDebugMessage());
 
 		_rkMethodID = INVALID;
 		_rkNumStages = -1;
@@ -153,6 +132,7 @@ public:
 			return error.set("Unknown method '"+_method+"'");
 		}
 
+		assert(_rkNumStages >= 1);
 
 		if (_rkMethodID == INVALID)
 			return error.set("Invalid time stepping method");
@@ -161,37 +141,34 @@ public:
 	}
 
 	virtual
-	bool setupFunction(
+	bool setupTreeNodeByFunction(
 			std::shared_ptr<sweet::DESolver_TimeStepping_Tree::Function> &i_function,
 			sweet::DESolver_TimeStepping_Assemblation &i_tsAssemblation
 	)	override
 	{
 		for (auto iter = i_function->arguments.begin(); iter != i_function->arguments.end(); iter++)
 		{
-			sweet::DESolver_TimeStepping_Tree::Argument *a = (*iter).get();
+			sweet::DESolver_TimeStepping_Tree::Argument *a = iter->get();
 
 			switch(a->argType)
 			{
-#if 0
-			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_KEY_FUNCTION:
-			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_FUNCTION:
-				error.set("Time steppers inside this time stepper are not allowed, yet"+a->getNewLineDebugMessage());
-				return false;
-				break;
-#else
 			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_KEY_FUNCTION:
 				if (a->key != "fun")
 					return error.set("Only key 'fun' supported for a function!"+a->getNewLineDebugMessage());
 				// continue with ARG_TYPE_FUNCTION
 
 			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_FUNCTION:
-				if (_timeTreeNode != nullptr)
+				if (_timeTreeNodes.size() != 0)
 					return error.set("a 2nd timestepper was provided!"+a->getNewLineDebugMessage());
 
-				i_tsAssemblation.assembleTimeTreeNodeByFunction(a->function, _timeTreeNode);
+				_timeTreeNodes.push_back(std::shared_ptr<sweet::DESolver_TimeTreeNode_Base>());
+
+				i_tsAssemblation.assembleTimeTreeNodeByFunction(
+						a->function,
+						_timeTreeNodes.back()
+					);
 				ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(i_tsAssemblation);
 				break;
-#endif
 
 			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_KEY_VALUE:
 				if (a->key == "order" || a->key == "o")
@@ -211,13 +188,14 @@ public:
 				break;
 
 			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_VALUE:
-
-				if (_timeTreeNode != nullptr)
+				if (_timeTreeNodes.size() != 0)
 					return error.set("Only one DETerm is supported"+a->getNewLineDebugMessage());
+
+				_timeTreeNodes.push_back(std::shared_ptr<sweet::DESolver_TimeTreeNode_Base>());
 
 				i_tsAssemblation.assembleTimeTreeNodeByName(
 						a->value,
-						_timeTreeNode
+						_timeTreeNodes.back()
 					);
 				ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*a);
 				break;
@@ -230,16 +208,23 @@ public:
 
 		// provide debug message in case that something goes wrong with the arguments
 		setDebugMessage(i_function->getDebugMessage());
+
 		return _setupArgumentInternals();
 	}
 
 
-	bool setupConfig(
-		const sweet::DESolver_Config_Base &i_deConfig
+	bool setupConfigAndGetTimeStepperEval(
+		const sweet::DESolver_Config_Base &i_deTermConfig,
+		const std::string &i_timeStepperEvalName,
+		DESolver_TimeTreeNode_Base::EvalFun &o_timeStepper
 	) override
 	{
-		_timeTreeNode->setupConfig(i_deConfig);
-		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*_timeTreeNode);
+		_helperSetupConfigAndGetTimeStepperEval(
+				i_deTermConfig,
+				i_timeStepperEvalName,
+				o_timeStepper,
+				"tendencies"
+			);
 
 		/*
 		 * Setup buffers for RK stage solutions
@@ -247,16 +232,16 @@ public:
 		_rkStageDataContainer.resize(_rkNumStages);
 
 		for (std::size_t i = 0; i < _rkStageDataContainer.size(); i++)
-			_rkStageDataContainer[i] = i_deConfig.getNewDataContainerInstance();
+			_rkStageDataContainer[i] = i_deTermConfig.getNewDataContainerInstance();
 
 		/*
 		 * Setup temporary buffers
 		 */
 		if (_rkNumStages > 1)
-			_rkTmpDataContainer.resize(1);
+			_tmpDataContainer.resize(1);
 
-		for (std::size_t i = 0; i < _rkTmpDataContainer.size(); i++)
-			_rkTmpDataContainer[i] = i_deConfig.getNewDataContainerInstance();
+		for (std::size_t i = 0; i < _tmpDataContainer.size(); i++)
+			_tmpDataContainer[i] = i_deTermConfig.getNewDataContainerInstance();
 
 		return true;
 
@@ -268,9 +253,7 @@ public:
 			delete _rkStageDataContainer[i];
 		_rkStageDataContainer.clear();
 
-		for (std::size_t i = 0; i < _rkTmpDataContainer.size(); i++)
-			delete _rkTmpDataContainer[i];
-		_rkTmpDataContainer.clear();
+		DESolver_TimeTreeNode_NodeInteriorHelper::clear();
 	}
 
 	std::shared_ptr<DESolver_TimeTreeNode_Base> getNewInstance()	override
@@ -278,15 +261,7 @@ public:
 		return std::shared_ptr<DESolver_TimeTreeNode_Base>(new DESolver_TimeStepper_ExplicitRungeKutta);
 	}
 
-	void setTimeStepSize(double i_dt)	override
-	{
-		_timestep_size = i_dt;
-
-		// Not required for explicit time stepper, but we do it
-		_timeTreeNode->setTimeStepSize(i_dt);
-	}
-
-	void eval_integration(
+	void _eval_integration(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulation_time
@@ -312,7 +287,12 @@ private:
 			double i_simulation_time
 	)
 	{
-		_timeTreeNode->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
+		evalTimeStepper(
+				0,
+				i_U,
+				*_rkStageDataContainer[0],
+				i_simulation_time
+			);
 
 		o_U.op_setVectorPlusScalarMulVector(i_U, _timestep_size, *_rkStageDataContainer[0]);
 	}
@@ -338,15 +318,21 @@ private:
 		double c[1] = {0.5};
 
 		// STAGE 1
-		_timeTreeNode->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
+		evalTimeStepper(
+				0,
+				i_U,
+				*_rkStageDataContainer[0],
+				i_simulation_time
+			);
 
 		// STAGE 2
-		_rkTmpDataContainer[0]->op_setVectorPlusScalarMulVector(
+		_tmpDataContainer[0]->op_setVectorPlusScalarMulVector(
 				i_U, dt*a2[0], *_rkStageDataContainer[0]
 		);
 
-		_timeTreeNode->eval_tendencies(
-				*_rkTmpDataContainer[0],
+		evalTimeStepper(
+				0,
+				*_tmpDataContainer[0],
 				*_rkStageDataContainer[1],
 				i_simulation_time + c[0]*dt
 			);
@@ -374,15 +360,19 @@ private:
 		double c[1] = {1.0};
 
 		// STAGE 1
-		_timeTreeNode->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
+		evalTimeStepper(
+				i_U,
+				*_rkStageDataContainer[0],
+				i_simulation_time
+			);
 
 		// STAGE 2
-		_rkTmpDataContainer[0]->op_setVectorPlusScalarMulVector(
+		_tmpDataContainer[0]->op_setVectorPlusScalarMulVector(
 				i_U, dt*a2[0], *_rkStageDataContainer[0]
 		);
 
-		_timeTreeNode->eval_tendencies(
-				*_rkTmpDataContainer[0],
+		evalTimeStepper(
+				*_tmpDataContainer[0],
 				*_rkStageDataContainer[1],
 				i_simulation_time + c[0]*dt
 			);
@@ -416,15 +406,19 @@ private:
 		double c[1] = {2.0/3.0};
 
 		// STAGE 1
-		_timeTreeNode->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
+		evalTimeStepper(
+				i_U,
+				*_rkStageDataContainer[0],
+				i_simulation_time
+		);
 
 		// STAGE 2
-		_rkTmpDataContainer[0]->op_setVectorPlusScalarMulVector(
+		_tmpDataContainer[0]->op_setVectorPlusScalarMulVector(
 				i_U, dt*a2[0], *_rkStageDataContainer[0]
 		);
 
-		_timeTreeNode->eval_tendencies(
-				*_rkTmpDataContainer[0],
+		evalTimeStepper(
+				*_tmpDataContainer[0],
 				*_rkStageDataContainer[1],
 				i_simulation_time + c[0]*dt
 			);
@@ -438,7 +432,7 @@ private:
 	void _eval_timeIntegration_ERK2_RalstonCC(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
-			double i_simulation_time
+			double i_simulationTime
 	)
 	{
 		/*
@@ -460,17 +454,21 @@ private:
 		double c[1] = {3.0/4.0};
 
 		// STAGE 1
-		_timeTreeNode->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
+		evalTimeStepper(
+				i_U,
+				*_rkStageDataContainer[0],
+				i_simulationTime
+			);
 
 		// STAGE 2
-		_rkTmpDataContainer[0]->op_setVectorPlusScalarMulVector(
+		_tmpDataContainer[0]->op_setVectorPlusScalarMulVector(
 				i_U, dt*a2[0], *_rkStageDataContainer[0]
 		);
 
-		_timeTreeNode->eval_tendencies(
-				*_rkTmpDataContainer[0],
+		evalTimeStepper(
+				*_tmpDataContainer[0],
 				*_rkStageDataContainer[1],
-				i_simulation_time + c[0]*dt
+				i_simulationTime + c[0]*dt
 			);
 
 		o_U.op_setVectorPlusScalarMulVector(i_U, dt*b[0], *_rkStageDataContainer[0]);
@@ -481,7 +479,7 @@ private:
 	void _eval_timeIntegration_ERK3(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
-			double i_simulation_time
+			double i_simulationTime
 	)
 	{
 		// See https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods#Explicit_Runge.E2.80.93Kutta_methods
@@ -500,28 +498,32 @@ private:
 		double c[2] = {1.0/3.0, 2.0/3.0};
 
 		// STAGE 1
-		_timeTreeNode->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
+		evalTimeStepper(
+				i_U,
+				*_rkStageDataContainer[0],
+				i_simulationTime
+			);
 
 		// STAGE 2
-		_rkTmpDataContainer[0]->op_setVectorPlusScalarMulVector(
+		_tmpDataContainer[0]->op_setVectorPlusScalarMulVector(
 				i_U, dt*a2[0], *_rkStageDataContainer[0]
 		);
 
-		_timeTreeNode->eval_tendencies(
-				*_rkTmpDataContainer[0],
+		evalTimeStepper(
+				*_tmpDataContainer[0],
 				*_rkStageDataContainer[1],
-				i_simulation_time + c[0]*dt
+				i_simulationTime + c[0]*dt
 			);
 
 		// STAGE 3
-		_rkTmpDataContainer[0]->op_setVectorPlusScalarMulVector(
+		_tmpDataContainer[0]->op_setVectorPlusScalarMulVector(
 				i_U, dt*a3[1], *_rkStageDataContainer[1]
 		);
 
-		_timeTreeNode->eval_tendencies(
-				*_rkTmpDataContainer[0],
+		evalTimeStepper(
+				*_tmpDataContainer[0],
 				*_rkStageDataContainer[2],
-				i_simulation_time + c[1]*dt
+				i_simulationTime + c[1]*dt
 			);
 
 		// Closure
@@ -534,7 +536,7 @@ private:
 	void _eval_timeIntegration_ERK4(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
-			double i_simulation_time
+			double i_simulationTime
 	)
 	{
 		// See https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods#Explicit_Runge.E2.80.93Kutta_methods
@@ -555,37 +557,44 @@ private:
 		double c[3] = {0.5, 0.5, 1.0};
 
 		// STAGE 1
-		_timeTreeNode->eval_tendencies(i_U, *_rkStageDataContainer[0], i_simulation_time);
+		evalTimeStepper(
+				i_U,
+				*_rkStageDataContainer[0],
+				i_simulationTime
+			);
 
 		// STAGE 2
-		_rkTmpDataContainer[0]->op_setVectorPlusScalarMulVector(
+		_tmpDataContainer[0]->op_setVectorPlusScalarMulVector(
 				i_U, dt*a2[0], *_rkStageDataContainer[0]
 		);
-		_timeTreeNode->eval_tendencies(
-				*_rkTmpDataContainer[0],
+
+		evalTimeStepper(
+				*_tmpDataContainer[0],
 				*_rkStageDataContainer[1],
-				i_simulation_time + c[0]*dt
+				i_simulationTime + c[0]*dt
 			);
 
 		// STAGE 3
-		_rkTmpDataContainer[0]->op_setVectorPlusScalarMulVector(
+		_tmpDataContainer[0]->op_setVectorPlusScalarMulVector(
 				i_U, dt*a3[1], *_rkStageDataContainer[1]
 		);
-		_timeTreeNode->eval_tendencies(
-				*_rkTmpDataContainer[0],
+
+		evalTimeStepper(
+				*_tmpDataContainer[0],
 				*_rkStageDataContainer[2],
-				i_simulation_time + c[1]*dt
+				i_simulationTime + c[1]*dt
 			);
 
 
 		// STAGE 4
-		_rkTmpDataContainer[0]->op_setVectorPlusScalarMulVector(
+		_tmpDataContainer[0]->op_setVectorPlusScalarMulVector(
 				i_U, dt*a4[2], *_rkStageDataContainer[2]
 		);
-		_timeTreeNode->eval_tendencies(
-				*_rkTmpDataContainer[0],
+
+		evalTimeStepper(
+				*_tmpDataContainer[0],
 				*_rkStageDataContainer[3],
-				i_simulation_time + c[2]*dt
+				i_simulationTime + c[2]*dt
 			);
 
 		// Closure

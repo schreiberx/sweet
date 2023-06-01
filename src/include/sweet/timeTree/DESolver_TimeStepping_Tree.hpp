@@ -32,7 +32,7 @@ public:
 		mainFunction.reset();
 	}
 
-	/*
+	/**
 	 * This represents an entire function of the form
 	 *
 	 * "FunctionNameAnd123SomeNumbers(these, are=parameters, and, can, also, be, a, recursive, function(yadda))"

@@ -120,17 +120,26 @@ public:
 
 #if SWEET_GUI
 			sweet::ShackPlaneDataOps shackPlaneDataOps;
+#if 0
+			// WARNING: We need to use sphereDataConfig, since i_shackSphereDataOps is not initialized with a reset()
 			shackPlaneDataOps.space_res_physical[0] = i_shackSphereDataOps->space_res_physical[0];
 			shackPlaneDataOps.space_res_physical[1] = i_shackSphereDataOps->space_res_physical[1];
+#else
+			shackPlaneDataOps.space_res_physical[0] = sphereDataConfig.physical_num_lon;
+			shackPlaneDataOps.space_res_physical[1] = sphereDataConfig.physical_num_lat;
+
+#endif
 			shackPlaneDataOps.reuse_spectral_transformation_plans = i_shackSphereDataOps->reuse_spectral_transformation_plans;
 
 			planeDataConfig.setupAuto(shackPlaneDataOps);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(planeDataConfig);
 #endif
 			return true;
 		}
 
 		void clear(bool i_clear_spectral_transforms = true)
 		{
+			progTmp.clear();
 			prog.clear();
 
 			t0_prog_phi_pert.clear();
@@ -426,7 +435,9 @@ public:
 		dataConfigOps.clear(i_clear_spectral_transforms);
 	}
 
-	bool setup(bool i_setup_spectral_transforms = true)
+	bool setup(
+			bool i_setup_spectral_transforms = true
+	)
 	{
 		StopwatchBox::getInstance().main_setup.start();
 
@@ -455,8 +466,11 @@ public:
 		 */
 		if (shackIOData->output_each_sim_seconds >= 0)
 			_timestepDoOutput();
+
+		//assert(dataConfigOps.planeDataConfig.)
 		return true;
 	}
+
 	void clear(bool i_clear_spectral_transforms = true)
 	{
 		clear_3_data(i_clear_spectral_transforms);
@@ -510,7 +524,7 @@ public:
 
 		if (useNewTimeSteppers)
 		{
-			timeSteppersNewTS.timeIntegrator->eval_integration(
+			timeSteppersNewTS.timeIntegrator->_eval_integration(
 					dataConfigOps.prog,
 					dataConfigOps.progTmp,
 					shackTimestepControl->current_simulation_time
@@ -927,7 +941,7 @@ public:
 				<< sep;
 
 
-		int id = dataConfigOps.vis_data_id % max_vis_types;
+		int id = (dataConfigOps.vis_data_id % max_vis_types + max_vis_types) % max_vis_types;
 		ss << "id=" << dataConfigOps.vis_data_id << sep;
 		ss << "field=" << fields_array[id] << sep;
 		ss << "max=" << dataConfigOps.vis_plane_data.physical_reduce_max() << sep;

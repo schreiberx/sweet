@@ -42,8 +42,10 @@ std::shared_ptr<sweet::DESolver_TimeTreeNode_Base> PDESWESphere_nr_uv::getNewIns
 }
 
 
-bool PDESWESphere_nr_uv::setupConfig(
-	const sweet::DESolver_Config_Base &i_deTermConfig
+bool PDESWESphere_nr_uv::setupConfigAndGetTimeStepperEval(
+		const sweet::DESolver_Config_Base &i_deTermConfig,
+		const std::string &i_timeStepperEvalName,
+		DESolver_TimeTreeNode_Base::EvalFun &o_timeStepper
 )
 {
 	const PDESWESphere_DESolver_Config& myConfig = cast(i_deTermConfig);
@@ -58,7 +60,15 @@ bool PDESWESphere_nr_uv::setupConfig(
 	ug.setup(ops->sphereDataConfig);
 	vg.setup(ops->sphereDataConfig);
 
+	// default setup
+	DESolver_TimeTreeNode_Base::_helperSetupConfigAndGetTimeStepperEval(
+			i_timeStepperEvalName,
+			o_timeStepper
+		);
+	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*this);
+
 	return true;
+	//return error.set("Time evaluation '"+i_timeStepperEvalName+"' not supported");
 }
 
 void PDESWESphere_nr_uv::setTimeStepSize(double i_dt)
@@ -73,7 +83,7 @@ void PDESWESphere_nr_uv::clear()
 /*
  * Return the time tendencies of the PDE term
  */
-void PDESWESphere_nr_uv::eval_tendencies(
+void PDESWESphere_nr_uv::_eval_tendencies(
 		const sweet::DESolver_DataContainer_Base &i_U_,
 		sweet::DESolver_DataContainer_Base &o_U_,
 		double i_time_stamp

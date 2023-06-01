@@ -108,8 +108,9 @@ public:
 		 * We also hand over this class since there could be other
 		 *
 		 */
-		o_timestepper->setupFunction(i_function, *this);
+		o_timestepper->setupTreeNodeByFunction(i_function, *this);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*(o_timestepper.get()));
+
 		return true;
 	}
 

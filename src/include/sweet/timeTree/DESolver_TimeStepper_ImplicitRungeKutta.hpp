@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 #include <sweet/timeTree/DESolver_DataContainer_Base.hpp>
-#include <sweet/timeTree/DESolver_TimeTreeNode_Base.hpp>
+#include <sweet/timeTree/DESolver_TimeTreeNode_NodeInteriorHelper.hpp>
 #include <sweet/core/shacks/ShackDictionary.hpp>
 
 
@@ -12,12 +12,9 @@ namespace sweet
 {
 
 class DESolver_TimeStepper_ImplicitRungeKutta	:
-		public sweet::DESolver_TimeTreeNode_Base
+		public DESolver_TimeTreeNode_NodeInteriorHelper
 {
 private:
-	double _timestep_size;
-	double &dt = _timestep_size;
-
 	/*
 	 * We use an enum to identify different RK implementations
 	 */
@@ -29,8 +26,13 @@ private:
 	};
 	IRKMethod _rkMethodID;
 
-	// DE term to evaluate
-	std::shared_ptr<DESolver_TimeTreeNode_Base> _timeTreeNode;
+	// DE term to evaluate backward Euler
+	std::shared_ptr<DESolver_TimeTreeNode_Base> _timeTreeNodeEulerBackward;
+	DESolver_TimeTreeNode_Base::EvalFun _evalFunEulerBackward;
+
+	// DE term to evaluate forward Euler
+	std::shared_ptr<DESolver_TimeTreeNode_Base> _timeTreeNodeTendencies;
+	DESolver_TimeTreeNode_Base::EvalFun _evalFunTendendies;
 
 	// Order of Runge-Kutta method
 	int _order;
@@ -41,15 +43,11 @@ private:
 	// Runge-Kutta stage storages
 	int _rkNumStages;
 
-	// Number of stages to allocate buffers
-	std::vector<sweet::DESolver_DataContainer_Base*> _rkTmpDataContainer;
-
 	// Damping factor for 2nd order IRK CN method. 0.5 means no damping
 	double _crank_nicolson_damping_factor = 0.5;
 
 public:
 	DESolver_TimeStepper_ImplicitRungeKutta()	:
-		_timestep_size(-1),
 		_rkMethodID(INVALID),
 		_order(-1),
 		_method("std"),
@@ -73,20 +71,10 @@ public:
 		return retval;
 	}
 
-	bool shackRegistration(
-			sweet::ShackDictionary *io_shackDict
-	)	override
-	{
-		_timeTreeNode->shackRegistration(io_shackDict);
-		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*_timeTreeNode);
-
-		return true;
-	}
-
 
 	bool _setupArgumentInternals()
 	{
-		if (_timeTreeNode == nullptr)
+		if (_timeTreeNodeEulerBackward == nullptr)
 			return error.set("DE Term not specified for time stepper"+getNewLineDebugMessage());
 
 		_rkMethodID = INVALID;
@@ -117,14 +105,6 @@ public:
 			return error.set("Unknown method '"+_method+"'");
 		}
 
-		if (!_timeTreeNode->isEvalAvailable("eulerBackward"))
-			return error.set("'eulerBackward' not available");
-
-		if (_order == 2)
-			if (!_timeTreeNode->isEvalAvailable("tendencies"))
-				return error.set("'tendencies' not available");
-
-
 		if (_rkMethodID == INVALID)
 			return error.set("Invalid time stepping method");
 
@@ -132,14 +112,14 @@ public:
 	}
 
 	virtual
-	bool setupFunction(
+	bool setupTreeNodeByFunction(
 			std::shared_ptr<sweet::DESolver_TimeStepping_Tree::Function> &i_function,
 			sweet::DESolver_TimeStepping_Assemblation &i_tsAssemblation
 	)	override
 	{
 		for (auto iter = i_function->arguments.begin(); iter != i_function->arguments.end(); iter++)
 		{
-			sweet::DESolver_TimeStepping_Tree::Argument *a = (*iter).get();
+			sweet::DESolver_TimeStepping_Tree::Argument *a = iter->get();
 
 			switch(a->argType)
 			{
@@ -159,7 +139,7 @@ public:
 				if (timestepperArgFound)
 					return error.set("a 2nd timestepper was provided!"+a->getNewLineDebugMessage());
 
-				i_tsAssemblation.assembleTimeStepperByFunction(a->function, _timeTreeNode);
+				i_tsAssemblation.assembleTimeStepperByFunction(a->function, _timeTreeNodeEulerBackward);
 				ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(i_tsAssemblation);
 
 				timestepperArgFound = true;
@@ -191,12 +171,12 @@ public:
 				break;
 
 			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_VALUE:
-				if (_timeTreeNode != nullptr)
+				if (_timeTreeNodeEulerBackward != nullptr)
 					return error.set("Only one DETerm is suppored"+a->getNewLineDebugMessage());
 
 				i_tsAssemblation.assembleTimeTreeNodeByName(
 						a->value,
-						_timeTreeNode
+						_timeTreeNodeEulerBackward
 					);
 				ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*a);
 				break;
@@ -213,21 +193,40 @@ public:
 	}
 
 
-	bool setupConfig(
-		const sweet::DESolver_Config_Base &i_deConfig
+	bool setupConfigAndGetTimeStepperEval(
+		const sweet::DESolver_Config_Base &i_deTermConfig,
+		const std::string &i_timeStepperEvalName,
+		DESolver_TimeTreeNode_Base::EvalFun &o_timeStepper
 	) override
 	{
-		_timeTreeNode->setupConfig(i_deConfig);
-		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*_timeTreeNode);
+		/*
+		 * Manually setup the backward Euler
+		 */
+		_timeTreeNodeEulerBackward->setupConfigAndGetTimeStepperEval(i_deTermConfig, "eulerBackward", _evalFunEulerBackward);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*_timeTreeNodeEulerBackward);
 
 		/*
 		 * Setup temporary buffers
 		 */
 		if (_order > 1)
-			_rkTmpDataContainer.resize(2);
+		{
+			_tmpDataContainer.resize(2);
 
-		for (std::size_t i = 0; i < _rkTmpDataContainer.size(); i++)
-			_rkTmpDataContainer[i] = i_deConfig.getNewDataContainerInstance();
+			// Create new instance
+			_timeTreeNodeTendencies = _timeTreeNodeEulerBackward->getNewInstance();
+			_timeTreeNodeTendencies->setupConfigAndGetTimeStepperEval(i_deTermConfig, "tendencies", _evalFunTendendies);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*_timeTreeNodeEulerBackward);
+		}
+
+		for (std::size_t i = 0; i < _tmpDataContainer.size(); i++)
+			_tmpDataContainer[i] = i_deTermConfig.getNewDataContainerInstance();
+
+		// default setup
+		DESolver_TimeTreeNode_Base::_helperSetupConfigAndGetTimeStepperEval(
+				i_timeStepperEvalName,
+				o_timeStepper
+			);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*this);
 
 		return true;
 
@@ -235,9 +234,9 @@ public:
 
 	void clear() override
 	{
-		for (std::size_t i = 0; i < _rkTmpDataContainer.size(); i++)
-			delete _rkTmpDataContainer[i];
-		_rkTmpDataContainer.clear();
+		for (std::size_t i = 0; i < _tmpDataContainer.size(); i++)
+			delete _tmpDataContainer[i];
+		_tmpDataContainer.clear();
 	}
 
 	std::shared_ptr<DESolver_TimeTreeNode_Base> getNewInstance()	override
@@ -251,18 +250,22 @@ public:
 
 		// Not required for explicit time stepper, but we do it
 		if (_order == 1)
-			_timeTreeNode->setTimeStepSize(i_dt);
+		{
+			_timeTreeNodeEulerBackward->setTimeStepSize(i_dt);
+		}
 		else if (_order == 2)
 		{
 			// Crank-Nicolson: Use damping factor for explicit time stepper
-			_timeTreeNode->setTimeStepSize(_crank_nicolson_damping_factor*i_dt);
+			_timeTreeNodeEulerBackward->setTimeStepSize(_crank_nicolson_damping_factor*i_dt);
 		}
 		else
-			_timeTreeNode->setTimeStepSize(i_dt);
+		{
+			_timeTreeNodeEulerBackward->setTimeStepSize(i_dt);
+		}
 
 	}
 
-	void eval_integration(
+	void _eval_integration(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulation_time
@@ -283,7 +286,11 @@ private:
 			double i_simulation_time
 	)
 	{
-		_timeTreeNode->eval_eulerBackward(i_U, o_U, i_simulation_time);
+		(_timeTreeNodeEulerBackward.get()->*_evalFunEulerBackward)(
+				i_U,
+				o_U,
+				i_simulation_time
+			);
 	}
 
 private:
@@ -301,15 +308,23 @@ private:
 	)
 	{
 		// Forward Euler step
-		_timeTreeNode->eval_tendencies(i_U, *_rkTmpDataContainer[0], i_simulation_time);
-		_rkTmpDataContainer[1]->op_setVectorPlusScalarMulVector(
+		(_timeTreeNodeEulerBackward.get()->*_evalFunTendendies)(
+				i_U,
+				*_tmpDataContainer[0],
+				i_simulation_time
+			);
+		_tmpDataContainer[1]->op_setVectorPlusScalarMulVector(
 				i_U,
 				_crank_nicolson_damping_factor*_timestep_size,
-				*_rkTmpDataContainer[0]
+				*_tmpDataContainer[0]
 			);
 
 		// Backward Euler step
-		_timeTreeNode->eval_eulerBackward(*_rkTmpDataContainer[1], o_U, i_simulation_time+dt*_crank_nicolson_damping_factor);
+		(_timeTreeNodeEulerBackward.get()->*_evalFunEulerBackward)(
+				*_tmpDataContainer[1],
+				o_U,
+				i_simulation_time+dt*_crank_nicolson_damping_factor
+			);
 	}
 
 	void print(const std::string &i_prefix = "")

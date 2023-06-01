@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 #include <sweet/timeTree/DESolver_DataContainer_Base.hpp>
-#include <sweet/timeTree/DESolver_TimeTreeNode_Base.hpp>
+#include <sweet/timeTree/DESolver_TimeTreeNode_NodeInteriorHelper.hpp>
 #include <sweet/core/shacks/ShackDictionary.hpp>
 
 
@@ -12,24 +12,15 @@ namespace sweet
 {
 
 class DESolver_TimeStepper_StrangSplitting	:
-		public sweet::DESolver_TimeTreeNode_Base
+		//public DESolver_TimeTreeNode_Base,
+		public DESolver_TimeTreeNode_NodeInteriorHelper
 {
 private:
-	double _timestep_size;
-	double &dt = _timestep_size;
-
 	// Order of Strang splitting
 	int _order;
 
-	// DE term to evaluate
-	std::vector<std::shared_ptr<sweet::DESolver_TimeTreeNode_Base>> _timeTreeNodes;
-
-	// Number of stages to allocate buffers
-	std::vector<sweet::DESolver_DataContainer_Base*> _tmpDataContainer;
-
 public:
-	DESolver_TimeStepper_StrangSplitting()	:
-		_timestep_size(-1)
+	DESolver_TimeStepper_StrangSplitting()
 	{
 		setEvalAvailable("integration");
 	}
@@ -61,6 +52,7 @@ public:
 		return true;
 	}
 
+
 	bool _setupArgumentInternals()
 	{
 		if (_timeTreeNodes.size() != 2)
@@ -69,17 +61,11 @@ public:
 		if (_order < 1 || _order > 2)
 			return error.set("Only order 1 or 2 allowed for SS method"+getNewLineDebugMessage());
 
-		for (auto &i : _timeTreeNodes)
-		{
-			if (!i->isEvalAvailable("integration"))
-				return error.set("eval of 'integration' missing in term '"+i->getNodeNames()[0]+"'");
-		}
-
 		return true;
 	}
 
 	virtual
-	bool setupFunction(
+	bool setupTreeNodeByFunction(
 			std::shared_ptr<sweet::DESolver_TimeStepping_Tree::Function> &i_function,
 			sweet::DESolver_TimeStepping_Assemblation &i_tsAssemblation
 	)	override
@@ -92,7 +78,6 @@ public:
 			{
 
 			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_FUNCTION:
-
 				_timeTreeNodes.push_back(std::shared_ptr<sweet::DESolver_TimeTreeNode_Base>());
 
 				i_tsAssemblation.assembleTimeTreeNodeByFunction(
@@ -140,15 +125,18 @@ public:
 	}
 
 
-	bool setupConfig(
-		const sweet::DESolver_Config_Base &i_deConfig
+	bool setupConfigAndGetTimeStepperEval(
+		const sweet::DESolver_Config_Base &i_deTermConfig,
+		const std::string &i_timeStepperEvalName,
+		DESolver_TimeTreeNode_Base::EvalFun &o_timeStepper
 	) override
 	{
-		for (auto &i : _timeTreeNodes)
-		{
-			i->setupConfig(i_deConfig);
-			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*i);
-		}
+		_helperSetupConfigAndGetTimeStepperEval(
+				i_deTermConfig,
+				i_timeStepperEvalName,
+				o_timeStepper,
+				"integration"
+			);
 
 		if (_order == 1)
 			_tmpDataContainer.resize(1);
@@ -156,25 +144,9 @@ public:
 			_tmpDataContainer.resize(2);
 
 		for (std::size_t i = 0; i < _tmpDataContainer.size(); i++)
-			_tmpDataContainer[i] = i_deConfig.getNewDataContainerInstance();
-
-		if (!_timeTreeNodes[0]->isEvalAvailable("integration"))
-			return error.set("integration not available in 1st SS term");
-
-		if (!_timeTreeNodes[1]->isEvalAvailable("integration"))
-			return error.set("integration not available in 2nd SS term");
+			_tmpDataContainer[i] = i_deTermConfig.getNewDataContainerInstance();
 
 		return true;
-
-	}
-
-	void clear() override
-	{
-		for (std::size_t i = 0; i < _tmpDataContainer.size(); i++)
-			delete _tmpDataContainer[i];
-		_tmpDataContainer.clear();
-
-		_timeTreeNodes.clear();
 	}
 
 	std::shared_ptr<DESolver_TimeTreeNode_Base> getNewInstance()	override
@@ -182,23 +154,8 @@ public:
 		return std::shared_ptr<DESolver_TimeTreeNode_Base>(new DESolver_TimeStepper_StrangSplitting);
 	}
 
-	void setTimeStepSize(double i_dt)	override
-	{
-		_timestep_size = i_dt;
 
-		if (_order == 1)
-		{
-			_timeTreeNodes[0]->setTimeStepSize(dt);
-			_timeTreeNodes[1]->setTimeStepSize(dt);
-		}
-		else if (_order == 2)
-		{
-			_timeTreeNodes[0]->setTimeStepSize(dt*0.5);
-			_timeTreeNodes[1]->setTimeStepSize(dt);
-		}
-	}
-
-	void eval_integration(
+	void _eval_integration(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulation_time
@@ -206,16 +163,16 @@ public:
 	{
 		if (_order == 1)
 		{
-			_timeTreeNodes[0]->eval_integration(i_U, *_tmpDataContainer[0], i_simulation_time);
-			_timeTreeNodes[1]->eval_integration(*_tmpDataContainer[0], o_U, i_simulation_time);
+			_timeTreeNodes[0]->_eval_integration(i_U, *_tmpDataContainer[0], i_simulation_time);
+			_timeTreeNodes[1]->_eval_integration(*_tmpDataContainer[0], o_U, i_simulation_time);
 			return;
 		}
 		
 		if (_order == 2)
 		{
-			_timeTreeNodes[0]->eval_integration(i_U, *_tmpDataContainer[0], i_simulation_time);
-			_timeTreeNodes[1]->eval_integration(*_tmpDataContainer[0], *_tmpDataContainer[1], i_simulation_time);
-			_timeTreeNodes[0]->eval_integration(*_tmpDataContainer[1], o_U, i_simulation_time+0.5*dt);
+			_timeTreeNodes[0]->_eval_integration(i_U, *_tmpDataContainer[0], i_simulation_time);
+			_timeTreeNodes[1]->_eval_integration(*_tmpDataContainer[0], *_tmpDataContainer[1], i_simulation_time);
+			_timeTreeNodes[0]->_eval_integration(*_tmpDataContainer[1], o_U, i_simulation_time+0.5*dt);
 			return;
 		}
 	}

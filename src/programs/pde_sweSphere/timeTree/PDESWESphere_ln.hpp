@@ -50,14 +50,15 @@ public:
 			sweet::ShackDictionary *io_shackDict
 	) override;
 
-	virtual
 	const std::vector<std::string> getNodeNames();
 
 	std::shared_ptr<sweet::DESolver_TimeTreeNode_Base> getNewInstance() override;
 
 	virtual
-	bool setupConfig(
-		const sweet::DESolver_Config_Base &i_deTermConfig
+	bool setupConfigAndGetTimeStepperEval(
+		const sweet::DESolver_Config_Base &i_deTermConfig,
+		const std::string &i_timeStepperEvalName,
+		DESolver_TimeTreeNode_Base::EvalFun &o_timeStepper
 	) override;
 
 	void setTimeStepSize(double i_dt) override;
@@ -67,7 +68,7 @@ public:
 	/*
 	 * Return the time tendencies of the PDE term
 	 */
-	void eval_tendencies(
+	void _eval_tendencies(
 			const sweet::DESolver_DataContainer_Base &i_u,
 			sweet::DESolver_DataContainer_Base &o_u,
 			double i_time_stamp

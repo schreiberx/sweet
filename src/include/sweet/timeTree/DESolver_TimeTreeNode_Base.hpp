@@ -38,6 +38,15 @@ public:
 	sweet::ErrorBase error;
 
 	/*
+	 * Type define 'EvalFun' which is required to time step
+	 */
+	typedef void (DESolver_TimeTreeNode_Base::*EvalFun)(
+					const DESolver_DataContainer_Base &i_U,
+					DESolver_DataContainer_Base &o_U,
+					double i_simulation_time
+			);
+
+	/*
 	 * Keep track of a list of implemented evaluation functions
 	 */
 private:
@@ -53,7 +62,7 @@ public:
 	{
 	}
 
-	/*
+	/**
 	 * Return string of implemented PDE term.
 	 *
 	 * e.g.
@@ -65,11 +74,15 @@ public:
 	const std::vector<std::string>
 	getNodeNames() = 0;
 
+
+	/**
+	 * Return a new instance of this class
+	 */
 	virtual
 	std::shared_ptr<DESolver_TimeTreeNode_Base> getNewInstance() = 0;
 
 
-	/*
+	/**
 	 * Shack registration
 	 */
 	virtual bool shackRegistration(
@@ -77,24 +90,71 @@ public:
 	) = 0;
 
 
+	/**
+	 * Setup the treenode function
+	 */
 	virtual
-	bool setupFunction(
+	bool setupTreeNodeByFunction(
 			std::shared_ptr<sweet::DESolver_TimeStepping_Tree::Function> &i_function,
 			sweet::DESolver_TimeStepping_Assemblation &i_tsAssemblation
 	)
 	{
-		return error.set("setupFunction not supported for this node");
+		return error.set("setupTreeNodeByFunction not supported for this node");
 	}
 
 
-	/*
+	/**
 	 * Setup operators and potential internal data structures,
 	 * e.g., storage space for RK stages
 	 */
 	virtual
-	bool setupConfig(
-		const sweet::DESolver_Config_Base &i_deTermConfig
-	) = 0;
+	bool setupConfigAndGetTimeStepperEval(
+			const sweet::DESolver_Config_Base &i_deTermConfig,
+			const std::string &i_timeStepperEvalName,
+			EvalFun &o_timeStepper
+		) = 0;
+
+public:
+	bool _helperSetupConfigAndGetTimeStepperEval(
+			const std::string &i_timeStepperEvalName,
+			EvalFun &o_timeStepper
+	)
+	{
+		if (!isEvalAvailable(i_timeStepperEvalName))
+			return error.set("Time stepper evaluation '"+i_timeStepperEvalName+"' not available or not registered");
+
+		if (i_timeStepperEvalName == "integration")
+		{
+			o_timeStepper = &DESolver_TimeTreeNode_Base::_eval_integration;
+			return true;
+		}
+
+		if (i_timeStepperEvalName == "tendencies")
+		{
+			o_timeStepper = &DESolver_TimeTreeNode_Base::_eval_tendencies;
+			return true;
+		}
+
+		if (i_timeStepperEvalName == "eulerBackward")
+		{
+			o_timeStepper = &DESolver_TimeTreeNode_Base::_eval_eulerBackward;
+			return true;
+		}
+
+		if (i_timeStepperEvalName == "eulerForward")
+		{
+			o_timeStepper = &DESolver_TimeTreeNode_Base::_eval_eulerForward;
+			return true;
+		}
+
+		if (i_timeStepperEvalName == "exponential")
+		{
+			o_timeStepper = &DESolver_TimeTreeNode_Base::_eval_exponential;
+			return true;
+		}
+
+		return error.set("Time stepper '"+i_timeStepperEvalName+"' not found");
+	}
 
 
 	/*
@@ -116,6 +176,7 @@ public:
 	/*
 	 * Return true if an evaluation function exists.
 	 */
+private:
 	bool isEvalAvailable(const std::string &i_evalFunction)
 	{
 		for (auto &e: existingEvalFunctions)
@@ -128,9 +189,10 @@ public:
 	}
 
 
-	/*
+	/**
 	 * Set an evaluation function to be available
 	 */
+public:
 	void setEvalAvailable(const std::string &i_evalFunction)
 	{
 		if (
@@ -150,7 +212,7 @@ public:
 	 * Return the time integration
 	 */
 	virtual
-	void eval_integration(
+	void _eval_integration(
 			const DESolver_DataContainer_Base &i_U,
 			DESolver_DataContainer_Base &o_U,
 			double i_simulation_time
@@ -160,8 +222,9 @@ public:
 	/*
 	 * Optional: Return the time tendencies of the DE term
 	 */
+public:
 	virtual
-	void eval_tendencies(
+	void _eval_tendencies(
 			const DESolver_DataContainer_Base &i_U,
 			DESolver_DataContainer_Base &o_U,
 			double i_time_stamp
@@ -173,8 +236,9 @@ public:
 	 * (U^{n+1}-U^{n})/Dt = dU^{n}/dt
 	 * <=> U^{n+1} = U^n + Dt* (dU^{n}n/dt)
 	 */
+public:
 	virtual
-	void eval_eulerForward(
+	void _eval_eulerForward(
 			const DESolver_DataContainer_Base &i_U,
 			DESolver_DataContainer_Base &o_U,
 			double i_time_stamp
@@ -191,7 +255,7 @@ public:
 	 * <=> (I - Dt * L) U^{n+1} = U^{n}
 	 */
 	virtual
-	void eval_eulerBackward(
+	void _eval_eulerBackward(
 			const DESolver_DataContainer_Base &i_U,
 			DESolver_DataContainer_Base &o_U,
 			double i_time_stamp
@@ -203,7 +267,7 @@ public:
 	 * U^{n+1} = exp(Dt*L) U^n
 	 */
 	virtual
-	void eval_exponential(
+	void _eval_exponential(
 			const DESolver_DataContainer_Base &i_U,
 			DESolver_DataContainer_Base &o_U,
 			double i_time_stamp
@@ -234,32 +298,32 @@ public:
 
 		if (i_functionName == "tendencies")
 		{
-			void *a = (void*)(this->*(&DESolver_TimeTreeNode_Base::eval_tendencies));
-			void *b = (void*)&DESolver_TimeTreeNode_Base::eval_tendencies;
+			void *a = (void*)(this->*(&DESolver_TimeTreeNode_Base::_eval_tendencies));
+			void *b = (void*)&DESolver_TimeTreeNode_Base::_eval_tendencies;
 			return a != b;
 		}
 		if (i_functionName == "eulerForward")
 		{
-			void *a = (void*)(this->*(&DESolver_TimeTreeNode_Base::eval_eulerForward));
-			void *b = (void*)&DESolver_TimeTreeNode_Base::eval_eulerForward;
+			void *a = (void*)(this->*(&DESolver_TimeTreeNode_Base::_eval_eulerForward));
+			void *b = (void*)&DESolver_TimeTreeNode_Base::_eval_eulerForward;
 			return a != b;
 		}
 		if (i_functionName == "eulerBackward")
 		{
-			void *a = (void*)(this->*(&DESolver_TimeTreeNode_Base::eval_eulerBackward));
-			void *b = (void*)&DESolver_TimeTreeNode_Base::eval_eulerBackward;
+			void *a = (void*)(this->*(&DESolver_TimeTreeNode_Base::_eval_eulerBackward));
+			void *b = (void*)&DESolver_TimeTreeNode_Base::_eval_eulerBackward;
 			return a != b;
 		}
 		if (i_functionName == "exponential")
 		{
-			void *a = (void*)(this->*(&DESolver_TimeTreeNode_Base::eval_exponential));
-			void *b = (void*)&DESolver_TimeTreeNode_Base::eval_exponential;
+			void *a = (void*)(this->*(&DESolver_TimeTreeNode_Base::_eval_exponential));
+			void *b = (void*)&DESolver_TimeTreeNode_Base::_eval_exponential;
 			return a != b;
 		}
 		if (i_functionName == "timeIntegration")
 		{
-			void *a = (void*)(this->*(&DESolver_TimeTreeNode_Base::eval_integration));
-			void *b = (void*)&DESolver_TimeTreeNode_Base::eval_integration;
+			void *a = (void*)(this->*(&DESolver_TimeTreeNode_Base::_eval_integration));
+			void *b = (void*)&DESolver_TimeTreeNode_Base::_eval_integration;
 			return a != b;
 		}
 
@@ -290,26 +354,26 @@ public:
 
 		if (i_functionName == "tendencies")
 		{
-			void *a = (void*)(i_deTermBase.*(&DESolver_TimeTreeNode_Base::eval_tendencies));
-			void *b = (void*)&DESolver_TimeTreeNode_Base::eval_tendencies;
+			void *a = (void*)(i_deTermBase.*(&DESolver_TimeTreeNode_Base::_eval_tendencies));
+			void *b = (void*)&DESolver_TimeTreeNode_Base::_eval_tendencies;
 			return a != b;
 		}
 		if (i_functionName == "eulerForward")
 		{
-			void *a = (void*)(i_deTermBase.*(&DESolver_TimeTreeNode_Base::eval_eulerForward));
-			void *b = (void*)&DESolver_TimeTreeNode_Base::eval_eulerForward;
+			void *a = (void*)(i_deTermBase.*(&DESolver_TimeTreeNode_Base::_eval_eulerForward));
+			void *b = (void*)&DESolver_TimeTreeNode_Base::_eval_eulerForward;
 			return a != b;
 		}
 		if (i_functionName == "eulerBackward")
 		{
-			void *a = (void*)(i_deTermBase.*(&DESolver_TimeTreeNode_Base::eval_eulerBackward));
-			void *b = (void*)&DESolver_TimeTreeNode_Base::eval_eulerBackward;
+			void *a = (void*)(i_deTermBase.*(&DESolver_TimeTreeNode_Base::_eval_eulerBackward));
+			void *b = (void*)&DESolver_TimeTreeNode_Base::_eval_eulerBackward;
 			return a != b;
 		}
 		if (i_functionName == "exponential")
 		{
-			void *a = (void*)(i_deTermBase.*(&DESolver_TimeTreeNode_Base::eval_exponential));
-			void *b = (void*)&DESolver_TimeTreeNode_Base::eval_exponential;
+			void *a = (void*)(i_deTermBase.*(&DESolver_TimeTreeNode_Base::_eval_exponential));
+			void *b = (void*)&DESolver_TimeTreeNode_Base::_eval_exponential;
 			return a != b;
 		}
 
