@@ -23,6 +23,7 @@
 #include "benchmarks/PDESWEPlaneBench_UnstableJet.hpp"
 #include "benchmarks/PDESWEPlaneBench_UnstableJetFast.hpp"
 #include "benchmarks/PDESWEPlaneBench_UnstableJetAdv.hpp"
+#include "benchmarks/PDESWEPlaneBench_UnstableJetMoriZwanzig.hpp"
 #include "benchmarks/PDESWEPlaneBench_GaussianBump.hpp"
 
 
@@ -163,10 +164,7 @@ public:
 
 			return true;
 		}
-		else if (
-				shackPDESWEPlaneBenchmarks->benchmark_name == "unstablejet_dimensionless" ||
-				shackPDESWEPlaneBenchmarks->benchmark_name == "unstablejet_MZ"
-			)
+		else if (shackPDESWEPlaneBenchmarks->benchmark_name == "unstablejet_dimensionless")
 		{
 			PDESWEPlaneBench_UnstableJet swe_unstablejet;
 			swe_unstablejet.shackRegistration(shackDict);
@@ -179,6 +177,20 @@ public:
 
 			return true;
 		}
+		else if (shackPDESWEPlaneBenchmarks->benchmark_name == "unstablejet_MZ")
+		{
+			PDESWEPlaneBench_UnstableJetMoriZwanzig swe_unstablejet;
+			swe_unstablejet.shackRegistration(shackDict);
+			swe_unstablejet.setup(io_ops, io_planeDataConfig);
+			swe_unstablejet.setupBenchmark(
+					o_h_pert,
+					o_u,
+					o_v
+			);
+
+			return true;
+		}
+
 		else if (shackPDESWEPlaneBenchmarks->benchmark_name == "unstablejet")
 		{
 			double r = 6.37122e6;

@@ -1,11 +1,11 @@
 /*
  * SWEUnstableJet.hpp
  *
- *  Created on: 30 May 2023
- *  Author: Joao Steinstraesser <joao.steinstraesser@usp.br>
+ *  Created on: 03 Nov 2017
+ * Author: Pedro Peixoto <pedrosp@ime.usp.br>
  */
-#ifndef SWE_PLANE_MORI_ZWANZIG_UNSTABLEJET_HPP_
-#define SWE_PLANE_MORI_ZWANZIG_UNSTABLEJET_HPP_
+#ifndef SWE_PLANE_UNSTABLEJET_MORI_ZWANZIG_HPP_
+#define SWE_PLANE_UNSTABLEJET_MORI_ZWANZIG_HPP_
 
 
 #include <stdlib.h>
@@ -15,7 +15,7 @@
 #include <sweet/core/plane/PlaneData_Spectral.hpp>
 #include <sweet/core/plane/PlaneData_Physical.hpp>
 #include <sweet/libmath/GaussQuadrature.hpp>
-#include "PDESWEPlaneMoriZwanzigBench_BaseInterface.hpp"
+#include "PDESWEPlaneBench_BaseInterface.hpp"
 
 
 /**
@@ -25,8 +25,8 @@
  *
  *
  **/
-class PDESWEPlaneMoriZwanzigBench_UnstableJet	:
-		public PDESWEPlaneMoriZwanzigBench_BaseInterface
+class PDESWEPlaneBench_UnstableJetMoriZwanzig	:
+		public PDESWEPlaneBench_BaseInterface
 {
 	double f;
 	double g;
@@ -38,11 +38,12 @@ class PDESWEPlaneMoriZwanzigBench_UnstableJet	:
 	static double u_scale;
 
 public:
-	PDESWEPlaneMoriZwanzigBench_UnstableJet(
+	PDESWEPlaneBench_UnstableJetMoriZwanzig(
 			bool i_with_gaussian_bump = true
-	)	:
+	) :
 		with_gaussian_bumgaussian_p(i_with_gaussian_bump)
 	{
+		u_scale = std::sqrt(shackPDESWEPlane->h0 / 1e4);
 	}
 
 
@@ -70,6 +71,7 @@ public:
 		 //power has to be odd to ensure periodicity
 		// the larger the thiner the jet
 		// Max speed is 50m/s
+		////return 50.0*std::pow(std::sin(2.0*M_PI*y), 81);
 		return u_scale*std::pow(std::sin(2.0*M_PI*y), 81);
 	}
 
