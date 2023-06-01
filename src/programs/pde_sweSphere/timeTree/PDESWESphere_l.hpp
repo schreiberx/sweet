@@ -51,7 +51,7 @@ public:
 	) override;
 
 	virtual
-	const std::vector<std::string> getNodeNames();
+	const std::vector<std::string> getNodeNames() override;
 
 	std::shared_ptr<sweet::DESolver_TimeTreeNode_Base> getNewInstance() override;
 

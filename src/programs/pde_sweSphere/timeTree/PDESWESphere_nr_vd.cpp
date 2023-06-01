@@ -49,14 +49,6 @@ bool PDESWESphere_nr_vd::setupConfig(
 
 	ops = myConfig.ops;
 
-	if (shackPDESWESphere->sphere_use_fsphere)
-		fg = ops->getFG_fSphere(shackPDESWESphere->sphere_fsphere_f0);
-	else
-		fg = ops->getFG_rotatingSphere(shackPDESWESphere->sphere_rotating_coriolis_omega);
-
-	ug.setup(ops->sphereDataConfig);
-	vg.setup(ops->sphereDataConfig);
-
 	return true;
 }
 

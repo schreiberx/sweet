@@ -246,6 +246,7 @@ if compiler_type_cxx == 'gcc':
                 env.Append(LIBS=['mpi_cxx'])
 
 
+
 elif compiler_type_cxx == 'intel':
     reqversion = [12,1]
     iccversion_line = exec_command('icpc -dumpversion -w').splitlines()[0]
@@ -314,6 +315,7 @@ elif compiler_type_cxx == 'llvm':
 
     # speedup compilation - remove this when compiler slows down or segfaults by running out of memory
     env.Append(CXXFLAGS=['-pipe'])
+
 
 else:
     raise Exception("Unsupported compiler")

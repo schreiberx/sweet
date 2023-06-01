@@ -30,17 +30,6 @@ private:
 
 	double dt;
 
-	/*
-	 * Coriolis effect
-	 */
-	sweet::SphereData_Physical fg;
-
-	/*
-	 * Temporary variables
-	 */
-	sweet::SphereData_Physical ug;
-	sweet::SphereData_Physical vg;
-
 public:
 	PDESWESphere_na_vd();
 	~PDESWESphere_na_vd();
@@ -51,7 +40,7 @@ public:
 	) override;
 
 	virtual
-	const std::vector<std::string> getNodeNames();
+	const std::vector<std::string> getNodeNames() override;
 
 	std::shared_ptr<sweet::DESolver_TimeTreeNode_Base> getNewInstance() override;
 

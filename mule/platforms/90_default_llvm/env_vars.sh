@@ -51,7 +51,8 @@ test -z "$MULE_MPICC" && export MULE_MPICC=mpicc
 test -z "$MULE_MPICXX" && export MULE_MPICXX=mpic++
 test -z "$MULE_MPI90" && export MULE_MPIF90=mpif90
 
-test -z "$MULE_MPILINK" && export MULE_MPILINK=mpif90
+# Link with c++ version of MPI since this includes all required clang libs as well
+test -z "$MULE_MPILINK" && export MULE_MPILINK=mpic++
 
 # If we link with mpif90, we have to add stdc++ for C++
 #test -z "MULE_MPILIBS" && export MULE_MPILIBS=stdc++
