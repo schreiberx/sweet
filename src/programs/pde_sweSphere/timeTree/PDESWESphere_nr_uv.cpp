@@ -52,23 +52,7 @@ bool PDESWESphere_nr_uv::setupConfigAndGetTimeStepperEval(
 
 	ops = myConfig.ops;
 
-	if (shackPDESWESphere->sphere_use_fsphere)
-		fg = ops->getFG_fSphere(shackPDESWESphere->sphere_fsphere_f0);
-	else
-		fg = ops->getFG_rotatingSphere(shackPDESWESphere->sphere_rotating_coriolis_omega);
-
-	ug.setup(ops->sphereDataConfig);
-	vg.setup(ops->sphereDataConfig);
-
-	// default setup
-	DESolver_TimeTreeNode_Base::_helperSetupConfigAndGetTimeStepperEval(
-			i_timeStepperEvalName,
-			o_timeStepper
-		);
-	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*this);
-
 	return true;
-	//return error.set("Time evaluation '"+i_timeStepperEvalName+"' not supported");
 }
 
 void PDESWESphere_nr_uv::setTimeStepSize(double i_dt)
