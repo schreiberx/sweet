@@ -45,7 +45,7 @@ test -z "$LD" && export LD=ld
 
 
 # Setup further MULE variables
-test -z "$MULE_LINK" && export MULE_LINK=$MULE_CXX
+test -z "$MULE_LINK" && export MULE_LINK=$CXX
 
 test -z "$MULE_MPICC" && export MULE_MPICC=mpicc
 test -z "$MULE_MPICXX" && export MULE_MPICXX=mpic++
@@ -55,7 +55,7 @@ test -z "$MULE_MPI90" && export MULE_MPIF90=mpif90
 test -z "$MULE_MPILINK" && export MULE_MPILINK=mpic++
 
 # If we link with mpif90, we have to add stdc++ for C++
-#test -z "MULE_MPILIBS" && export MULE_MPILIBS=stdc++
+#test -z "MULE_MPILINKFLAGS" && export MULE_MPILINKFLAGS=-lstdc++
 
 
 test -z "$MULE_CC_COMPILER" && export MULE_CC_COMPILER="llvm"
