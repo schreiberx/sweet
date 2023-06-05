@@ -1,62 +1,35 @@
 #! /bin/bash
 
-## TODO: rewrite this installation file using functions from install_helpers.sh
 
 source ./install_helpers.sh ""
 
 PKG_NAME="xbraid"
 PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/libbraid.a"
 PKG_INSTALLED_HEADERS="$SWEET_LOCAL_SOFTWARE_DST_DIR/include/xbraid"
-PKG_URL_SRC="https://github.com/XBraid/xbraid.git"
+PKG_URL_SRC="https://github.com/XBraid/xbraid/archive/refs/tags/v3.1.0.tar.gz"
 
-## temporary folder for installation
-mkdir -p tmp_xbraid
-cd tmp_xbraid
+config_setup
 
-## download package
-git clone --depth 1 $PKG_URL_SRC
+config_package $@
 
-## install
-cd xbraid
-make braid
+# Add an empty line to avoid other problems
+echo "" >> Makefile.local
 
-## copy library and source files
-cp braid/libbraid.a  $PKG_INSTALLED_FILE
+echo_info "Executing 'make clean'..."
+config_exec make clean
+
+config_exec make braid
+
+echo_info "Installing..."
+
+# Copy modules
 mkdir -p $PKG_INSTALLED_HEADERS
-cp braid/* $PKG_INSTALLED_HEADERS/.
-rm $PKG_INSTALLED_HEADERS/libbraid.a
+echo_info cp -v -f braid/* $PKG_INSTALLED_HEADERS/.
+cp -v -f  braid/* $PKG_INSTALLED_HEADERS/. || echo_error_exit "Failed to install .mod files"
 
-## clean
-cd ../../
-rm -rf tmp_xbraid
+# Copy static library
+mkdir -p "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/"
+echo_info cp -v -f braid/libbraid.a $PKG_INSTALLED_FILE
+cp -v -f braid/libbraid.a $PKG_INSTALLED_FILE || echo_error_exit "Failed to install libbraid.a files"
 
-
-
-
-#########config_setup
-#########
-#########config_package $@
-#########
-#########
-########## Add an empty line to avoid other problems
-#########echo "" >> Makefile.local
-#########
-#########echo_info "Executing 'make clean'..."
-#########config_exec make clean
-#########
-#########config_exec make
-#########
-#########echo_info "Installing..."
-#########
-########## Copy modules
-#########mkdir -p "$SWEET_LOCAL_SOFTWARE_DST_DIR/include/"
-#########echo_info cp -v -f ./include/*mod "$SWEET_LOCAL_SOFTWARE_DST_DIR/include/"
-#########cp -v -f ./include/*mod "$SWEET_LOCAL_SOFTWARE_DST_DIR/include/" || echo_error_exit "Failed to install .mod files"
-#########
-########## Copy static library
-#########mkdir -p "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/"
-#########echo_info cp -v -f "./lib/libpfasst.a" "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/"
-#########cp -v -f "./lib/libpfasst.a" "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/" || echo_error_exit "Failed to install libpfasst.a files"
-#########
-#########
-#########config_success
+config_success
