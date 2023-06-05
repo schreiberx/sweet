@@ -2,7 +2,7 @@
  * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
-#include <sweet/expIntegration/ExpFunctions.hpp>
+#include <sweet/expIntegration/ExpFunction.hpp>
 
 
 int main()
@@ -12,7 +12,7 @@ int main()
 	typedef double T;
 	typedef std::complex<T> CT;
 
-	sweet::ExpFunctions<T> fun;
+	sweet::ExpFunction<T> fun;
 	fun.setup("phi0");
 
 	CT x, y;

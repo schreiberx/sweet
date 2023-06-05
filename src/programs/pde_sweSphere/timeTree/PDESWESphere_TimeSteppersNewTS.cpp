@@ -84,7 +84,7 @@ bool PDESWESphere_TimeSteppersNewTS::setup_2_timestepper(
 
 	deSolver_Config.myDataContainer = &i_U;
 	deSolver_Config.ops = io_ops;
-	timeIntegrator->setupConfigAndGetTimeStepperEval(deSolver_Config, "integrate", evalFun);
+	timeIntegrator->setupConfigAndGetTimeStepperEval(deSolver_Config, "integration", evalFun);
 	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*timeIntegrator);
 
 	return true;

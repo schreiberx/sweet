@@ -6,7 +6,6 @@
 
 #include <iostream>
 //#include <quadmath.h>
-#include <sweet/expIntegration/ExpFunctions.hpp>
 #include <sweet/expIntegration/REXI.hpp>
 #include <sweet/expIntegration/REXICoefficients.hpp>
 
@@ -14,6 +13,7 @@
 #include <sweet/core/shacksShared/ShackIOData.hpp>
 #include <sweet/expIntegration/ShackExpIntegration.hpp>
 #include <sweet/core/ProgramArguments.hpp>
+#include <sweet/expIntegration/ExpFunction.hpp>
 
 
 #define TEST_REXI_PDE_QUADPRECISION 0
@@ -24,7 +24,7 @@
 	typedef double T;
 #endif
 
-sweet::ExpFunctions<T> rexiFunctions;
+sweet::ExpFunction<T> rexiFunctions;
 
 
 std::complex<double> fromTtoComplexDouble(

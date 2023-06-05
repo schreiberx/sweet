@@ -20,7 +20,7 @@
 #include <sweet/core/sphere/SphereData_SpectralComplex.hpp>
 #include <sweet/core/sphere/SphereOperators.hpp>
 #include <sweet/core/sphere/SphereOperatorsComplex.hpp>
-#include <sweet/expIntegration/ExpFunctions.hpp>
+#include <sweet/expIntegration/ExpFunction.hpp>
 #include "../timeHelpers/SWERexiTerm_SPH.hpp"
 #include "PDESWESphereTS_BaseInterface.hpp"
 #include "PDESWESphereTS_l_exp_direct_special.hpp"
@@ -107,7 +107,7 @@ public:
 	std::complex<double> rexi_gamma;
 
 
-	sweet::ExpFunctions<double> expFunctions;
+	sweet::ExpFunction<double> expFunctions;
 
 
 private:

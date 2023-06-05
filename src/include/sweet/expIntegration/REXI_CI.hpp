@@ -7,7 +7,7 @@
 
 #include <vector>
 #include <sweet/core/SWEETError.hpp>
-#include <sweet/expIntegration/ExpFunctions.hpp>
+#include <sweet/expIntegration/ExpFunction.hpp>
 #include <sweet/libmath/DQStuff.hpp>
 
 
@@ -107,7 +107,7 @@ public:
 		alpha_eval.resize(N);
 		beta_eval.resize(N);
 
-		ExpFunctions<T> fun;
+		ExpFunction<T> fun;
 		fun.setup(i_function_name);
 
 		if (i_primitive_name == "circle")

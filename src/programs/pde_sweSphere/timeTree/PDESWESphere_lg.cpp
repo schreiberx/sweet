@@ -56,6 +56,26 @@ const std::vector<std::string> PDESWESphere_lg::getNodeNames()
 }
 
 
+bool PDESWESphere_lg::setupByKeyValue(
+		const std::string &i_key,
+		const std::string &i_value
+)
+{
+	if (i_key == "expIntegrationFunction")
+	{
+		if (expFunction.functionName != "")
+			return error.set("Function name for expFunction is already set ('"+expFunction.functionName+"')");
+
+		expFunction.setup(i_value);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(expFunction);
+
+		return true;
+	}
+
+	return false;
+}
+
+
 bool PDESWESphere_lg::setupConfigAndGetTimeStepperEval(
 	const sweet::DESolver_Config_Base &i_deTermConfig,
 	const std::string &i_timeStepperEvalName,
@@ -75,7 +95,13 @@ bool PDESWESphere_lg::setupConfigAndGetTimeStepperEval(
 	ERROR_CHECK_COND_RETURN_BOOLEAN(*this);
 
 	if (i_timeStepperEvalName == "exponential")
-		expFunction.setup("phi0");
+	{
+		if (expFunction.functionName == "")
+		{
+			// set default to phi0
+			expFunction.setup("phi0");
+		}
+	}
 
 	return true;
 }

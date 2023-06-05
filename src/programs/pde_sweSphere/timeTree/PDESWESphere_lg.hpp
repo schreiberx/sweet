@@ -5,8 +5,8 @@
 /*
  * Generic includes
  */
-#include <sweet/expIntegration/ExpFunctions.hpp>
 #include <sweet/core/ErrorBase.hpp>
+#include <sweet/expIntegration/ExpFunction.hpp>
 #include "../ShackPDESWESphere.hpp"
 
 /*
@@ -31,7 +31,7 @@ private:
 	sweet::ShackSphereDataOps *shackSphereDataOps;
 	const sweet::SphereOperators *ops;
 
-	sweet::ExpFunctions<double> expFunction;
+	sweet::ExpFunction<double> expFunction;
 
 public:
 	PDESWESphere_lg();
@@ -52,6 +52,12 @@ public:
 		const sweet::DESolver_Config_Base &i_deTermConfig,
 		const std::string &i_timeStepperEvalName,
 		DESolver_TimeTreeNode_Base::EvalFun &o_timeStepper
+	) override;
+
+	virtual
+	bool setupByKeyValue(
+			const std::string &i_key,
+			const std::string &i_value
 	) override;
 
 	void clear() override;

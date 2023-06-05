@@ -9,10 +9,10 @@
 #define SRC_PROGRAMS_SWE_PLANE_NORMAL_MODES_HPP_
 
 #include <sweet/core/ErrorBase.hpp>
-#include <sweet/expIntegration/ExpFunctions.hpp>
 #include <sweet/core/plane/PlaneData_Spectral.hpp>
 #include <sweet/core/plane/PlaneData_SpectralComplex.hpp>
 #include <sweet/core/plane/PlaneOperators.hpp>
+#include <sweet/expIntegration/ExpFunction.hpp>
 #include <functional>
 #if SWEET_EIGEN
 #	include <Eigen/Eigenvalues>
@@ -71,7 +71,7 @@ public:
 			sweet::PlaneData_Spectral &io_v // v: velocity in y-direction
 	)
 	{
-		sweet::ExpFunctions<T> rexiFunctions;
+		sweet::ExpFunction<T> rexiFunctions;
 
 		const sweet::PlaneData_Config *planeDataConfig = io_h.planeDataConfig;
 
@@ -218,7 +218,7 @@ public:
 	)
 	{
 
-		sweet::ExpFunctions<T> rexiFunctions;
+		sweet::ExpFunction<T> rexiFunctions;
 
 		const sweet::PlaneData_Config *planeDataConfig = i_h.planeDataConfig;
 
@@ -288,7 +288,7 @@ public:
 			complex o_evalues[3] =  0 // output eigen values (optional)
 	)
 	{
-		sweet::ExpFunctions<T> rexiFunctions;
+		sweet::ExpFunction<T> rexiFunctions;
 		bool i_evalues = false;
 		if (o_evalues){
 			i_evalues = true;

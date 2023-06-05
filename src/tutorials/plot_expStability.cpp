@@ -2,7 +2,7 @@
  * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
-#include <sweet/expIntegration/ExpFunctions.hpp>
+#include <sweet/expIntegration/ExpFunction.hpp>
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -22,13 +22,13 @@ int main()
 	typedef double T;
 	typedef std::complex<T> CT;
 
-	sweet::ExpFunctions<T> phi0("phi0");
-	sweet::ExpFunctions<T> phi1("phi1");
-	sweet::ExpFunctions<T> phi2("phi2");
+	sweet::ExpFunction<T> phi0("phi0");
+	sweet::ExpFunction<T> phi1("phi1");
+	sweet::ExpFunction<T> phi2("phi2");
 
-	sweet::ExpFunctions<T> ups1("ups1");
-	sweet::ExpFunctions<T> ups2("ups2");
-	sweet::ExpFunctions<T> ups3("ups3");
+	sweet::ExpFunction<T> ups1("ups1");
+	sweet::ExpFunction<T> ups2("ups2");
+	sweet::ExpFunction<T> ups3("ups3");
 
 	CT lambda1 = CT(0, 1);
 

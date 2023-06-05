@@ -99,8 +99,9 @@ public:
 			const sweet::DESolver_DataContainer_Base &i_a
 	) override
 	{
+		const PDESWESphere_DataContainer &i_A = cast(i_a);
 		for (int i = 0; i < Ndofs; i++)
-			data[i] = cast(i_a).data[i];
+			data[i] = i_A.data[i];
 	}
 
 public:
@@ -108,8 +109,19 @@ public:
 			const sweet::DESolver_DataContainer_Base &i_a
 	) override
 	{
+		const PDESWESphere_DataContainer &i_A = cast(i_a);
 		for (int i = 0; i < Ndofs; i++)
-			data[i] += cast(i_a).data[i];
+			data[i] += i_A.data[i];
+	}
+
+public:
+	void op_subVector(
+			const sweet::DESolver_DataContainer_Base &i_a
+	) override
+	{
+		const PDESWESphere_DataContainer &i_A = cast(i_a);
+		for (int i = 0; i < Ndofs; i++)
+			data[i] -= i_A.data[i];
 	}
 
 public:
@@ -125,8 +137,10 @@ public:
 			const sweet::DESolver_DataContainer_Base &i_b
 	) override
 	{
+		const PDESWESphere_DataContainer &i_A = cast(i_a);
+		const PDESWESphere_DataContainer &i_B = cast(i_b);
 		for (int i = 0; i < Ndofs; i++)
-			data[i] = cast(i_a).data[i] + cast(i_b).data[i];
+			data[i] = i_A.data[i] + i_B.data[i];
 	}
 
 public:
@@ -136,8 +150,10 @@ public:
 			const sweet::DESolver_DataContainer_Base &i_b
 	) override
 	{
+		const PDESWESphere_DataContainer &i_A = cast(i_a);
+		const PDESWESphere_DataContainer &i_B = cast(i_b);
 		for (int i = 0; i < Ndofs; i++)
-			data[i] = cast(i_a).data[i] + i_scalar*cast(i_b).data[i];
+			data[i] = i_A.data[i] + i_scalar*i_B.data[i];
 	}
 
 public:
@@ -146,8 +162,9 @@ public:
 			const sweet::DESolver_DataContainer_Base &i_a
 		) override
 	{
+		const PDESWESphere_DataContainer &i_A = cast(i_a);
 		for (int i = 0; i < Ndofs; i++)
-			data[i] += i_scalar*cast(i_a).data[i];
+			data[i] += i_scalar*i_A.data[i];
 	}
 
 public:

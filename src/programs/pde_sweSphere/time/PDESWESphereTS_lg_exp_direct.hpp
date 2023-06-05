@@ -7,7 +7,6 @@
 
 
 
-#include <sweet/expIntegration/ExpFunctions.hpp>
 #include <complex>
 #include <sweet/core/shacks/ShackDictionary.hpp>
 #include <string.h>
@@ -16,6 +15,7 @@
 #include <sweet/core/sphere/SphereData_SpectralComplex.hpp>
 #include <sweet/core/sphere/SphereOperators.hpp>
 #include <sweet/core/sphere/SphereOperatorsComplex.hpp>
+#include <sweet/expIntegration/ExpFunction.hpp>
 #include "../timeHelpers/SWERexiTerm_SPH.hpp"
 
 #include "PDESWESphereTS_BaseInterface.hpp"
@@ -69,7 +69,7 @@ private:
 	const sweet::SphereData_Config *sphereDataConfig;
 
 public:
-	sweet::ExpFunctions<double> expFunctions;
+	sweet::ExpFunction<double> expFunctions;
 
 
 private:

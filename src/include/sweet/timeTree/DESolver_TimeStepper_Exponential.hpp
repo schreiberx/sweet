@@ -21,6 +21,7 @@ private:
 public:
 	DESolver_TimeStepper_Exponential()
 	{
+		setEvalAvailable("exponential");
 		setEvalAvailable("integration");
 	}
 
@@ -136,8 +137,27 @@ public:
 	}
 
 
+
 private:
 	void _eval_integration(
+			const sweet::DESolver_DataContainer_Base &i_U,
+			sweet::DESolver_DataContainer_Base &o_U,
+			double i_simulationTime
+	)	override
+	{
+		assert(_timeTreeNodes[0] != nullptr);
+		evalTimeStepper(i_U, o_U, i_simulationTime);
+	}
+
+
+
+	/*
+	 * We also provide an exponential time integration for this one
+	 * in order to transparently support 'exponential' time integration for
+	 * either DE terms themselves, EXP and also REXI evaluations.
+	 */
+private:
+	void _eval_exponential(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulationTime

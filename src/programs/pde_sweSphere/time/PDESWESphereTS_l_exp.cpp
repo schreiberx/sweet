@@ -7,11 +7,11 @@
 #include <iostream>
 #include <cassert>
 #include <utility>
-#include <sweet/expIntegration/ExpFunctions.hpp>
 #include <sweet/expIntegration/REXI.hpp>
 #include <sweet/core/sphere/Convert_SphereDataSpectralComplex_to_SphereDataSpectral.hpp>
 #include <sweet/core/sphere/Convert_SphereDataSpectral_to_SphereDataSpectralComplex.hpp>
 #include <sweet/core/StopwatchBox.hpp>
+#include <sweet/expIntegration/ExpFunction.hpp>
 #include "PDESWESphereTS_l_exp_direct_special.hpp"
 
 #ifndef SWEET_THREADING_TIME_REXI

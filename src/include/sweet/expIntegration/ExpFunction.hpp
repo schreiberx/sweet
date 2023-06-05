@@ -32,10 +32,12 @@ namespace sweet
 {
 
 template <typename T = double>
-class ExpFunctions
+class ExpFunction
 {
 public:
 	ErrorBase error;
+
+	std::string functionName;
 
 private:
 	typedef std::complex<T> CT;
@@ -61,7 +63,7 @@ private:
 	};
 
 public:
-	fun_id_enum function_id;
+	fun_id_enum functionId;
 
 
 public:
@@ -98,8 +100,8 @@ public:
 
 
 public:
-	ExpFunctions()	:
-		function_id(INVALID)
+	ExpFunction()	:
+		functionId(INVALID)
 	{
 		setup_constvars();
 	}
@@ -107,54 +109,55 @@ public:
 
 public:
 	bool setup(
-			const std::string &i_function_name
+			const std::string &i_functionName
 	)
 	{
-		if (i_function_name  == "phi0")
-			function_id = PHI0;
-		else if (i_function_name  == "phi1")
-			function_id = PHI1;
-		else if (i_function_name  == "phi2")
-			function_id = PHI2;
-		else if (i_function_name  == "phi3")
-			function_id = PHI3;
-		else if (i_function_name  == "phi4")
-			function_id = PHI4;
-		else if (i_function_name  == "phi5")
-			function_id = PHI5;
+		if (i_functionName  == "phi0")
+			functionId = PHI0;
+		else if (i_functionName  == "phi1")
+			functionId = PHI1;
+		else if (i_functionName  == "phi2")
+			functionId = PHI2;
+		else if (i_functionName  == "phi3")
+			functionId = PHI3;
+		else if (i_functionName  == "phi4")
+			functionId = PHI4;
+		else if (i_functionName  == "phi5")
+			functionId = PHI5;
 
-		else if (i_function_name  == "ups1")
-			function_id = UPS1;
-		else if (i_function_name  == "ups2")
-			function_id = UPS2;
-		else if (i_function_name  == "ups3")
-			function_id = UPS3;
+		else if (i_functionName  == "ups1")
+			functionId = UPS1;
+		else if (i_functionName  == "ups2")
+			functionId = UPS2;
+		else if (i_functionName  == "ups3")
+			functionId = UPS3;
 
 		/*
 		 * Semi-Lag phi functions (phi0 factored out) - see sl-rexi paper
 		 * This is not the psi from some of Martin's presentation slides!
 		 */
-		else if (i_function_name  == "psi1")
-			function_id = PSI1;
-		else if (i_function_name  == "psi2")
-			function_id = PSI2;
-		else if (i_function_name  == "psi3")
-			function_id = PSI3;
+		else if (i_functionName  == "psi1")
+			functionId = PSI1;
+		else if (i_functionName  == "psi2")
+			functionId = PSI2;
+		else if (i_functionName  == "psi3")
+			functionId = PSI3;
 
 		else
 		{
 			std::ostringstream ss;
-			ss << "The function '" << i_function_name << "' is not supported!";
+			ss << "The function '" << i_functionName << "' is not supported!";
 			error.set(ss.str());
 			return false;
 		}
 
+		functionName = i_functionName;
 		return true;
 	}
 
 	bool isSetup()
 	{
-		return function_id != INVALID;
+		return functionId != INVALID;
 	}
 
 #if SWEET_QUADMATH
@@ -471,7 +474,7 @@ public:
 	{
 		std::complex<T> K = i_K;
 
-		switch(function_id)
+		switch(functionId)
 		{
 		case PHI0:
 			return phiN(0, i_K);
@@ -516,7 +519,7 @@ public:
 		default:
 			{
 				std::ostringstream ss;
-				ss << "The phi function with id '" << function_id << "' is not supported!";
+				ss << "The phi function with id '" << functionId << "' is not supported!";
 				error.set(ss.str());
 				SWEETError(ss.str().c_str());
 			}
@@ -532,7 +535,7 @@ public:
 		std::complex<T> &o_retval
 	)
 	{
-		switch(function_id)
+		switch(functionId)
 		{
 		case PHI0:
 			o_retval = phiN(0, i_K);
@@ -589,7 +592,7 @@ public:
 		default:
 			{
 				std::ostringstream ss;
-				ss << "The phi function with id '" << function_id << "' is not supported!";
+				ss << "The phi function with id '" << functionId << "' is not supported!";
 				error.set(ss.str());
 				SWEETError(ss.str().c_str());
 			}

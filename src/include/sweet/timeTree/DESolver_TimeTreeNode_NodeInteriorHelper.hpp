@@ -125,6 +125,8 @@ public:
 			double i_simulationTime
 	)
 	{
+		assert(_timeTreeNodes.size() > i_id);
+		assert(_evalFuns.size() > i_id);
 		(_timeTreeNodes[i_id].get()->*_evalFuns[i_id])(i_U, o_U, i_simulationTime);
 	}
 

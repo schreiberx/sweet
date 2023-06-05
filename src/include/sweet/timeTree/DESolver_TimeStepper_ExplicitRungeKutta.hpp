@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 #include <sweet/timeTree/DESolver_DataContainer_Base.hpp>
-#include <sweet/timeTree/DESolver_TimeTreeNode_Base.hpp>
+#include <sweet/timeTree/DESolver_TimeTreeNode_NodeInteriorHelper.hpp>
 #include <sweet/core/shacks/ShackDictionary.hpp>
 
 

@@ -38,6 +38,12 @@ public:
 
 public:
 	virtual
+	void op_subVector(
+			const DESolver_DataContainer_Base &i_a
+		) = 0;
+
+public:
+	virtual
 	void op_setVectorPlusVector(
 			const DESolver_DataContainer_Base &i_a,
 			const DESolver_DataContainer_Base &i_b

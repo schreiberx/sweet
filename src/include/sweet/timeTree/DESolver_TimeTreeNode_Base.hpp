@@ -123,6 +123,25 @@ public:
 			EvalFun &o_timeStepper
 		) = 0;
 
+
+	/**
+	 * This allows customizing the time stepper by its parent class
+	 *
+	 * This can be helpful, e.g., for exponential integration to specify the particular phi function:
+	 *
+	 * "expIntegratorFunction" => "phi0"
+	 * or
+	 * "expIntegratorFunction" => "phi1"
+	 * ...
+	 */
+	virtual
+	bool setupByKeyValue(
+			const std::string &i_key,
+			const std::string &i_value
+	){
+		return error.set("ERROR: setupByKeyValue() not available.");
+	};
+
 public:
 	bool _helperGetTimeStepperEval(
 			const std::string &i_timeStepperEvalName,
@@ -225,7 +244,9 @@ public:
 			const DESolver_DataContainer_Base &i_U,
 			DESolver_DataContainer_Base &o_U,
 			double i_simulationTime
-		) {};
+	) {
+		error.set("ERROR: _eval_integration() not available");
+	};
 
 
 	/*
@@ -237,7 +258,9 @@ public:
 			const DESolver_DataContainer_Base &i_U,
 			DESolver_DataContainer_Base &o_U,
 			double i_time_stamp
-		){};
+	){
+		error.set("ERROR: _eval_tendencies() not available");
+	};
 
 	/*
 	 * Optional: Return the forward Euler evaluation of the term:
@@ -251,7 +274,9 @@ public:
 			const DESolver_DataContainer_Base &i_U,
 			DESolver_DataContainer_Base &o_U,
 			double i_time_stamp
-		){};
+	){
+		error.set("ERROR: _eval_eulerForward() not available");
+	};
 
 	/*
 	 * Optional: Return the backward Euler evaluation of the term:
@@ -268,7 +293,9 @@ public:
 			const DESolver_DataContainer_Base &i_U,
 			DESolver_DataContainer_Base &o_U,
 			double i_time_stamp
-		){};
+	){
+		error.set("ERROR: _eval_eulerBackward() not available");
+	};
 
 	/*
 	 * Optional: Return an evaluation of the exponential term
@@ -280,7 +307,9 @@ public:
 			const DESolver_DataContainer_Base &i_U,
 			DESolver_DataContainer_Base &o_U,
 			double i_time_stamp
-		){};
+	){
+		error.set("ERROR: _eval_exponential() not available");
+	};
 
 #if 0
 	/**

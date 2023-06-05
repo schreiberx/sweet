@@ -144,7 +144,8 @@ public:
 		_hasError = i_error._hasError;
 		_errorMessage = i_error._errorMessage;
 
-		i_error.reset();
+		if (&i_error != this)
+			i_error.reset();
 
 		return true;
 	}

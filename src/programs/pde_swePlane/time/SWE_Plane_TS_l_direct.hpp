@@ -8,7 +8,6 @@
 #ifndef SRC_PROGRAMS_SWE_PLANE_TIMEINTEGRATORS_SWE_PLANE_TS_L_DIRECT_HPP_
 #define SRC_PROGRAMS_SWE_PLANE_TIMEINTEGRATORS_SWE_PLANE_TS_L_DIRECT_HPP_
 
-#include <sweet/expIntegration/ExpFunctions.hpp>
 #include <limits>
 #include <sweet/core/plane/PlaneData_Spectral.hpp>
 #include <sweet/core/plane/PlaneDataSampler.hpp>
@@ -18,6 +17,7 @@
 #include <sweet/core/plane/PlaneStaggering.hpp>
 
 #include <sweet/core/shacksShared/ShackPlaneDataOps.hpp>
+#include <sweet/expIntegration/ExpFunction.hpp>
 #include <sweet/expIntegration/ShackExpIntegration.hpp>
 #include "ShackPDESWEPlaneTimeDiscretization.hpp"
 #include "../ShackPDESWEPlane.hpp"
@@ -30,7 +30,7 @@ class SWE_Plane_TS_l_direct	:
 {
 	typedef double T;
 
-	sweet::ExpFunctions<T> expFunctions;
+	sweet::ExpFunction<T> expFunctions;
 
 	sweet::PlaneDataGridMapping planeDataGridMapping;
 

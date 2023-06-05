@@ -10,7 +10,7 @@
 #include <sweet/core/shacks/ShackInterface.hpp>
 
 #include <sweet/core/shacksShared/ShackTimestepControl.hpp>
-#include <sweet/expIntegration/ExpFunctions.hpp>
+#include <sweet/expIntegration/ExpFunction.hpp>
 #include <sweet/expIntegration/ShackExpIntegration.hpp>
 
 #include <sweet/expIntegration/REXI.hpp>
@@ -109,7 +109,7 @@ int main(
 	/*
 	 * Load analytical function
 	 */
-	sweet::ExpFunctions<double> expFunctions;
+	sweet::ExpFunction<double> expFunctions;
 	expFunctions.setup(function_name);
 
 	/*
