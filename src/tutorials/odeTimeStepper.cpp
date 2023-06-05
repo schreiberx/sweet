@@ -213,7 +213,7 @@ public:
 		data.resize(i_d.data.size());
 	}
 
-	DESolver_DataContainer_Base* getNewInstance() const override
+	DESolver_DataContainer_Base* getInstanceNew() const override
 	{
 		MyDataContainer *retval = new MyDataContainer;
 		retval->setup_like(*this);
@@ -403,7 +403,7 @@ private:
 	}
 
 
-	std::shared_ptr<sweet::DESolver_TimeTreeNode_Base> getNewInstance() override
+	std::shared_ptr<sweet::DESolver_TimeTreeNode_Base> getInstanceNew() override
 	{
 		return std::shared_ptr<sweet::DESolver_TimeTreeNode_Base>(new MyODETerm);
 	}
@@ -658,19 +658,19 @@ int main(int argc, char *argv[])
 	ODETimeStepper odeTimeStepper;
 
 	odeTimeStepper.setup_1_shacks(argc, argv);
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(odeTimeStepper);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(odeTimeStepper);
 
 	odeTimeStepper.setup_2_config();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(odeTimeStepper);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(odeTimeStepper);
 
 	odeTimeStepper.setup_3_data();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(odeTimeStepper);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(odeTimeStepper);
 
 	odeTimeStepper.setup_4_timestepper();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(odeTimeStepper);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(odeTimeStepper);
 
 	odeTimeStepper.setup_5_initialConditions();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(odeTimeStepper);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(odeTimeStepper);
 
 	odeTimeStepper.maxTimeStamp = 10.0;
 

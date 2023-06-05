@@ -6,8 +6,7 @@
 
 PDESWESphere_na_uv::PDESWESphere_na_uv()	:
 	shackPDESWESphere(nullptr),
-	ops(nullptr),
-	dt(-1)
+	ops(nullptr)
 {
 	setEvalAvailable("tendencies");
 }
@@ -36,11 +35,6 @@ const std::vector<std::string> PDESWESphere_na_uv::getNodeNames()
 
 }
 
-std::shared_ptr<sweet::DESolver_TimeTreeNode_Base> PDESWESphere_na_uv::getNewInstance()
-{
-	return std::shared_ptr<sweet::DESolver_TimeTreeNode_Base>(new PDESWESphere_na_uv);
-}
-
 
 bool PDESWESphere_na_uv::setupConfigAndGetTimeStepperEval(
 	const sweet::DESolver_Config_Base &i_deTermConfig,
@@ -53,7 +47,7 @@ bool PDESWESphere_na_uv::setupConfigAndGetTimeStepperEval(
 	ops = myConfig.ops;
 
 	// default setup
-	DESolver_TimeTreeNode_Base::_helperSetupConfigAndGetTimeStepperEval(
+	DESolver_TimeTreeNode_Base::_helperGetTimeStepperEval(
 			i_timeStepperEvalName,
 			o_timeStepper
 		);
@@ -62,14 +56,9 @@ bool PDESWESphere_na_uv::setupConfigAndGetTimeStepperEval(
 	return true;
 }
 
-
-void PDESWESphere_na_uv::setTimeStepSize(double i_dt)
-{
-	dt = i_dt;
-}
-
 void PDESWESphere_na_uv::clear()
 {
+	DESolver_TimeTreeNode_NodeLeafHelper::clear();
 }
 
 /*
@@ -78,7 +67,7 @@ void PDESWESphere_na_uv::clear()
 void PDESWESphere_na_uv::_eval_tendencies(
 		const sweet::DESolver_DataContainer_Base &i_U_,
 		sweet::DESolver_DataContainer_Base &o_U_,
-		double i_time_stamp
+		double i_timeStamp
 )
 {
 	const PDESWESphere_DataContainer &i_U = cast(i_U_);

@@ -21,16 +21,16 @@ class TimeStepSizeChanged
 public:
 	static
 	bool is_changed(
-		double i_old_timestep_size,		///< old timestep size with which the timestepper has been configured
-		double i_new_timestep_size,		///< new timestep size
+		double i_old_timestepSize,		///< old timestep size with which the timestepper has been configured
+		double i_new_timestepSize,		///< new timestep size
 		bool i_output = true
 	)
 	{
-		if (std::abs(i_old_timestep_size - i_new_timestep_size)/std::max(i_old_timestep_size, i_new_timestep_size) > 1e-14)
+		if (std::abs(i_old_timestepSize - i_new_timestepSize)/std::max(i_old_timestepSize, i_new_timestepSize) > 1e-14)
 		{
 //#if SWEET_DEBUG
 			if (i_output)
-				std::cout << "Warning: Reducing time step size from " << i_old_timestep_size << " to " << i_new_timestep_size << std::endl;
+				std::cout << "Warning: Reducing time step size from " << i_old_timestepSize << " to " << i_new_timestepSize << std::endl;
 //#endif
 
 			return true;

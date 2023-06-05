@@ -29,12 +29,12 @@ public:
 		) override;
 
 	bool setup_main(
-			sweet::SphereOperators *io_ops,
+			const sweet::SphereOperators *io_ops,
 			sweet::ShackExpIntegration *i_shackExpIntegration,
 			const std::string &i_exp_method,
 			int i_order,	///< order of RK time stepping method
 			int i_order2,	///< order of RK time stepping method of non-linear parts
-			double i_timestep_size,
+			double i_timestepSize,
 			bool i_use_f_sphere,
 			int i_version_id,
 			bool i_use_rexi_sphere_solver_preallocation

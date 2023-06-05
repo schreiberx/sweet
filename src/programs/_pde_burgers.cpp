@@ -319,8 +319,8 @@ public:
 	 */
 	void runTimestep()
 	{
-		if (shackDict.timecontrol.current_simulation_time + shackDict.timecontrol.current_timestep_size > shackDict.timecontrol.max_simulation_time)
-			shackDict.timecontrol.current_timestep_size = shackDict.timecontrol.max_simulation_time - shackDict.timecontrol.current_simulation_time;
+		if (shackDict.timecontrol.current_simulation_time + shackDict.timecontrol.current_timestepSize > shackDict.timecontrol.max_simulation_time)
+			shackDict.timecontrol.current_timestepSize = shackDict.timecontrol.max_simulation_time - shackDict.timecontrol.current_simulation_time;
 
 		if (shackDict.disc.timestepping_method == "ln_cole_hopf" || shackDict.disc.timestepping_method == "l_direct")
 		{
@@ -329,7 +329,7 @@ public:
 			timeSteppers.master->runTimestep(
 				prog_u, prog_v,
 				///prog_u_prev, prog_v_prev,
-				shackDict.timecontrol.current_timestep_size+shackDict.timecontrol.current_simulation_time,
+				shackDict.timecontrol.current_timestepSize+shackDict.timecontrol.current_simulation_time,
 				shackDict.timecontrol.current_simulation_time
 			);
 		}
@@ -338,13 +338,13 @@ public:
 			timeSteppers.master->runTimestep(
 				prog_u, prog_v,
 				///prog_u_prev, prog_v_prev,
-				shackDict.timecontrol.current_timestep_size,
+				shackDict.timecontrol.current_timestepSize,
 				shackDict.timecontrol.current_simulation_time
 			);
 		}
 
 		// Advance time step and provide information to parameters
-		shackDict.timecontrol.current_simulation_time += shackDict.timecontrol.current_timestep_size;
+		shackDict.timecontrol.current_simulation_time += shackDict.timecontrol.current_timestepSize;
 		shackDict.timecontrol.current_timestep_nr++;
 
 		if (shackDict.timecontrol.current_simulation_time > shackDict.timecontrol.max_simulation_time)
@@ -827,7 +827,7 @@ public:
 		sprintf(title_string, "Time: %f, k: %i, dt: %.3e, Vis: %s, TEnergy: %.6e, MaxVal: %.6e, MinVal: %.6e ",
 				shackDict.timecontrol.current_simulation_time,
 				shackDict.timecontrol.current_timestep_nr,
-				shackDict.timecontrol.current_timestep_size,
+				shackDict.timecontrol.current_timestepSize,
 				description,
 				shackDict.diag.total_energy,
 				vis.physical_reduce_max(),
@@ -946,10 +946,10 @@ int main(int i_argc, char *i_argv[])
 				int N_physical[2] = {-1, -1};
 				int N_spectral[2];
 				double frac;
-				if ( shackDict.parareal.coarse_timestep_size > 0)
-					frac = shackDict.timecontrol.current_timestep_size / shackDict.parareal.coarse_timestep_size;
+				if ( shackDict.parareal.coarse_timestepSize > 0)
+					frac = shackDict.timecontrol.current_timestepSize / shackDict.parareal.coarse_timestepSize;
 				else
-					frac = shackDict.timecontrol.current_timestep_size / (shackDict.timecontrol.max_simulation_time / shackDict.parareal.coarse_slices );
+					frac = shackDict.timecontrol.current_timestepSize / (shackDict.timecontrol.max_simulation_time / shackDict.parareal.coarse_slices );
 				for (int j = 0; j < 2; j++)
 					N_spectral[j] = std::max(4, int(shackDict.disc.space_res_spectral[j] * frac));
 				planeDataConfigs.push_back(new PlaneData_Config);
@@ -1046,7 +1046,7 @@ int main(int i_argc, char *i_argv[])
 			std::cout << "Simulation time (seconds): " << seconds << std::endl;
 			std::cout << "Number of time steps: " << shackDict.timecontrol.current_timestep_nr << std::endl;
 			std::cout << "Time per time step: " << seconds/(double)shackDict.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
-			std::cout << "Last time step size: " << shackDict.timecontrol.current_timestep_size << std::endl;
+			std::cout << "Last time step size: " << shackDict.timecontrol.current_timestepSize << std::endl;
 
 			if (shackDict.misc.verbosity > 0)
 			{

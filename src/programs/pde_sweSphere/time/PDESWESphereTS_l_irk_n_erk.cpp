@@ -31,7 +31,7 @@ bool PDESWESphereTS_l_irk_n_erk::setup_auto(
  * Setup
  */
 bool PDESWESphereTS_l_irk_n_erk::setup_main(
-		sweet::SphereOperators *io_ops,
+		const sweet::SphereOperators *io_ops,
 		int i_order,	///< order of RK time stepping method
 		int i_order2,	///< order of RK time stepping method for non-linear parts
 		int i_version_id
@@ -49,7 +49,7 @@ bool PDESWESphereTS_l_irk_n_erk::setup_main(
 
 	timestepping_order = i_order;
 	timestepping_order2 = i_order2;
-	timestep_size = shackTimestepControl->current_timestep_size;
+	timestep_size = shackTimestepControl->current_timestepSize;
 
 	if (timestepping_order == 1)
 	{

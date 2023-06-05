@@ -555,7 +555,7 @@ public:
 			const SphereData_Spectral &i_sphere_data,
 			const double &i_b,
 			double i_sphere_radius
-	)
+	)	const
 	{
 		SphereData_Spectral out(i_sphere_data);
 

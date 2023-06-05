@@ -20,7 +20,7 @@
 #include <sweet/timeTree/DESolver_TimeStepper_StrangSplitting.hpp>
 
 #include <sweet/timeTree/DESolver_TimeStepper_Exponential.hpp>
-//#include <sweet/timeTree/DESolver_TimeStepper_SubCycling.hpp>
+#include <sweet/timeTree/DESolver_TimeStepper_SubCycling.hpp>
 
 
 namespace sweet
@@ -51,6 +51,7 @@ public:
 		o_timeStepper_registry.registerTimeTreeNode<sweet::DESolver_TimeStepper_StrangSplitting>();
 
 		o_timeStepper_registry.registerTimeTreeNode<sweet::DESolver_TimeStepper_Exponential>();
+		o_timeStepper_registry.registerTimeTreeNode<sweet::DESolver_TimeStepper_SubCycling>();
 
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(o_timeStepper_registry);
 		return true;

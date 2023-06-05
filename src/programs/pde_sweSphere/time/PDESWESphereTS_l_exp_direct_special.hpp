@@ -28,7 +28,7 @@ public:
 		) override;
 
 	bool setup_main(
-			sweet::SphereOperators *io_ops,
+			const sweet::SphereOperators *io_ops,
 			int i_order,	///< order of RK time stepping method
 			bool i_use_coriolis,		///< Include Coriolis term
 			const std::string i_function_name	///< phi/ups function

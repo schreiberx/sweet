@@ -12,7 +12,7 @@ namespace sweet
 {
 
 class DESolver_TimeStepper_Exponential	:
-	public DESolver_TimeTreeNode_NodeInteriorHelper
+	public DESolver_TimeTreeNode_NodeInteriorHelper<DESolver_TimeStepper_Exponential>
 {
 private:
 	// Order of Strang splitting
@@ -63,6 +63,7 @@ public:
 			switch(a->argType)
 			{
 			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_FUNCTION:
+			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_KEY_FUNCTION:
 				if (_timeTreeNodes.size() == 1)
 					return error.set("Only one term for exponential integration supported");
 
@@ -74,10 +75,6 @@ public:
 					);
 
 				ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(i_tsAssemblation);
-				break;
-
-			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_KEY_FUNCTION:
-				return error.set("Key with functions not supported"+a->getNewLineDebugMessage());
 				break;
 
 			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_KEY_VALUE:
@@ -128,9 +125,14 @@ public:
 	}
 
 
-	std::shared_ptr<DESolver_TimeTreeNode_Base> getNewInstance()	override
+	std::shared_ptr<DESolver_TimeTreeNode_Base> getInstanceNew()	override
 	{
 		return std::shared_ptr<DESolver_TimeTreeNode_Base>(new DESolver_TimeStepper_Exponential);
+	}
+
+	std::shared_ptr<DESolver_TimeTreeNode_Base> getInstanceCopy()	override
+	{
+		return std::shared_ptr<DESolver_TimeTreeNode_Base>(new DESolver_TimeStepper_Exponential(*this));
 	}
 
 
@@ -138,11 +140,11 @@ private:
 	void _eval_integration(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
-			double i_simulation_time
+			double i_simulationTime
 	)	override
 	{
 		assert(_timeTreeNodes[0] != nullptr);
-		evalTimeStepper(0, i_U, o_U, i_simulation_time);
+		evalTimeStepper(i_U, o_U, i_simulationTime);
 	}
 
 

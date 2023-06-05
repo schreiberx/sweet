@@ -100,7 +100,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nr_settls::runTimestep(
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
 			SWEETError("Implicit diffusion only supported with spectral space activated");
 #else
-			N_h = ops->implicit_diffusion(N_h, shackTimestepControl->current_timestep_size*shackPDESWEPlane->viscosity, shackPDESWEPlane->viscosity_order);
+			N_h = ops->implicit_diffusion(N_h, shackTimestepControl->current_timestepSize*shackPDESWEPlane->viscosity, shackPDESWEPlane->viscosity_order);
 #endif
 		}
 
@@ -117,7 +117,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nr_settls::runTimestep(
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
 			SWEETError("Implicit diffusion only supported with spectral space activated");
 #else
-			hdiv = ops->implicit_diffusion(hdiv, shackTimestepControl->current_timestep_size*shackPDESWEPlane->viscosity, shackPDESWEPlane->viscosity_order);
+			hdiv = ops->implicit_diffusion(hdiv, shackTimestepControl->current_timestepSize*shackPDESWEPlane->viscosity, shackPDESWEPlane->viscosity_order);
 #endif
 		}
 

@@ -52,7 +52,7 @@ bool PDESWESphereTS_lg_exp_na_sl_lc_nr_etd_uv::setup_auto(
 			shackExpIntegration,
 			timestepping_order,
 			timestepping_order2,
-			shackTimestepControl->current_timestep_size,
+			shackTimestepControl->current_timestepSize,
 
 			_nonlinear_remainder_treatment
 		);
@@ -60,11 +60,11 @@ bool PDESWESphereTS_lg_exp_na_sl_lc_nr_etd_uv::setup_auto(
 
 
 bool PDESWESphereTS_lg_exp_na_sl_lc_nr_etd_uv::setup(
-		sweet::SphereOperators *io_ops,
+		const sweet::SphereOperators *io_ops,
 		sweet::ShackExpIntegration *i_shackExpIntegration,
 		int i_timestepping_order,
 		int i_timestepping_order2,
-		double i_timestep_size,
+		double i_timestepSize,
 
 		NLRemainderTreatment_enum i_nonlinear_remainder_treatment
 )
@@ -86,14 +86,14 @@ bool PDESWESphereTS_lg_exp_na_sl_lc_nr_etd_uv::setup(
 
 	if (timestepping_order == 0 || timestepping_order == 1)
 	{
-		ts_phi0_exp.setup_variant_50(ops, i_shackExpIntegration, "phi0", i_timestep_size, false, true, timestepping_order);	/* NO Coriolis */
-		ts_phi1_exp.setup_variant_50(ops, i_shackExpIntegration, "phi1", i_timestep_size, false, true, timestepping_order);
+		ts_phi0_exp.setup_variant_50(ops, i_shackExpIntegration, "phi0", i_timestepSize, false, true, timestepping_order);	/* NO Coriolis */
+		ts_phi1_exp.setup_variant_50(ops, i_shackExpIntegration, "phi1", i_timestepSize, false, true, timestepping_order);
 	}
 	else if (timestepping_order == 2)
 	{
-		ts_phi0_exp.setup_variant_50(ops, i_shackExpIntegration, "phi0", i_timestep_size, false, true, timestepping_order);	/* NO Coriolis */
-		ts_phi1_exp.setup_variant_50(ops, i_shackExpIntegration, "phi1", i_timestep_size, false, true, timestepping_order);
-		ts_phi2_exp.setup_variant_50(ops, i_shackExpIntegration, "phi2", i_timestep_size, false, true, timestepping_order);
+		ts_phi0_exp.setup_variant_50(ops, i_shackExpIntegration, "phi0", i_timestepSize, false, true, timestepping_order);	/* NO Coriolis */
+		ts_phi1_exp.setup_variant_50(ops, i_shackExpIntegration, "phi1", i_timestepSize, false, true, timestepping_order);
+		ts_phi2_exp.setup_variant_50(ops, i_shackExpIntegration, "phi2", i_timestepSize, false, true, timestepping_order);
 	}
 	else if  (timestepping_order == 4)
 	{

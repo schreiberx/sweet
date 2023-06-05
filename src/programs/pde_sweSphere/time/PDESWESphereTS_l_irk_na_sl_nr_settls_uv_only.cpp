@@ -36,7 +36,7 @@ bool PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::setup_auto(
 }
 
 bool PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::setup_main(
-		sweet::SphereOperators *io_ops,
+		const sweet::SphereOperators *io_ops,
 		int i_timestepping_order
 )
 {
@@ -53,7 +53,7 @@ bool PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::setup_main(
 	swe_sphere_ts_ln_erk_split_uv__l_erk_1st_order.setup_main(ops, 1, true, true, false, false, false);
 
 	// Initialize with 1st order and half time step size
-	swe_sphere_ts_l_irk.setup_main(ops, 1, 0.5 * shackTimestepControl->current_timestep_size, shackPDESWETimeDisc->timestepping_crank_nicolson_filter, false);
+	swe_sphere_ts_l_irk.setup_main(ops, 1, 0.5 * shackTimestepControl->current_timestepSize, shackPDESWETimeDisc->timestepping_crank_nicolson_filter, false);
 
 	return true;
 }

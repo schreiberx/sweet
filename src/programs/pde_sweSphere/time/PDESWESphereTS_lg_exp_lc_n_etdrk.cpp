@@ -31,17 +31,17 @@ bool PDESWESphereTS_lg_exp_lc_n_etdrk::setup_auto(
 			shackExpIntegration,
 			shackPDESWETimeDisc->timestepping_order,
 			shackPDESWETimeDisc->timestepping_order2,
-			shackTimestepControl->current_timestep_size
+			shackTimestepControl->current_timestepSize
 		);
 }
 
 
 bool PDESWESphereTS_lg_exp_lc_n_etdrk::setup_main(
-		sweet::SphereOperators *io_ops,
+		const sweet::SphereOperators *io_ops,
 		sweet::ShackExpIntegration *i_shackExpIntegration,
 		int i_timestepping_order,
 		int i_timestepping_order2,
-		double i_timestep_size
+		double i_timestepSize
 )
 {
 	ops = io_ops;
@@ -55,26 +55,26 @@ bool PDESWESphereTS_lg_exp_lc_n_etdrk::setup_main(
 
 	if (timestepping_order == 0 || timestepping_order == 1)
 	{
-		ts_phi0_rexi.setup_variant_50(ops, i_shackExpIntegration, "phi0", i_timestep_size, false, true, timestepping_order);	/* NO Coriolis */
-		ts_phi1_rexi.setup_variant_50(ops, i_shackExpIntegration, "phi1", i_timestep_size, false, true, timestepping_order);
+		ts_phi0_rexi.setup_variant_50(ops, i_shackExpIntegration, "phi0", i_timestepSize, false, true, timestepping_order);	/* NO Coriolis */
+		ts_phi1_rexi.setup_variant_50(ops, i_shackExpIntegration, "phi1", i_timestepSize, false, true, timestepping_order);
 	}
 	else if (timestepping_order == 2)
 	{
-		ts_phi0_rexi.setup_variant_50(ops, i_shackExpIntegration, "phi0", i_timestep_size, false, true, timestepping_order);	/* NO Coriolis */
-		ts_phi1_rexi.setup_variant_50(ops, i_shackExpIntegration, "phi1", i_timestep_size, false, true, timestepping_order);
-		ts_phi2_rexi.setup_variant_50(ops, i_shackExpIntegration, "phi2", i_timestep_size, false, true, timestepping_order);
+		ts_phi0_rexi.setup_variant_50(ops, i_shackExpIntegration, "phi0", i_timestepSize, false, true, timestepping_order);	/* NO Coriolis */
+		ts_phi1_rexi.setup_variant_50(ops, i_shackExpIntegration, "phi1", i_timestepSize, false, true, timestepping_order);
+		ts_phi2_rexi.setup_variant_50(ops, i_shackExpIntegration, "phi2", i_timestepSize, false, true, timestepping_order);
 	}
 	else if  (timestepping_order == 4)
 	{
-		ts_phi0_rexi.setup_variant_50(ops, i_shackExpIntegration, "phi0", i_timestep_size*0.5, false, true, timestepping_order);	/* NO Coriolis */
-		ts_phi1_rexi.setup_variant_50(ops, i_shackExpIntegration, "phi1", i_timestep_size*0.5, false, true, timestepping_order);
-		ts_phi2_rexi.setup_variant_50(ops, i_shackExpIntegration, "phi2", i_timestep_size*0.5, false, true, timestepping_order);
+		ts_phi0_rexi.setup_variant_50(ops, i_shackExpIntegration, "phi0", i_timestepSize*0.5, false, true, timestepping_order);	/* NO Coriolis */
+		ts_phi1_rexi.setup_variant_50(ops, i_shackExpIntegration, "phi1", i_timestepSize*0.5, false, true, timestepping_order);
+		ts_phi2_rexi.setup_variant_50(ops, i_shackExpIntegration, "phi2", i_timestepSize*0.5, false, true, timestepping_order);
 
 		// phi0, but with a full time step size
-		ts_ups0_rexi.setup_variant_50(ops, i_shackExpIntegration, "phi0", i_timestep_size, false, true, timestepping_order);
-		ts_ups1_rexi.setup_variant_50(ops, i_shackExpIntegration, "ups1", i_timestep_size, false, true, timestepping_order);
-		ts_ups2_rexi.setup_variant_50(ops, i_shackExpIntegration, "ups2", i_timestep_size, false, true, timestepping_order);
-		ts_ups3_rexi.setup_variant_50(ops, i_shackExpIntegration, "ups3", i_timestep_size, false, true, timestepping_order);
+		ts_ups0_rexi.setup_variant_50(ops, i_shackExpIntegration, "phi0", i_timestepSize, false, true, timestepping_order);
+		ts_ups1_rexi.setup_variant_50(ops, i_shackExpIntegration, "ups1", i_timestepSize, false, true, timestepping_order);
+		ts_ups2_rexi.setup_variant_50(ops, i_shackExpIntegration, "ups2", i_timestepSize, false, true, timestepping_order);
+		ts_ups3_rexi.setup_variant_50(ops, i_shackExpIntegration, "ups3", i_timestepSize, false, true, timestepping_order);
 	}
 	else
 	{

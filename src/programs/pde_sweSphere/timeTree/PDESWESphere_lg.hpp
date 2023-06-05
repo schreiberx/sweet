@@ -12,31 +12,32 @@
 /*
  * Time tree node related includes
  */
-#include <sweet/timeTree/DESolver_TimeTreeNode_Base.hpp>
+#include <sweet/timeTree/DESolver_TimeTreeNode_NodeLeafHelper.hpp>
 #include <sweet/timeTree/DESolver_TimeTreeNode_CastHelper.hpp>
 #include "PDESWESphere_DataContainer.hpp"
 #include "PDESWESphere_DESolver_Config.hpp"
 
+#include "../time/PDESWESphereTS_lg_exp_direct.hpp"
 
 class PDESWESphere_lg	:
-	public sweet::DESolver_TimeTreeNode_Base,
+	public sweet::DESolver_TimeTreeNode_NodeLeafHelper<PDESWESphere_lg>,
 	public sweet::DESolver_TimeTreeNode_CastHelper<
 			PDESWESphere_DataContainer,
 			PDESWESphere_DESolver_Config
 		>
 {
 private:
-	sweet::ShackSphereDataOps *shackSphereDataOps;
 	ShackPDESWESphere *shackPDESWESphere;
+	sweet::ShackSphereDataOps *shackSphereDataOps;
 	const sweet::SphereOperators *ops;
-
-	double _dt;
 
 	sweet::ExpFunctions<double> expFunction;
 
 public:
 	PDESWESphere_lg();
 	~PDESWESphere_lg();
+
+	PDESWESphere_lg(const PDESWESphere_lg &i_val);
 
 public:
 	bool shackRegistration(
@@ -46,16 +47,12 @@ public:
 	virtual
 	const std::vector<std::string> getNodeNames() override;
 
-	std::shared_ptr<sweet::DESolver_TimeTreeNode_Base> getNewInstance() override;
-
 	virtual
 	bool setupConfigAndGetTimeStepperEval(
 		const sweet::DESolver_Config_Base &i_deTermConfig,
 		const std::string &i_timeStepperEvalName,
 		DESolver_TimeTreeNode_Base::EvalFun &o_timeStepper
 	) override;
-
-	void setTimeStepSize(double i_dt) override;
 
 	void clear() override;
 
@@ -67,7 +64,17 @@ public:
 	void _eval_tendencies(
 			const sweet::DESolver_DataContainer_Base &i_u,
 			sweet::DESolver_DataContainer_Base &o_u,
-			double i_time_stamp
+			double i_timeStamp
+	)	override;
+
+	/*
+	 * Return the backward Euler time step
+	 */
+public:
+	void _eval_eulerBackward(
+			const sweet::DESolver_DataContainer_Base &i_u,
+			sweet::DESolver_DataContainer_Base &o_u,
+			double i_timeStamp
 	)	override;
 
 	/*
@@ -77,7 +84,7 @@ private:
 	void _eval_exponential(
 			const sweet::DESolver_DataContainer_Base &i_u,
 			sweet::DESolver_DataContainer_Base &o_u,
-			double i_time_stamp
+			double i_timeStamp
 	)	override;
 };
 

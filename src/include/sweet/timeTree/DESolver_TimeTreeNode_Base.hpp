@@ -43,7 +43,7 @@ public:
 	typedef void (DESolver_TimeTreeNode_Base::*EvalFun)(
 					const DESolver_DataContainer_Base &i_U,
 					DESolver_DataContainer_Base &o_U,
-					double i_simulation_time
+					double i_simulationTime
 			);
 
 	/*
@@ -79,7 +79,16 @@ public:
 	 * Return a new instance of this class
 	 */
 	virtual
-	std::shared_ptr<DESolver_TimeTreeNode_Base> getNewInstance() = 0;
+	std::shared_ptr<DESolver_TimeTreeNode_Base> getInstanceNew() = 0;
+
+
+	/**
+	 * Return a copy of this class
+	 *
+	 * This is a special case where we might like to reuse the already utilized shacks
+	 */
+	virtual
+	std::shared_ptr<DESolver_TimeTreeNode_Base> getInstanceCopy() = 0;
 
 
 	/**
@@ -115,7 +124,7 @@ public:
 		) = 0;
 
 public:
-	bool _helperSetupConfigAndGetTimeStepperEval(
+	bool _helperGetTimeStepperEval(
 			const std::string &i_timeStepperEvalName,
 			EvalFun &o_timeStepper
 	)
@@ -215,7 +224,7 @@ public:
 	void _eval_integration(
 			const DESolver_DataContainer_Base &i_U,
 			DESolver_DataContainer_Base &o_U,
-			double i_simulation_time
+			double i_simulationTime
 		) {};
 
 

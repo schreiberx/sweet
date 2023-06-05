@@ -15,7 +15,7 @@ namespace sweet
  * Negate a PDE term (put a minus sign in front of the tendencies)
  */
 class DESolver_TimeStepper_NegTendencies	:
-	public DESolver_TimeTreeNode_NodeInteriorHelper
+	public DESolver_TimeTreeNode_NodeInteriorHelper<DESolver_TimeStepper_NegTendencies>
 {
 public:
 	DESolver_TimeStepper_NegTendencies()
@@ -65,7 +65,7 @@ public:
 						a->function,
 						_timeTreeNodes.back()
 					);
-				ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*a);
+				ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(i_tsAssemblation);
 				break;
 
 			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_KEY_VALUE:
@@ -75,11 +75,11 @@ public:
 			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_VALUE:
 				_timeTreeNodes.push_back(std::shared_ptr<sweet::DESolver_TimeTreeNode_Base>());
 
-				i_tsAssemblation.assembleTimeTreeNodeByName(
-						a->value,
+				i_tsAssemblation.assembleTimeTreeNodeByFunction(
+						a->function,
 						_timeTreeNodes.back()
 					);
-				ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*a);
+				ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(i_tsAssemblation);
 				break;
 
 			default:
@@ -116,7 +116,7 @@ public:
 		return true;
 	}
 
-	std::shared_ptr<DESolver_TimeTreeNode_Base> getNewInstance()	override
+	std::shared_ptr<DESolver_TimeTreeNode_Base> getInstanceNew()	override
 	{
 		return std::shared_ptr<DESolver_TimeTreeNode_Base>(new DESolver_TimeStepper_NegTendencies);
 	}
@@ -125,7 +125,7 @@ private:
 	void _eval_tendencies(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
-			double i_simulation_time
+			double i_simulationTime
 	)	override
 	{
 		o_U.op_setZero();
@@ -136,7 +136,7 @@ private:
 					i,
 					i_U,
 					*_tmpDataContainer[0],
-					i_simulation_time
+					i_simulationTime
 				);
 			o_U.op_addVector(*_tmpDataContainer[0]);
 		}

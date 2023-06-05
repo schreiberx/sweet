@@ -18,10 +18,10 @@
 int main(int i_argc, char *i_argv[])
 {
 	ProgramPDEAdvectionSphere simulation(i_argc, i_argv);
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(simulation);
 
 	simulation.setup();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(simulation);
 
 #if SWEET_GUI
 	if (simulation.shackIOData->gui_enabled)
@@ -32,18 +32,18 @@ int main(int i_argc, char *i_argv[])
 #endif
 	{
 		simulation.shackTimestepControl->validateMaxSimulationTimeOrTimestepNr();
-		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(*(simulation.shackTimestepControl));
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(*(simulation.shackTimestepControl));
 
 		while (!simulation.should_quit())
 			simulation.runTimestep();
 	}
 
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(simulation);
 
 	if (simulation.shackPDEAdvectionSphere->compute_errors)
 	{
 		simulation.printSimulationErrors();
-		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(simulation);
 	}
 
 	std::cout << "FIN" << std::endl;

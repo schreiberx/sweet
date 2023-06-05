@@ -26,7 +26,7 @@ bool PDESWESphereTS_l_exp_direct_special::setup_auto(
 
 
 bool PDESWESphereTS_l_exp_direct_special::setup_main(
-	sweet::SphereOperators *io_ops,
+	const sweet::SphereOperators *io_ops,
 	int i_order,
 	bool i_use_coriolis,	///< Include Coriolis term
 	const std::string i_function_name

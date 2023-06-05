@@ -52,7 +52,7 @@ bool PDESWESphereTS_lg_irk_lc_na_erk_vd::setup_auto(
 
 
 bool PDESWESphereTS_lg_irk_lc_na_erk_vd::setup(
-		sweet::SphereOperators *io_ops,
+		const sweet::SphereOperators *io_ops,
 		int i_timestepping_order,	///< order of RK time stepping method
 		int i_timestepping_order2,	///< order of RK time stepping method for non-linear parts
 		int i_version_id
@@ -71,7 +71,7 @@ bool PDESWESphereTS_lg_irk_lc_na_erk_vd::setup(
 	if (i_timestepping_order != i_timestepping_order2)
 		SWEETError("Orders of 1st and 2nd one must match");
 
-	timestep_size = shackTimestepControl->current_timestep_size;
+	timestep_size = shackTimestepControl->current_timestepSize;
 
 	if (timestepping_order == 1)
 	{

@@ -23,7 +23,7 @@ bool PDESWESphereTS_lg_exp_lc_erk::setup_auto(
 			shackExpIntegration->exp_method,
 			shackPDESWETimeDisc->timestepping_order,
 			shackPDESWETimeDisc->timestepping_order2,
-			shackTimestepControl->current_timestep_size,
+			shackTimestepControl->current_timestepSize,
 			version,
 			shackExpIntegration->sphere_solver_preallocation
 		);
@@ -33,12 +33,12 @@ bool PDESWESphereTS_lg_exp_lc_erk::setup_auto(
 
 
 bool PDESWESphereTS_lg_exp_lc_erk::setup_main(
-		sweet::SphereOperators *io_ops,
+		const sweet::SphereOperators *io_ops,
 		sweet::ShackExpIntegration *i_shackExpIntegration,
 		const std::string &i_exp_method,
 		int i_timestepping_order,
 		int i_timestepping_order2,
-		double i_timestep_size,
+		double i_timestepSize,
 		int i_version_id,
 		bool i_use_rexi_sphere_solver_preallocation
 )
@@ -50,7 +50,7 @@ bool PDESWESphereTS_lg_exp_lc_erk::setup_main(
 	timestepping_order = i_timestepping_order;
 	timestepping_order2 = i_timestepping_order2;
 
-	timestep_size = shackTimestepControl->current_timestep_size;
+	timestep_size = shackTimestepControl->current_timestepSize;
 
 	if (timestepping_order2 == 1)
 	{
@@ -58,7 +58,7 @@ bool PDESWESphereTS_lg_exp_lc_erk::setup_main(
 				ops,
 				i_shackExpIntegration,
 				"phi0",
-				i_timestep_size,
+				i_timestepSize,
 				false,
 				true,
 				timestepping_order
@@ -72,7 +72,7 @@ bool PDESWESphereTS_lg_exp_lc_erk::setup_main(
 					ops,
 					i_shackExpIntegration,
 					"phi0",
-					i_timestep_size*0.5,
+					i_timestepSize*0.5,
 					false,
 					true,
 					timestepping_order
@@ -84,7 +84,7 @@ bool PDESWESphereTS_lg_exp_lc_erk::setup_main(
 					ops,
 					i_shackExpIntegration,
 					"phi0",
-					i_timestep_size,
+					i_timestepSize,
 					false,
 					true,
 					timestepping_order

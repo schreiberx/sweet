@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 #include <sweet/timeTree/DESolver_DataContainer_Base.hpp>
-#include <sweet/timeTree/DESolver_TimeTreeNode_Base.hpp>
+#include <sweet/timeTree/DESolver_TimeTreeNode_NodeInteriorHelper.hpp>
 #include <sweet/core/shacks/ShackDictionary.hpp>
 
 
@@ -12,25 +12,15 @@ namespace sweet
 {
 
 class DESolver_TimeStepper_SubCycling	:
-		public sweet::DESolver_TimeTreeNode_Base
+	public DESolver_TimeTreeNode_NodeInteriorHelper<DESolver_TimeStepper_SubCycling>
 {
 private:
-	double _timestep_size;
-	double &dt = _timestep_size;
-
 	// Number of subcycling intervals
 	int _subCyclingIntervals;
 
-	// DE term to evaluate
-	std::shared_ptr<sweet::DESolver_TimeTreeNode_Base> _timeTreeNode;
-	DESolver_TimeTreeNode_Base::EvalFun _evalFun;
-
-	// Number of stages to allocate buffers
-	std::vector<sweet::DESolver_DataContainer_Base*> _tmpDataContainer;
 
 public:
-	DESolver_TimeStepper_SubCycling()	:
-		_timestep_size(-1)
+	DESolver_TimeStepper_SubCycling()
 	{
 		setEvalAvailable("integration");
 	}
@@ -51,29 +41,13 @@ public:
 		return retval;
 	}
 
-	bool shackRegistration(
-			sweet::ShackDictionary *io_shackDict
-	)	override
-	{
-		_timeTreeNode->shackRegistration(io_shackDict);
-		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(*_timeTreeNode);
-
-		return true;
-	}
-
 	bool _setupArgumentInternals()
 	{
 		if (_subCyclingIntervals <= 1)
 			return error.set("At least one interval for subcycling required"+getNewLineDebugMessage());
 
-		if (_timeTreeNode == nullptr)
+		if (_timeTreeNodes.size() == 0)
 			return error.set("Subcycling requires one term/function"+getNewLineDebugMessage());
-
-		for (auto &i : _timeTreeNode)
-		{
-			if (!i->isEvalAvailable("integration"))
-				return error.set("eval of 'integration' missing in term '"+i->getNodeNames()[0]+"'");
-		}
 
 		return true;
 	}
@@ -93,14 +67,14 @@ public:
 
 			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_FUNCTION:
 
-				if (_timeTreeNode.size() >= 1)
+				if (_timeTreeNodes.size() >= 1)
 					return error.set("Subcycling only supports a single function/DETerm"+a->getNewLineDebugMessage());
-
-				_timeTreeNode.push_back(std::shared_ptr<sweet::DESolver_TimeTreeNode_Base>());
+					
+				_timeTreeNodes.push_back(std::shared_ptr<sweet::DESolver_TimeTreeNode_Base>());
 
 				i_tsAssemblation.assembleTimeTreeNodeByFunction(
 						a->function,
-						_timeTreeNode.back()
+						_timeTreeNodes.back()
 					);
 				ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(i_tsAssemblation);
 				break;
@@ -114,7 +88,7 @@ public:
 				{
 					a->getValue(_subCyclingIntervals);
 					std::cout << _subCyclingIntervals << std::endl;
-					ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*a);
+					ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(i_tsAssemblation);
 					break;
 				}
 
@@ -122,11 +96,11 @@ public:
 				break;
 
 			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_VALUE:
-				_timeTreeNode.push_back(std::shared_ptr<sweet::DESolver_TimeTreeNode_Base>());
+				_timeTreeNodes.push_back(std::shared_ptr<sweet::DESolver_TimeTreeNode_Base>());
 
 				i_tsAssemblation.assembleTimeTreeNodeByName(
 						a->value,
-						_timeTreeNode.back()
+						_timeTreeNodes.back()
 					);
 				ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(i_tsAssemblation);
 				break;
@@ -149,74 +123,79 @@ public:
 		DESolver_TimeTreeNode_Base::EvalFun &o_timeStepper
 	) override
 	{
-		for (auto &i : _timeTreeNode)
-		{
-			i->setupConfig(i_deTermConfig);
-			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*i);
-		}
-
-		if (!_timeTreeNode[0]->isEvalAvailable("integration"))
-			return error.set("integration not available in 1st SS term");
-
-		// default setup
-		DESolver_TimeTreeNode_Base::_helperSetupConfigAndGetTimeStepperEval(
+		_helperSetupConfigAndGetTimeStepperEval(
+				i_deTermConfig,
 				i_timeStepperEvalName,
-				o_timeStepper
+				o_timeStepper,
+				"integration"
 			);
+		
+		_tmpDataContainer.resize(1);
+		for (std::size_t i = 0; i < _tmpDataContainer.size(); i++)
+			_tmpDataContainer[i] = i_deTermConfig.getNewDataContainerInstance();
+		
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*this);
 
 		return true;
-
 	}
 
-	void clear() override
-	{
-		for (std::size_t i = 0; i < _tmpDataContainer.size(); i++)
-			delete _tmpDataContainer[i];
-		_tmpDataContainer.clear();
-
-		_timeTreeNode.clear();
-	}
-
-	std::shared_ptr<DESolver_TimeTreeNode_Base> getNewInstance()	override
-	{
-		return std::shared_ptr<DESolver_TimeTreeNode_Base>(new DESolver_TimeStepper_SubCycling);
-	}
-
+	inline
 	void setTimeStepSize(double i_dt)	override
 	{
-		_timestep_size = i_dt;
+		_timestepSize = i_dt;
 
-		_timeTreeNode[0]->setTimeStepSize(dt/_subCyclingIntervals);
+		for (auto &i : _timeTreeNodes)
+		{
+			i->setTimeStepSize(_timestepSize/_subCyclingIntervals);
+		}
 	}
 
 	void _eval_integration(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
-			double i_simulation_time
+			double i_simulationTime
 	)	override
 	{
 		if (_subCyclingIntervals == 1)
 		{
-			_timeTreeNode[0]->_eval_integration(i_U, *_tmpDataContainer[0], i_simulation_time);
-			_timeTreeNode[1]->_eval_integration(*_tmpDataContainer[0], o_U, i_simulation_time);
+			evalTimeStepper(i_U, o_U, i_simulationTime);
 			return;
 		}
-		
-		if (_subCyclingIntervals == 2)
+
+		int stepsTodo = _subCyclingIntervals;
+
+		// 1st step to use temporary buffer
+		evalTimeStepper(i_U, *_tmpDataContainer[0], i_simulationTime);
+		stepsTodo--;
+
+		// perform always 2 steps
+		for (int i = 1; i < _subCyclingIntervals-1; i+=2)
 		{
-			_timeTreeNode[0]->_eval_integration(i_U, *_tmpDataContainer[0], i_simulation_time);
-			_timeTreeNode[1]->_eval_integration(*_tmpDataContainer[0], *_tmpDataContainer[1], i_simulation_time);
-			_timeTreeNode[0]->_eval_integration(*_tmpDataContainer[1], o_U, i_simulation_time+0.5*dt);
-			return;
+			evalTimeStepper(*_tmpDataContainer[0], o_U, i_simulationTime);
+			evalTimeStepper(o_U, *_tmpDataContainer[0], i_simulationTime);
+			stepsTodo -= 2;
 		}
+
+		assert(stepsTodo > 0 && stepsTodo <= 2);
+
+		evalTimeStepper(*_tmpDataContainer[0], o_U, i_simulationTime);
+		stepsTodo--;
+
+		if (stepsTodo == 0)
+			return;
+
+		_tmpDataContainer[0]->swap(o_U);
+		evalTimeStepper(*_tmpDataContainer[0], o_U, i_simulationTime);
+		stepsTodo--;
+
+		assert(stepsTodo == 0);
 	}
 
 	void print(const std::string &i_prefix = "")
 	{
 		std::string newPrefix = i_prefix + "  ";
-		std::cout << i_prefix << "SS(" << std::endl;
-		std::cout << newPrefix << "  order: " << _subCyclingIntervals << std::endl;
+		std::cout << i_prefix << "SUBCYCLING(" << std::endl;
+		std::cout << newPrefix << "  subCyclingIntervals: " << _subCyclingIntervals << std::endl;
 		std::cout << i_prefix << ")" << std::endl;
 	}
 };

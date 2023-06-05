@@ -173,11 +173,11 @@ public:
 		while (true)
 		{
 			this->timeSteppers->master->runTimestep(this->prog_u,
-					shackDict->timecontrol.current_timestep_size,
+					shackDict->timecontrol.current_timestepSize,
 					shackDict->timecontrol.current_simulation_time
 				);
 
-			shackDict->timecontrol.current_simulation_time += shackDict->timecontrol.current_timestep_size;
+			shackDict->timecontrol.current_simulation_time += shackDict->timecontrol.current_timestepSize;
 			shackDict->timecontrol.current_timestep_nr++;
 
 			this->do_output();
@@ -284,7 +284,7 @@ int main(int i_argc, char *i_argv[])
 	}
 
 
-	param_parareal_fine_dt = shackDict.timecontrol.current_timestep_size;
+	param_parareal_fine_dt = shackDict.timecontrol.current_timestepSize;
 	//if (shackDict.bogus.var[0] != "")
 	//	param_parareal_fine_dt = atof(shackDict.bogus.var[0].c_str());
 	if (shackDict.user_defined.var[1] != "")
@@ -365,8 +365,8 @@ int main(int i_argc, char *i_argv[])
 		MPI_Comm comm = MPI_COMM_WORLD;
 		MPI_Comm comm_x, comm_t;
 
-		int nt = (int) (shackDict.timecontrol.max_simulation_time / shackDict.timecontrol.current_timestep_size);
-                if (nt * shackDict.timecontrol.current_timestep_size < shackDict.timecontrol.max_simulation_time - 1e-10)
+		int nt = (int) (shackDict.timecontrol.max_simulation_time / shackDict.timecontrol.current_timestepSize);
+                if (nt * shackDict.timecontrol.current_timestepSize < shackDict.timecontrol.max_simulation_time - 1e-10)
 			nt++;
 		sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., shackDict.timecontrol.max_simulation_time, nt, &shackDict);
 
@@ -376,7 +376,7 @@ int main(int i_argc, char *i_argv[])
 			app.setup();
 
 			BraidUtil braid_util;
-			int test = braid_util.TestAll(&app, comm, stdout, 0., shackDict.timecontrol.current_timestep_size, shackDict.timecontrol.current_timestep_size * 2);
+			int test = braid_util.TestAll(&app, comm, stdout, 0., shackDict.timecontrol.current_timestepSize, shackDict.timecontrol.current_timestepSize * 2);
 			if (test == 0)
 				SWEETError("Tests failed!");
 			else

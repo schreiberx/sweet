@@ -6,15 +6,31 @@
 
 PDESWESphere_lg::PDESWESphere_lg()	:
 	shackPDESWESphere(nullptr),
-	ops(nullptr),
-	_dt(-1)
+	shackSphereDataOps(nullptr),
+	ops(nullptr)
 {
 	setEvalAvailable("tendencies");
+	setEvalAvailable("eulerBackward");
 	setEvalAvailable("exponential");
 }
 
 PDESWESphere_lg::~PDESWESphere_lg()
 {
+}
+
+
+PDESWESphere_lg::PDESWESphere_lg(
+		const PDESWESphere_lg &i_val
+)	:
+	DESolver_TimeTreeNode_NodeLeafHelper(*this)
+{
+	shackSphereDataOps = i_val.shackSphereDataOps;
+	shackPDESWESphere = i_val.shackPDESWESphere;
+	ops = i_val.ops;
+
+	setEvalAvailable("tendencies");
+	setEvalAvailable("eulerBackward");
+	setEvalAvailable("exponential");
 }
 
 
@@ -39,11 +55,6 @@ const std::vector<std::string> PDESWESphere_lg::getNodeNames()
 
 }
 
-std::shared_ptr<sweet::DESolver_TimeTreeNode_Base> PDESWESphere_lg::getNewInstance()
-{
-	return std::shared_ptr<sweet::DESolver_TimeTreeNode_Base>(new PDESWESphere_lg);
-}
-
 
 bool PDESWESphere_lg::setupConfigAndGetTimeStepperEval(
 	const sweet::DESolver_Config_Base &i_deTermConfig,
@@ -55,34 +66,26 @@ bool PDESWESphere_lg::setupConfigAndGetTimeStepperEval(
 
 	ops = myConfig.ops;
 
-
 	// default setup
-	DESolver_TimeTreeNode_Base::_helperSetupConfigAndGetTimeStepperEval(
+	DESolver_TimeTreeNode_Base::_helperGetTimeStepperEval(
 			i_timeStepperEvalName,
 			o_timeStepper
 		);
-	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*this);
 
-	if (i_timeStepperEvalName == "eulerBackward")
-	{
-		SWEETError("TODO: Setup implicit time stepping solver");
-		return true;
-	}
+	ERROR_CHECK_COND_RETURN_BOOLEAN(*this);
+
+	if (i_timeStepperEvalName == "exponential")
+		expFunction.setup("phi0");
 
 	return true;
-	//return error.set("Time evaluation '"+i_timeStepperEvalName+"' not supported");
 }
 
-void PDESWESphere_lg::setTimeStepSize(double i_dt)
-{
-	_dt = i_dt;
-
-	expFunction.setup("phi0");
-}
 
 void PDESWESphere_lg::clear()
 {
+	DESolver_TimeTreeNode_NodeLeafHelper::clear();
 }
+
 
 /*
  * Return the time tendencies of the PDE term
@@ -90,7 +93,7 @@ void PDESWESphere_lg::clear()
 void PDESWESphere_lg::_eval_tendencies(
 		const sweet::DESolver_DataContainer_Base &i_U_,
 		sweet::DESolver_DataContainer_Base &o_U_,
-		double i_time_stamp
+		double i_timeStamp
 )
 {
 	assert(ops != nullptr);
@@ -112,14 +115,42 @@ void PDESWESphere_lg::_eval_tendencies(
 /*
  * Evaluate exponential of linear term
  */
-void PDESWESphere_lg::_eval_exponential(
+void PDESWESphere_lg::_eval_eulerBackward(
 		const sweet::DESolver_DataContainer_Base &i_U_,
 		sweet::DESolver_DataContainer_Base &o_U_,
-		double i_time_stamp
+		double i_timeStamp
 )
 {
 	const PDESWESphere_DataContainer &i_U = cast(i_U_);
 	PDESWESphere_DataContainer &o_U = cast(o_U_);
+
+	/*
+	 * avg. geopotential
+	 */
+	double GH = shackPDESWESphere->h0*shackPDESWESphere->gravitation;
+
+
+	sweet::SphereData_Spectral rhs = i_U.div + ops->implicit_L(i_U.phi_pert, _dt);
+	o_U.div = ops->implicit_helmholtz(rhs, -GH*_dt*_dt, shackSphereDataOps->sphere_radius);
+	o_U.phi_pert = i_U.phi_pert - _dt*GH*o_U.div;
+	o_U.vrt = i_U.vrt;
+}
+
+
+
+/*
+ * Evaluate exponential of linear term
+ */
+void PDESWESphere_lg::_eval_exponential(
+		const sweet::DESolver_DataContainer_Base &i_U_,
+		sweet::DESolver_DataContainer_Base &o_U_,
+		double i_timeStamp
+)
+{
+	const PDESWESphere_DataContainer &i_U = cast(i_U_);
+	PDESWESphere_DataContainer &o_U = cast(o_U_);
+
+	assert(expFunction.isSetup());
 
 	/*
 	 * Using exponential integrators, we must compute an
@@ -127,9 +158,9 @@ void PDESWESphere_lg::_eval_exponential(
 	double ir = 1.0/shackSphereDataOps->sphere_radius;
 
 	/*
-	 * avg. geopotential
+	 * Average geopotential
 	 */
-	double G = -shackPDESWESphere->h0*shackPDESWESphere->gravitation;
+	double GH = shackPDESWESphere->gravitation*shackPDESWESphere->h0;
 
 	/*
 	 * See doc/time_integration/exponential_integration/swe_sphere_direct_exp_int_for_L_nonrotating_sphere/
@@ -143,27 +174,30 @@ void PDESWESphere_lg::_eval_exponential(
 		{
 			double D = (double)n*((double)n+1.0)*ir*ir;
 
+			const std::complex<double> &i_phi = i_U.phi_pert.spectral_space_data[idx];
+			const std::complex<double> &i_div = i_U.div.spectral_space_data[idx];
+			const std::complex<double> &i_vrt = i_U.vrt.spectral_space_data[idx];
+
+			std::complex<double> &o_phi = o_U.phi_pert.spectral_space_data[idx];
+			std::complex<double> &o_div = o_U.div.spectral_space_data[idx];
+			std::complex<double> &o_vrt = o_U.vrt.spectral_space_data[idx];
+
 			if (D == 0)
 			{
-				o_U.phi_pert.spectral_space_data[idx] = 0;
-				o_U.div.spectral_space_data[idx] = 0;
+				o_phi = i_phi;
+				o_div = i_div;
+				o_vrt = i_vrt;
 
 				idx++;
 				continue;
 			}
 
-			const std::complex<double> &i_phi = i_U.phi_pert.spectral_space_data[idx];
-			const std::complex<double> &i_div = i_U.div.spectral_space_data[idx];
-
-			std::complex<double> &o_phi = o_U.phi_pert.spectral_space_data[idx];
-			std::complex<double> &o_div = o_U.div.spectral_space_data[idx];
-
 
 			// result will be imaginary only!
-			std::complex<double> sqrt_DG = std::sqrt(std::complex<double>(D*G));
+			std::complex<double> sqrt_DG = std::sqrt(std::complex<double>(-D*GH));
 
-			std::complex<double> l0 = -sqrt_DG/(2*G) * i_phi + 0.5*i_div;
-			std::complex<double> l1 = +sqrt_DG/(2*G) * i_phi + 0.5*i_div;
+			std::complex<double> l0 = -sqrt_DG/(-2*GH) * i_phi + 0.5*i_div;
+			std::complex<double> l1 = +sqrt_DG/(-2*GH) * i_phi + 0.5*i_div;
 
 			std::complex<double> tmp;
 			expFunction.eval(-_dt*sqrt_DG, tmp);
@@ -172,12 +206,11 @@ void PDESWESphere_lg::_eval_exponential(
 			expFunction.eval(_dt*sqrt_DG, tmp);
 			l1 *= tmp;
 
-			o_phi = G/sqrt_DG * (l1 - l0);
+			o_phi = -GH/sqrt_DG * (l1 - l0);
 			o_div = l0 + l1;
+			o_vrt = i_vrt;
 
 			idx++;
 		}
 	}
-
-	o_U.vrt = i_U.vrt;
 }

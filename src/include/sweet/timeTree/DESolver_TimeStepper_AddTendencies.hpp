@@ -15,7 +15,7 @@ namespace sweet
  * Add tendencies of different tree nodes
  */
 class DESolver_TimeStepper_AddTendencies	:
-	public DESolver_TimeTreeNode_NodeInteriorHelper
+	public DESolver_TimeTreeNode_NodeInteriorHelper<DESolver_TimeStepper_AddTendencies>
 {
 public:
 	DESolver_TimeStepper_AddTendencies()
@@ -65,7 +65,7 @@ public:
 						a->function,
 						_timeTreeNodes.back()
 					);
-				ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*a);
+				ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(i_tsAssemblation);
 				break;
 
 			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_KEY_VALUE:
@@ -79,7 +79,7 @@ public:
 						a->value,
 						_timeTreeNodes.back()
 					);
-				ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*a);
+				ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(i_tsAssemblation);
 				break;
 
 			default:
@@ -106,27 +106,32 @@ public:
 				o_timeStepper,
 				"tendencies"
 			);
-
+		
 		_tmpDataContainer.resize(1);
 		for (std::size_t i = 0; i < _tmpDataContainer.size(); i++)
 			_tmpDataContainer[i] = i_deTermConfig.getNewDataContainerInstance();
-
+		
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*this);
 
 		return true;
 	}
 
 
-	std::shared_ptr<DESolver_TimeTreeNode_Base> getNewInstance()	override
+	std::shared_ptr<DESolver_TimeTreeNode_Base> getInstanceNew()	override
 	{
 		return std::shared_ptr<DESolver_TimeTreeNode_Base>(new DESolver_TimeStepper_AddTendencies);
+	}
+
+	std::shared_ptr<DESolver_TimeTreeNode_Base> getInstanceCopy()	override
+	{
+		return std::shared_ptr<DESolver_TimeTreeNode_Base>(new DESolver_TimeStepper_AddTendencies(*this));
 	}
 
 private:
 	void _eval_tendencies(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
-			double i_simulation_time
+			double i_simulationTime
 	)	override
 	{
 		o_U.op_setZero();
@@ -137,7 +142,7 @@ private:
 					i,
 					i_U,
 					*_tmpDataContainer[0],
-					i_simulation_time
+					i_simulationTime
 				);
 			o_U.op_addVector(*_tmpDataContainer[0]);
 		}

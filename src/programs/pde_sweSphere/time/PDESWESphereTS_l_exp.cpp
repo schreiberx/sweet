@@ -83,7 +83,7 @@ bool PDESWESphereTS_l_exp::setup_auto(
 		shackExpIntegration,
 		"phi0",
 		shackExpIntegration->exp_method,
-		shackTimestepControl->current_timestep_size,
+		shackTimestepControl->current_timestepSize,
 		shackPDESWESphere->sphere_use_fsphere,
 		no_coriolis,
 		shackPDESWETimeDisc->timestepping_order,
@@ -93,10 +93,10 @@ bool PDESWESphereTS_l_exp::setup_auto(
 }
 
 bool PDESWESphereTS_l_exp::setup_variant_10(
-		sweet::SphereOperators *io_ops,
+		const sweet::SphereOperators *io_ops,
 		sweet::ShackExpIntegration *i_shackExpIntegration,
 		const std::string &i_function_name,
-		double i_timestep_size,
+		double i_timestepSize,
 		bool i_use_f_sphere,
 		bool i_no_coriolis
 )
@@ -106,7 +106,7 @@ bool PDESWESphereTS_l_exp::setup_variant_10(
 		shackExpIntegration,
 		"phi0",
 		shackExpIntegration->exp_method,
-		i_timestep_size,
+		i_timestepSize,
 		i_use_f_sphere,
 		i_no_coriolis,
 		-1,
@@ -115,10 +115,10 @@ bool PDESWESphereTS_l_exp::setup_variant_10(
 }
 
 bool PDESWESphereTS_l_exp::setup_variant_50(
-		sweet::SphereOperators *io_ops,
+		const sweet::SphereOperators *io_ops,
 		sweet::ShackExpIntegration *i_shackExpIntegration,
 		const std::string &i_function_name,
-		double i_timestep_size,
+		double i_timestepSize,
 		bool i_use_f_sphere,
 		bool i_no_coriolis,
 		int i_timestepping_order
@@ -129,7 +129,7 @@ bool PDESWESphereTS_l_exp::setup_variant_50(
 		i_shackExpIntegration,
 		i_function_name,
 		shackExpIntegration->exp_method,
-		i_timestep_size,
+		i_timestepSize,
 		i_use_f_sphere,
 		i_no_coriolis,
 		i_timestepping_order,
@@ -139,11 +139,11 @@ bool PDESWESphereTS_l_exp::setup_variant_50(
 
 
 bool PDESWESphereTS_l_exp::setup_variant_100(
-		sweet::SphereOperators *io_ops,
+		const sweet::SphereOperators *io_ops,
 		sweet::ShackExpIntegration *i_shackExpIntegration,
 		const std::string &i_function_name,
 		const std::string &i_exp_method,
-		double i_timestep_size,
+		double i_timestepSize,
 		bool i_use_f_sphere,
 		bool i_no_coriolis,
 		int i_timestepping_order,
@@ -154,7 +154,7 @@ bool PDESWESphereTS_l_exp::setup_variant_100(
 
 	function_name = i_function_name;
 	exp_method = i_exp_method;
-	timestep_size = i_timestep_size;
+	timestep_size = i_timestepSize;
 
 	use_f_sphere = i_use_f_sphere;
 	no_coriolis = i_no_coriolis;

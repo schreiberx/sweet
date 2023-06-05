@@ -41,7 +41,7 @@ bool PDESWESphereTS_lg_exp_direct::setup_auto(
 
 
 bool PDESWESphereTS_lg_exp_direct::setup_main(
-		sweet::SphereOperators *io_ops,
+		const sweet::SphereOperators *io_ops,
 		const std::string &i_function_name
 )
 {

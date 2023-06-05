@@ -18,7 +18,7 @@ bool PDESWESphereTS_lg_erk_lc_erk::setup_auto(
 
 
 bool PDESWESphereTS_lg_erk_lc_erk::setup_main(
-		sweet::SphereOperators *io_ops,
+		const sweet::SphereOperators *io_ops,
 		int i_order	///< order of RK time stepping method
 )
 {

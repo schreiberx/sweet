@@ -46,7 +46,7 @@ public:
 		) override;
 
 	bool setup_main(
-			sweet::SphereOperators *io_ops,
+			const sweet::SphereOperators *io_ops,
 			int i_timestepping_order,
 			LinearCoriolisTreatment_enum i_coriolis_treatment,
 			NLRemainderTreatment_enum i_nonlinear_remainder_treatment,

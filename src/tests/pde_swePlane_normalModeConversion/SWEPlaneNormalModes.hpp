@@ -46,16 +46,16 @@ public:
 	bool shackRegistration(sweet::ShackDictionary &io_dict)
 	{
 		shackPlaneDataOps = io_dict.getAutoRegistration<sweet::ShackPlaneDataOps>();
-		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(io_dict);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(io_dict);
 
 		shackTimestepControl = io_dict.getAutoRegistration<sweet::ShackTimestepControl>();
-		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(io_dict);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(io_dict);
 
 		shackIOData = io_dict.getAutoRegistration<sweet::ShackIOData>();
-		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(io_dict);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(io_dict);
 
 		shackPDESWEPlane = io_dict.getAutoRegistration<ShackPDESWEPlane>();
-		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(io_dict);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(io_dict);
 
 		return true;
 	}
@@ -586,7 +586,7 @@ public:
 		const sweet::PlaneData_Config *planeDataConfig = io_prog_h_pert.planeDataConfig;
 
 		// dummy time step to get time step size
-		if (shackTimestepControl->current_timestep_size <= 0)
+		if (shackTimestepControl->current_timestepSize <= 0)
 			SWEETError("Normal mode analysis requires setting fixed time step size");
 
 		/*
@@ -615,20 +615,20 @@ public:
 			else
 				filename = shackIOData->output_file_name.c_str();
 
-			sprintf(buffer_real, filename, "normal_modes_plane", shackTimestepControl->current_timestep_size*shackIOData->output_time_scale);
+			sprintf(buffer_real, filename, "normal_modes_plane", shackTimestepControl->current_timestepSize*shackIOData->output_time_scale);
 			std::ofstream file(buffer_real, std::ios_base::trunc);
 			std::cout << "Writing normal mode analysis to files of the form '" << buffer_real << "'" << std::endl;
 
 			//Positive inertia-gravity modes
-			sprintf(buffer_real, filename, "normal_modes_plane_igpos", shackTimestepControl->current_timestep_size*shackIOData->output_time_scale);
+			sprintf(buffer_real, filename, "normal_modes_plane_igpos", shackTimestepControl->current_timestepSize*shackIOData->output_time_scale);
 			std::ofstream file_igpos(buffer_real, std::ios_base::trunc);
 
 			//Negative inertia-gravity modes
-			sprintf(buffer_real, filename, "normal_modes_plane_igneg", shackTimestepControl->current_timestep_size*shackIOData->output_time_scale);
+			sprintf(buffer_real, filename, "normal_modes_plane_igneg", shackTimestepControl->current_timestepSize*shackIOData->output_time_scale);
 			std::ofstream file_igneg(buffer_real, std::ios_base::trunc);
 
 			//Geostrophic modes
-			sprintf(buffer_real, filename, "normal_modes_plane_geo", shackTimestepControl->current_timestep_size*shackIOData->output_time_scale);
+			sprintf(buffer_real, filename, "normal_modes_plane_geo", shackTimestepControl->current_timestepSize*shackIOData->output_time_scale);
 			std::ofstream file_geo(buffer_real, std::ios_base::trunc);
 
 			//std::cout << "WARNING: OUTPUT IS TRANSPOSED!" << std::endl;
@@ -639,7 +639,7 @@ public:
 			file_igneg << std::setprecision(20);
 			file_geo << std::setprecision(20);
 
-			file << "# dt " << shackTimestepControl->current_timestep_size << std::endl;
+			file << "# dt " << shackTimestepControl->current_timestepSize << std::endl;
 			file << "# g " << shackPDESWEPlane->gravitation << std::endl;
 			file << "# h " << shackPDESWEPlane->h0 << std::endl;
 			file << "# f " << shackPDESWEPlane->plane_rotating_f0 << std::endl;
@@ -675,7 +675,7 @@ public:
 			//int num_timesteps = 1;
 
 			// Timestep and perturbation
-			double dt = shackTimestepControl->current_timestep_size;
+			double dt = shackTimestepControl->current_timestepSize;
 			double eps = dt;
 
 			//Matrix representing discrete linear operator in spectral space
@@ -827,7 +827,7 @@ public:
 					buffer_real,
 					filename,
 					"normal_modes_physical",
-					shackTimestepControl->current_timestep_size*shackIOData->output_time_scale
+					shackTimestepControl->current_timestepSize*shackIOData->output_time_scale
 				);
 			std::ofstream file(buffer_real, std::ios_base::trunc);
 			std::cout << "Writing normal mode analysis to file '" << buffer_real << "'" << std::endl;
@@ -870,8 +870,8 @@ public:
 				std::cout << "We'll do two Leapfrog time steps here to take the LF errors into account!" << std::endl;
 				std::cout << "Therefore, we also halve the time step size here" << std::endl;
 
-				shackTimestepControl->current_timestep_size = 0.5*shackPDESWEPlane->CFL;
-				shackPDESWEPlane->CFL = -shackTimestepControl->current_timestep_size;
+				shackTimestepControl->current_timestepSize = 0.5*shackPDESWEPlane->CFL;
+				shackPDESWEPlane->CFL = -shackTimestepControl->current_timestepSize;
 			}
 #endif
 
@@ -885,7 +885,7 @@ public:
 			if (shackTimestepControl->max_simulation_time > 0)
 				file << "# t " << shackTimestepControl->max_simulation_time << std::endl;
 			else
-				file << "# t " << (num_timesteps*(-shackTimestepControl->current_timestep_size)) << std::endl;
+				file << "# t " << (num_timesteps*(-shackTimestepControl->current_timestepSize)) << std::endl;
 
 			file << "# g " << shackPDESWEPlane->gravitation << std::endl;
 			file << "# h " << shackPDESWEPlane->h0 << std::endl;
@@ -952,7 +952,7 @@ public:
 							prog[outer_prog_id]->loadPlaneDataPhysical(tmp);
 
 							for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
-								(*prog[inner_prog_id]) /= shackTimestepControl->current_timestep_size;
+								(*prog[inner_prog_id]) /= shackTimestepControl->current_timestepSize;
 						}
 
 						for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
@@ -1014,7 +1014,7 @@ public:
 									prog[outer_prog_id]->spectral_set(j, i, val);
 
 									for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
-										(*prog[inner_prog_id]) /= shackTimestepControl->current_timestep_size;
+										(*prog[inner_prog_id]) /= shackTimestepControl->current_timestepSize;
 								}
 
 
@@ -1125,7 +1125,7 @@ public:
 							prog_cplx[outer_prog_id]->spectral_space_data[outer_i] -= 1.0;
 
 							for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
-								prog_cplx[inner_prog_id]->operator*=(1.0/shackTimestepControl->current_timestep_size);
+								prog_cplx[inner_prog_id]->operator*=(1.0/shackTimestepControl->current_timestepSize);
 						}
 
 

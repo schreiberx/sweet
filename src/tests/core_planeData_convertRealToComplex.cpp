@@ -88,7 +88,7 @@ public:
 		shackProgArgDict(i_argc, i_argv),
 		shackPlaneDataOps(nullptr)
 	{
-		ERROR_CHECK_COND_RETURN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN(shackProgArgDict);
 	}
 
 
@@ -611,16 +611,16 @@ public:
 int main(int i_argc, char *i_argv[])
 {
 	TestPlaneDataModes simulation(i_argc, i_argv);
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(simulation);
 
 	simulation.setup();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(simulation);
 
 	simulation.run_tests();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(simulation);
 
 	simulation.clear();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(simulation);
 
 
 

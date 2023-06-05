@@ -70,7 +70,7 @@ public:
 	) = 0;
 
 	virtual
-	DESolver_DataContainer_Base* getNewInstance() const = 0;
+	DESolver_DataContainer_Base* getInstanceNew() const = 0;
 
 	virtual
 	void clear() = 0;

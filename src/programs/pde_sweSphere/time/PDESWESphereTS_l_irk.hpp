@@ -11,7 +11,7 @@
 #include <sweet/core/sphere/SphereOperators.hpp>
 #include <sweet/core/shacks/ShackDictionary.hpp>
 
-#include "helpers/SWESphBandedMatrixPhysicalReal.hpp"
+#include "../timeHelpers/SWESphBandedMatrixPhysicalReal.hpp"
 #include "PDESWESphereTS_BaseInterface.hpp"
 #include "PDESWESphereTS_l_erk.hpp"
 #include "PDESWESphereTS_lg_erk.hpp"
@@ -30,15 +30,15 @@ public:
 		) override;
 
 	bool setup(
-			sweet::SphereOperators *io_ops,
+			const sweet::SphereOperators *io_ops,
 			int i_timestep_order,
-			double i_timestep_size
+			double i_timestepSize
 	);
 
 	bool setup_main(
-			sweet::SphereOperators *io_ops,
+			const sweet::SphereOperators *io_ops,
 			int i_timestep_order,
-			double i_timestep_size,
+			double i_timestepSize,
 			double i_crank_nicolson_damping_factor,
 			bool i_no_coriolis
 	);
@@ -83,7 +83,7 @@ public:
 	PDESWESphereTS_l_irk();
 
 public:
-	void update_coefficients(double i_timestep_size);
+	void update_coefficients(double i_timestepSize);
 
 public:
 	void clear();

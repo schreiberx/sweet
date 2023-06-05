@@ -94,7 +94,7 @@ public:
 		shackTimeDisc(nullptr),
 		shackBenchmarks(nullptr)
 	{
-		ERROR_CHECK_COND_RETURN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN(shackProgArgDict);
 	}
 
 
@@ -272,7 +272,7 @@ public:
 
 		timeSteppers.timestepper->runTimestep(
 				data.prog_u,
-				shackTimestepControl->current_timestep_size,
+				shackTimestepControl->current_timestepSize,
 				shackTimestepControl->current_simulation_time
 			);
 
@@ -281,7 +281,7 @@ public:
 		if (shackIOData->verbosity > 2)
 		{
 			double error = std::abs(data.prog_u_t0-data.prog_u);
-			std::cout << "timestep: " << shackTimestepControl->current_timestep_nr << ": dt=" << shackTimestepControl->current_timestep_size << ": t=" << shackTimestepControl->current_simulation_time << std::endl;
+			std::cout << "timestep: " << shackTimestepControl->current_timestep_nr << ": dt=" << shackTimestepControl->current_timestepSize << ": t=" << shackTimestepControl->current_simulation_time << std::endl;
 			std::cout << "error:" << error << std::endl;
 		}
 		return true;

@@ -173,7 +173,7 @@ public:
 		shackBenchmarks(nullptr),
 		shackPDEAdvectionSphere(nullptr)
 	{
-		ERROR_CHECK_COND_RETURN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN(shackProgArgDict);
 	}
 
 
@@ -414,7 +414,7 @@ public:
 
 		timeSteppers.timestepper->runTimestep(
 				dataConfigOps.prog_vec, dataConfigOps.vel_u, dataConfigOps.vel_v,
-				shackTimestepControl->current_timestep_size,
+				shackTimestepControl->current_timestepSize,
 				shackTimestepControl->current_simulation_time
 			);
 
@@ -426,7 +426,7 @@ public:
 			shackBenchmarks->getVelocities(
 					dataConfigOps.vel_u,
 					dataConfigOps.vel_v,
-					shackTimestepControl->current_simulation_time + shackTimestepControl->current_timestep_size,
+					shackTimestepControl->current_simulation_time + shackTimestepControl->current_timestepSize,
 					shackBenchmarks->getVelocitiesUserData
 				);
 		}
@@ -641,7 +641,7 @@ public:
 				shackTimestepControl->current_simulation_time,
 				shackTimestepControl->current_simulation_time/(60.0*60.0*24.0),
 				shackTimestepControl->current_timestep_nr,
-				shackTimestepControl->current_timestep_size,
+				shackTimestepControl->current_timestepSize,
 				description.c_str(),
 				dataConfigOps.vis_plane_data.physical_reduce_max(),
 				dataConfigOps.vis_plane_data.physical_reduce_min()

@@ -150,7 +150,7 @@ extern "C"
 			else
 			{
 				// output at every time step
-				i_ctx->shackIOData->output_next_sim_seconds = i_ctx->shackTimestepControl->current_timestep_size;
+				i_ctx->shackIOData->output_next_sim_seconds = i_ctx->shackTimestepControl->current_timestepSize;
 			}
 		}
 

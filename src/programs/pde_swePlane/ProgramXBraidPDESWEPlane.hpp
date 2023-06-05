@@ -155,7 +155,7 @@ public:
 		mpi_comm(i_mpi_comm),
 		mpi_rank(i_mpi_rank)
 	{
-		ERROR_CHECK_COND_RETURN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN(shackProgArgDict);
 	}
 
 	bool setup_1_shackRegistration()
@@ -232,8 +232,8 @@ public:
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(dataAndOps);
 
 		// get the number of timesteps in the finest level
-		int nt = (int) (shackTimestepControl->max_simulation_time / shackTimestepControl->current_timestep_size);
-		if (nt * shackTimestepControl->current_timestep_size < shackTimestepControl->max_simulation_time - 1e-10)
+		int nt = (int) (shackTimestepControl->max_simulation_time / shackTimestepControl->current_timestepSize);
+		if (nt * shackTimestepControl->current_timestepSize < shackTimestepControl->max_simulation_time - 1e-10)
 			nt++;
 
 		// XBraid app (user-defined)
@@ -339,7 +339,7 @@ public:
 		if (shackXBraid->xbraid_run_wrapper_tests)
 		{
 			BraidUtil braid_util;
-			int test = braid_util.TestAll(this->xbraid_app, this->mpi_comm, stdout, 0., shackTimestepControl->current_timestep_size, shackTimestepControl->current_timestep_size * 2);
+			int test = braid_util.TestAll(this->xbraid_app, this->mpi_comm, stdout, 0., shackTimestepControl->current_timestepSize, shackTimestepControl->current_timestepSize * 2);
 			if (test == 0)
 				SWEETError("Tests failed!");
 			else

@@ -11,14 +11,14 @@
 /*
  * Time tree node related includes
  */
-#include <sweet/timeTree/DESolver_TimeTreeNode_Base.hpp>
+#include <sweet/timeTree/DESolver_TimeTreeNode_NodeLeafHelper.hpp>
 #include <sweet/timeTree/DESolver_TimeTreeNode_CastHelper.hpp>
 #include "PDESWESphere_DataContainer.hpp"
 #include "PDESWESphere_DESolver_Config.hpp"
 
 
 class PDESWESphere_na_vd	:
-	public sweet::DESolver_TimeTreeNode_Base,
+	public sweet::DESolver_TimeTreeNode_NodeLeafHelper<PDESWESphere_na_vd>,
 	public sweet::DESolver_TimeTreeNode_CastHelper<
 			PDESWESphere_DataContainer,
 			PDESWESphere_DESolver_Config
@@ -27,8 +27,6 @@ class PDESWESphere_na_vd	:
 private:
 	ShackPDESWESphere *shackPDESWESphere;
 	const sweet::SphereOperators *ops;
-
-	double dt;
 
 public:
 	PDESWESphere_na_vd();
@@ -42,16 +40,12 @@ public:
 	virtual
 	const std::vector<std::string> getNodeNames() override;
 
-	std::shared_ptr<sweet::DESolver_TimeTreeNode_Base> getNewInstance() override;
-
 	virtual
 	bool setupConfigAndGetTimeStepperEval(
 		const sweet::DESolver_Config_Base &i_deTermConfig,
 		const std::string &i_timeStepperEvalName,
 		DESolver_TimeTreeNode_Base::EvalFun &o_timeStepper
 	) override;
-
-	void setTimeStepSize(double i_dt) override;
 
 	void clear() override;
 
@@ -61,7 +55,7 @@ public:
 	void _eval_tendencies(
 			const sweet::DESolver_DataContainer_Base &i_u,
 			sweet::DESolver_DataContainer_Base &o_u,
-			double i_time_stamp
+			double i_timeStamp
 	)	override;
 };
 

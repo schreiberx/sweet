@@ -118,7 +118,7 @@ public:
 		function_order(i_function_order),
 		timestepping_order(i_timestepping_order)
 	{
-		ERROR_CHECK_COND_RETURN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN(shackProgArgDict);
 	}
 
 
@@ -277,7 +277,7 @@ public:
 	{
 		// either set time step size to 0 for autodetection or to
 		// a positive value to use a fixed time step size
-		assert(shackTimestepControl->current_timestep_size > 0);
+		assert(shackTimestepControl->current_timestepSize > 0);
 
 		shackTimestepControl->timestepHelperStart();
 
@@ -285,7 +285,7 @@ public:
 				this,
 				&SimulationTestRK::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
 				data.prog_h, data.prog_u, data.prog_v,
-				shackTimestepControl->current_timestep_size,
+				shackTimestepControl->current_timestepSize,
 				timestepping_order,
 				shackTimestepControl->current_simulation_time
 			);
@@ -312,10 +312,10 @@ int main(
 		for (int timestepping_order = 1; timestepping_order <= 4; timestepping_order++)
 		{
 			SimulationTestRK simulation(i_argc, i_argv, fun_order, timestepping_order);
-			ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
+			ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(simulation);
 
 			simulation.setup();
-			ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
+			ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(simulation);
 
 			while(true)
 			{

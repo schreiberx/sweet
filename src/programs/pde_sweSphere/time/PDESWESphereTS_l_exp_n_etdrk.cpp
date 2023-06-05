@@ -55,7 +55,7 @@ bool PDESWESphereTS_l_exp_n_etdrk::setup_auto(
 			shackExpIntegration->exp_method,
 			shackPDESWETimeDisc->timestepping_order,
 			shackPDESWETimeDisc->timestepping_order2,
-			shackTimestepControl->current_timestep_size,
+			shackTimestepControl->current_timestepSize,
 			shackExpIntegration->sphere_solver_preallocation
 		);
 }
@@ -65,12 +65,12 @@ bool PDESWESphereTS_l_exp_n_etdrk::setup_auto(
  * Setup
  */
 bool PDESWESphereTS_l_exp_n_etdrk::setup_main(
-		sweet::SphereOperators *io_ops,
+		const sweet::SphereOperators *io_ops,
 		sweet::ShackExpIntegration *i_shackExpIntegration,
 		const std::string &i_exp_method,
 		int i_timestepping_order,
 		int i_timestepping_order2,
-		double i_timestep_size,
+		double i_timestepSize,
 		bool i_use_rexi_sphere_solver_preallocation
 )
 {
@@ -86,26 +86,26 @@ bool PDESWESphereTS_l_exp_n_etdrk::setup_main(
 
 	if (timestepping_order == 1)
 	{
-		ts_phi0_exp.setup_variant_100(ops, i_shackExpIntegration, "phi0", i_exp_method, i_timestep_size, false, false, timestepping_order, i_use_rexi_sphere_solver_preallocation);
-		ts_phi1_exp.setup_variant_100(ops, i_shackExpIntegration, "phi1", i_exp_method, i_timestep_size, false, false, timestepping_order, i_use_rexi_sphere_solver_preallocation);
+		ts_phi0_exp.setup_variant_100(ops, i_shackExpIntegration, "phi0", i_exp_method, i_timestepSize, false, false, timestepping_order, i_use_rexi_sphere_solver_preallocation);
+		ts_phi1_exp.setup_variant_100(ops, i_shackExpIntegration, "phi1", i_exp_method, i_timestepSize, false, false, timestepping_order, i_use_rexi_sphere_solver_preallocation);
 	}
 	else if (timestepping_order == 2)
 	{
-		ts_phi0_exp.setup_variant_100(ops, i_shackExpIntegration, "phi0", i_exp_method, i_timestep_size, false, false, timestepping_order, i_use_rexi_sphere_solver_preallocation);
-		ts_phi1_exp.setup_variant_100(ops, i_shackExpIntegration, "phi1", i_exp_method, i_timestep_size, false, false, timestepping_order, i_use_rexi_sphere_solver_preallocation);
-		ts_phi2_exp.setup_variant_100(ops, i_shackExpIntegration, "phi2", i_exp_method, i_timestep_size, false, false, timestepping_order, i_use_rexi_sphere_solver_preallocation);
+		ts_phi0_exp.setup_variant_100(ops, i_shackExpIntegration, "phi0", i_exp_method, i_timestepSize, false, false, timestepping_order, i_use_rexi_sphere_solver_preallocation);
+		ts_phi1_exp.setup_variant_100(ops, i_shackExpIntegration, "phi1", i_exp_method, i_timestepSize, false, false, timestepping_order, i_use_rexi_sphere_solver_preallocation);
+		ts_phi2_exp.setup_variant_100(ops, i_shackExpIntegration, "phi2", i_exp_method, i_timestepSize, false, false, timestepping_order, i_use_rexi_sphere_solver_preallocation);
 	}
 	else if  (timestepping_order == 4)
 	{
-		ts_phi0_exp.setup_variant_100(ops, i_shackExpIntegration, "phi0", i_exp_method, i_timestep_size*0.5, false, false, timestepping_order, i_use_rexi_sphere_solver_preallocation);
-		ts_phi1_exp.setup_variant_100(ops, i_shackExpIntegration, "phi1", i_exp_method, i_timestep_size*0.5, false, false, timestepping_order, i_use_rexi_sphere_solver_preallocation);
-		ts_phi2_exp.setup_variant_100(ops, i_shackExpIntegration, "phi2", i_exp_method, i_timestep_size*0.5, false, false, timestepping_order, i_use_rexi_sphere_solver_preallocation);
+		ts_phi0_exp.setup_variant_100(ops, i_shackExpIntegration, "phi0", i_exp_method, i_timestepSize*0.5, false, false, timestepping_order, i_use_rexi_sphere_solver_preallocation);
+		ts_phi1_exp.setup_variant_100(ops, i_shackExpIntegration, "phi1", i_exp_method, i_timestepSize*0.5, false, false, timestepping_order, i_use_rexi_sphere_solver_preallocation);
+		ts_phi2_exp.setup_variant_100(ops, i_shackExpIntegration, "phi2", i_exp_method, i_timestepSize*0.5, false, false, timestepping_order, i_use_rexi_sphere_solver_preallocation);
 
 		// phi0, but with a full time step size
-		ts_ups0_exp.setup_variant_100(ops, i_shackExpIntegration, "phi0", i_exp_method, i_timestep_size, false, false, timestepping_order, i_use_rexi_sphere_solver_preallocation);
-		ts_ups1_exp.setup_variant_100(ops, i_shackExpIntegration, "ups1", i_exp_method, i_timestep_size, false, false, timestepping_order, i_use_rexi_sphere_solver_preallocation);
-		ts_ups2_exp.setup_variant_100(ops, i_shackExpIntegration, "ups2", i_exp_method, i_timestep_size, false, false, timestepping_order, i_use_rexi_sphere_solver_preallocation);
-		ts_ups3_exp.setup_variant_100(ops, i_shackExpIntegration, "ups3", i_exp_method, i_timestep_size, false, false, timestepping_order, i_use_rexi_sphere_solver_preallocation);
+		ts_ups0_exp.setup_variant_100(ops, i_shackExpIntegration, "phi0", i_exp_method, i_timestepSize, false, false, timestepping_order, i_use_rexi_sphere_solver_preallocation);
+		ts_ups1_exp.setup_variant_100(ops, i_shackExpIntegration, "ups1", i_exp_method, i_timestepSize, false, false, timestepping_order, i_use_rexi_sphere_solver_preallocation);
+		ts_ups2_exp.setup_variant_100(ops, i_shackExpIntegration, "ups2", i_exp_method, i_timestepSize, false, false, timestepping_order, i_use_rexi_sphere_solver_preallocation);
+		ts_ups3_exp.setup_variant_100(ops, i_shackExpIntegration, "ups3", i_exp_method, i_timestepSize, false, false, timestepping_order, i_use_rexi_sphere_solver_preallocation);
 	}
 	else
 	{

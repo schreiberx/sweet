@@ -26,12 +26,12 @@ public:
 		) override;
 
 	bool setup_main(
-			sweet::SphereOperators *io_ops,
+			const sweet::SphereOperators *io_ops,
 			sweet::ShackExpIntegration *i_shackExpIntegration,
 			const std::string &i_exp_method,
 			int i_timestepping_order,
 			int i_timestepping_order2,
-			double i_timestep_size,
+			double i_timestepSize,
 			int i_version_id,
 			bool i_use_rexi_sphere_solver_preallocation
 	);

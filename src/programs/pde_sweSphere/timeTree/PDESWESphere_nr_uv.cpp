@@ -1,16 +1,15 @@
 #include "PDESWESphere_nr_uv.hpp"
-
-
 #include <vector>
 #include <sweet/core/sphere/SphereOperators.hpp>
 
+
 PDESWESphere_nr_uv::PDESWESphere_nr_uv()	:
 	shackPDESWESphere(nullptr),
-	ops(nullptr),
-	dt(-1)
+	ops(nullptr)
 {
 	setEvalAvailable("tendencies");
 }
+
 
 PDESWESphere_nr_uv::~PDESWESphere_nr_uv()
 {
@@ -27,6 +26,7 @@ bool PDESWESphere_nr_uv::shackRegistration(
 	return true;
 }
 
+
 const std::vector<std::string> PDESWESphere_nr_uv::getNodeNames()
 {
 	std::vector<std::string> retval;
@@ -34,11 +34,6 @@ const std::vector<std::string> PDESWESphere_nr_uv::getNodeNames()
 	retval.push_back("nr_uv");
 	return retval;
 
-}
-
-std::shared_ptr<sweet::DESolver_TimeTreeNode_Base> PDESWESphere_nr_uv::getNewInstance()
-{
-	return std::shared_ptr<sweet::DESolver_TimeTreeNode_Base>(new PDESWESphere_nr_uv);
 }
 
 
@@ -55,13 +50,9 @@ bool PDESWESphere_nr_uv::setupConfigAndGetTimeStepperEval(
 	return true;
 }
 
-void PDESWESphere_nr_uv::setTimeStepSize(double i_dt)
-{
-	dt = i_dt;
-}
-
 void PDESWESphere_nr_uv::clear()
 {
+	DESolver_TimeTreeNode_NodeLeafHelper::clear();
 }
 
 /*
@@ -70,7 +61,7 @@ void PDESWESphere_nr_uv::clear()
 void PDESWESphere_nr_uv::_eval_tendencies(
 		const sweet::DESolver_DataContainer_Base &i_U_,
 		sweet::DESolver_DataContainer_Base &o_U_,
-		double i_time_stamp
+		double i_timeStamp
 )
 {
 	const PDESWESphere_DataContainer &i_U = cast(i_U_);

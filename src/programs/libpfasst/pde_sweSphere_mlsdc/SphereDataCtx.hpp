@@ -50,22 +50,22 @@ public:
 		shackDict = io_shackDict;
 
 		shackSphereDataOps = shackDict->getAutoRegistration<sweet::ShackSphereDataOps>();
-		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(*shackDict);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(*shackDict);
 
 		shackIOData = shackDict->getAutoRegistration<sweet::ShackIOData>();
-		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(*shackDict);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(*shackDict);
 
 		shackPDESWESphere = shackDict->getAutoRegistration<ShackPDESWESphere>();
-		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(*shackDict);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(*shackDict);
 
 		shackTimeDisc = shackDict->getAutoRegistration<ShackPDESWESphereTimeDiscretization>();
-		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(*shackDict);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(*shackDict);
 
 		shackTimestepControl = shackDict->getAutoRegistration<sweet::ShackTimestepControl>();
-		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(*shackDict);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(*shackDict);
 
 		shackLibPFASST = shackDict->getAutoRegistration<ShackLibPFASST>();
-		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(*shackDict);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(*shackDict);
 
 		return true;
 	}
@@ -123,7 +123,7 @@ public:
 
 			timestepper_lg_irk[level] = new PDESWESphereTS_lg_irk;
 			timestepper_lg_irk[level]->shackRegistration(shackDict);
-			timestepper_lg_irk[level]->setup(&(levelSingletons->at(level).ops), timestepping_order, shackTimestepControl->current_timestep_size);
+			timestepper_lg_irk[level]->setup(&(levelSingletons->at(level).ops), timestepping_order, shackTimestepControl->current_timestepSize);
 		}
 
 		// initialize the residuals
@@ -210,7 +210,7 @@ public:
 	// Save the physical invariants
 	void save_physical_invariants(int i_niter)
 	{
-		time.push_back(shackTimestepControl->current_timestep_size * i_niter);
+		time.push_back(shackTimestepControl->current_timestepSize * i_niter);
 		mass.push_back(diagnostics.total_mass);
 		energy.push_back(diagnostics.total_energy);
 		potentialEnstrophy.push_back(diagnostics.total_potential_enstrophy);

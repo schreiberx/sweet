@@ -13,20 +13,20 @@
 int main(int i_argc, char *i_argv[])
 {
 	ProgramPDEAdvectionPlane progPDEAdvPlane(i_argc, i_argv);
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(progPDEAdvPlane);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(progPDEAdvPlane);
 
 	progPDEAdvPlane.setup();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(progPDEAdvPlane);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(progPDEAdvPlane);
 
 	// Simply test whether the clear and setup works properly
 	progPDEAdvPlane.clear();
 	progPDEAdvPlane.setup();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(progPDEAdvPlane);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(progPDEAdvPlane);
 
 
 	int max_modes = 256;
 
-	double dt = progPDEAdvPlane.shackTimestepControl->current_timestep_size;
+	double dt = progPDEAdvPlane.shackTimestepControl->current_timestepSize;
 	int initial_spectral_modes = progPDEAdvPlane.shackPlaneDataOps->space_res_spectral[0];
 
 	int loop_counter = 0;
@@ -44,7 +44,7 @@ int main(int i_argc, char *i_argv[])
 		/*
 		 * Overwrite parameters
 		 */
-		progPDEAdvPlane.shackTimestepControl->current_timestep_size = dt/std::pow(2.0, loop_counter);
+		progPDEAdvPlane.shackTimestepControl->current_timestepSize = dt/std::pow(2.0, loop_counter);
 
 		/*
 		 * We need higher resolution for
@@ -83,7 +83,7 @@ int main(int i_argc, char *i_argv[])
 		progPDEAdvPlane.setup_3_dataOpsEtc();
 
 		std::cout << "Testing with " << progPDEAdvPlane.dataConfigOps.planeDataConfig.getUniqueIDString() << std::endl;
-		std::cout << "Testing with dt=" << progPDEAdvPlane.shackTimestepControl->current_timestep_size << std::endl;
+		std::cout << "Testing with dt=" << progPDEAdvPlane.shackTimestepControl->current_timestepSize << std::endl;
 
 		{
 			while (!progPDEAdvPlane.should_quit())

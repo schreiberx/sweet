@@ -53,7 +53,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nr_etdrk::euler_timestep_update_nonlinear(
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
 			SWEETError("Implicit diffusion only supported with spectral space activated");
 #else
-			o_h_t= ops->implicit_diffusion(o_h_t, shackTimestepControl->current_timestep_size*shackPDESWEPlane->viscosity, shackPDESWEPlane->viscosity_order);
+			o_h_t= ops->implicit_diffusion(o_h_t, shackTimestepControl->current_timestepSize*shackPDESWEPlane->viscosity, shackPDESWEPlane->viscosity_order);
 #endif
 		}
 

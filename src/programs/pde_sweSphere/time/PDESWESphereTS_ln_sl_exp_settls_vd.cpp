@@ -119,7 +119,7 @@ bool PDESWESphereTS_ln_sl_exp_settls_vd::setup_auto(
 
 
 bool PDESWESphereTS_ln_sl_exp_settls_vd::setup_main(
-		sweet::SphereOperators *io_ops,
+		const sweet::SphereOperators *io_ops,
 		int i_timestepping_order,
 		LinearCoriolisTreatment_enum i_coriolis_treatment,
 		NLRemainderTreatment_enum i_nonlinear_remainder_treatment,
@@ -146,7 +146,7 @@ bool PDESWESphereTS_ln_sl_exp_settls_vd::setup_main(
 			ops,
 			shackExpIntegration,
 			"phi0",
-			shackTimestepControl->current_timestep_size,
+			shackTimestepControl->current_timestepSize,
 			shackPDESWESphere->sphere_use_fsphere,
 			!(coriolis_treatment == CORIOLIS_LINEAR),
 			timestepping_order

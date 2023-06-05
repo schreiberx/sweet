@@ -15,7 +15,7 @@ class PDESWESphere_DataContainer :
 	public sweet::DESolver_DataContainer_Base
 {
 public:
-	// Doesn't increase the size of the class
+	// How many number of DoF arrays
 	static constexpr int Ndofs = 3;
 
 	sweet::SphereData_Spectral data[Ndofs];
@@ -70,7 +70,7 @@ public:
 			data[i].setup(i_d.data[i].sphereDataConfig);
 	}
 
-	DESolver_DataContainer_Base* getNewInstance() const override
+	DESolver_DataContainer_Base* getInstanceNew() const override
 	{
 		PDESWESphere_DataContainer *retval = new PDESWESphere_DataContainer;
 		retval->setup_like(*this);

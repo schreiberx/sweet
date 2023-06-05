@@ -12,7 +12,7 @@
 #include <sweet/core/sphere/SphereOperators.hpp>
 #include <sweet/core/shacks/ShackDictionary.hpp>
 
-#include "helpers/SWESphBandedMatrixPhysicalReal.hpp"
+#include "../timeHelpers/SWESphBandedMatrixPhysicalReal.hpp"
 #include "PDESWESphereTS_BaseInterface.hpp"
 #include "PDESWESphereTS_lg_erk.hpp"
 
@@ -27,16 +27,16 @@ public:
 
 public:
 	bool setup(
-		sweet::SphereOperators *io_ops,
+		const sweet::SphereOperators *io_ops,
 		int i_timestep_order,
-		double i_timestep_size
+		double i_timestepSize
 	);
 
 public:
 	bool setup_main(
-		sweet::SphereOperators *io_ops,
+		const sweet::SphereOperators *io_ops,
 		int i_timestep_order,
-		double i_timestep_size,
+		double i_timestepSize,
 		double i_crank_nicolson_damping_factor
 	);
 

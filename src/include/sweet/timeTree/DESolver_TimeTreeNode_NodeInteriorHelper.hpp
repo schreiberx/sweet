@@ -12,12 +12,13 @@ namespace sweet
  *
  * It provides default member variables which are often used
  */
+template <typename MainInteriorNodeClass>
 class DESolver_TimeTreeNode_NodeInteriorHelper	:
 		public DESolver_TimeTreeNode_Base
 {
 protected:
-	double _timestep_size;
-	double &dt = _timestep_size;
+	double _timestepSize;
+	double &dt = _timestepSize;
 
 	// DE term to evaluate
 	std::vector<std::shared_ptr<sweet::DESolver_TimeTreeNode_Base>> _timeTreeNodes;
@@ -29,13 +30,14 @@ protected:
 
 public:
 	DESolver_TimeTreeNode_NodeInteriorHelper()	:
-		_timestep_size(-1)
+		_timestepSize(-1)
 	{
 	}
 
 	virtual
 	~DESolver_TimeTreeNode_NodeInteriorHelper()
 	{
+		clear();
 	}
 
 	bool _helperSetupConfigAndGetTimeStepperEval(
@@ -54,7 +56,7 @@ public:
 		}
 
 		// default setup
-		DESolver_TimeTreeNode_Base::_helperSetupConfigAndGetTimeStepperEval(
+		DESolver_TimeTreeNode_Base::_helperGetTimeStepperEval(
 				i_timeStepperEvalName,
 				o_timeStepper
 			);
@@ -66,11 +68,11 @@ public:
 	inline
 	void setTimeStepSize(double i_dt)	override
 	{
-		_timestep_size = i_dt;
+		_timestepSize = i_dt;
 
 		for (auto &i : _timeTreeNodes)
 		{
-			i->setTimeStepSize(i_dt);
+			i->setTimeStepSize(_timestepSize);
 		}
 	}
 
@@ -82,7 +84,7 @@ public:
 		for (auto &i : _timeTreeNodes)
 		{
 			i->shackRegistration(io_shackDict);
-			ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(*i);
+			ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(*i);
 		}
 
 		return true;
@@ -126,6 +128,34 @@ public:
 		(_timeTreeNodes[i_id].get()->*_evalFuns[i_id])(i_U, o_U, i_simulationTime);
 	}
 
+
+	std::shared_ptr<DESolver_TimeTreeNode_Base> getInstanceNew()	override
+	{
+		return std::shared_ptr<DESolver_TimeTreeNode_Base>(new MainInteriorNodeClass);
+	}
+
+	std::shared_ptr<DESolver_TimeTreeNode_Base> getInstanceCopy()	override
+	{
+		MainInteriorNodeClass *m = new MainInteriorNodeClass(static_cast<MainInteriorNodeClass&>(*this));
+		return std::shared_ptr<DESolver_TimeTreeNode_Base>(m);
+	}
+
+	DESolver_TimeTreeNode_NodeInteriorHelper(
+			const DESolver_TimeTreeNode_NodeInteriorHelper &i_src
+	)
+	{
+		_timestepSize = i_src._timestepSize;
+
+		_timeTreeNodes.resize(_timeTreeNodes.size());
+		for (std::size_t i = 0; i < i_src._timeTreeNodes.size(); i++)
+			_timeTreeNodes[i] = i_src._timeTreeNodes[i]->getInstanceCopy();
+
+		_evalFuns.resize(_evalFuns.size());
+
+		_tmpDataContainer.resize(_tmpDataContainer.size());
+		for (std::size_t i = 0; i < i_src._tmpDataContainer.size(); i++)
+			_tmpDataContainer[i] = i_src._tmpDataContainer[i]->getInstanceNew();
+	}
 };
 
 }

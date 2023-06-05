@@ -466,10 +466,10 @@ public:
 int main(int i_argc, char *i_argv[])
 {
 	ProgramVisSphericalHarmonics visSphericalHarmonics(i_argc, i_argv);
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(visSphericalHarmonics);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(visSphericalHarmonics);
 
 	visSphericalHarmonics.setup();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(visSphericalHarmonics);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(visSphericalHarmonics);
 
 #if SWEET_GUI
 	if (visSphericalHarmonics.shackIOData->gui_enabled)
@@ -483,7 +483,7 @@ int main(int i_argc, char *i_argv[])
 			visSphericalHarmonics.runTimestep();
 	}
 
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(visSphericalHarmonics);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(visSphericalHarmonics);
 
 
 	std::cout << "FIN" << std::endl;

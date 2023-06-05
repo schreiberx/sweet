@@ -214,7 +214,7 @@ public:
 		this->simVars_coarse->disc.timestepping_method = this->simVars->parareal.coarse_timestepping_method;
 		this->simVars_coarse->disc.timestepping_order = this->simVars->parareal.coarse_timestepping_order;
 		this->simVars_coarse->disc.timestepping_order2 = this->simVars->parareal.coarse_timestepping_order2;
-		this->simVars_coarse->timecontrol.current_timestep_size = this->simVars->parareal.coarse_timestep_size;
+		this->simVars_coarse->timecontrol.current_timestepSize = this->simVars->parareal.coarse_timestepSize;
 
 		this->timeSteppersFine = i_timeSteppersFine;
 		this->timeSteppersCoarse = i_timeSteppersCoarse;
@@ -303,20 +303,20 @@ public:
 	{
 
 		// check if seup has been called
-		assert(simVars_coarse->timecontrol.current_timestep_size == simVars->parareal.coarse_timestep_size);
+		assert(simVars_coarse->timecontrol.current_timestepSize == simVars->parareal.coarse_timestepSize);
 
 		// check if each time slice contains an integer number of fine and coarse time steps
 		double eps = 1e-12;
-		double mod_coarse = fmod(time_slice_size, simVars_coarse->timecontrol.current_timestep_size);
-		double mod_fine = fmod(time_slice_size, simVars->timecontrol.current_timestep_size);
+		double mod_coarse = fmod(time_slice_size, simVars_coarse->timecontrol.current_timestepSize);
+		double mod_fine = fmod(time_slice_size, simVars->timecontrol.current_timestepSize);
                 if ( std::abs(mod_coarse) > eps && std::abs(mod_coarse - time_slice_size) > eps )
-			SWEETError("Time slice length must be an integer multiple of the coarse time step! (" + std::to_string(simVars_coarse->timecontrol.current_timestep_size) + ", " + std::to_string(time_slice_size) + ")");
+			SWEETError("Time slice length must be an integer multiple of the coarse time step! (" + std::to_string(simVars_coarse->timecontrol.current_timestepSize) + ", " + std::to_string(time_slice_size) + ")");
                 if ( std::abs(mod_fine) > eps && std::abs(mod_fine - time_slice_size) > eps )
 		{
 			std::cout << "Number of timesteps: " << this->nb_timesteps_fine << std::endl;
 			std::cout << "Mod(dt): " << std::abs(mod_fine) << std::endl;
 			std::cout << "Mod(dt) - Dt: " << std::abs(mod_fine - time_slice_size) << std::endl;
-			SWEETError("Time slice length must be an integer multiple of the fine time step! (" + std::to_string(simVars->timecontrol.current_timestep_size) + ", " + std::to_string(time_slice_size) + ")");
+			SWEETError("Time slice length must be an integer multiple of the fine time step! (" + std::to_string(simVars->timecontrol.current_timestepSize) + ", " + std::to_string(time_slice_size) + ")");
 		}
 	};
 
@@ -329,24 +329,24 @@ public:
 			double i_timeframe_end		///< end time stamp of coarse time step
 	){
 		// check if seup has been called
-		assert(simVars_coarse->timecontrol.current_timestep_size == simVars->parareal.coarse_timestep_size);
+		assert(simVars_coarse->timecontrol.current_timestepSize == simVars->parareal.coarse_timestepSize);
 
 		if (simVars->parareal.verbosity > 2)
 			std::cout << "Timeframe: [" << i_timeframe_start << ", " << i_timeframe_end << "]" << std::endl;
 		this->timeframe_start = i_timeframe_start;
 		this->timeframe_end = i_timeframe_end;
 
-		this->nb_timesteps_fine = (int)((this->timeframe_end - this->timeframe_start) / simVars->timecontrol.current_timestep_size);
-		this->nb_timesteps_coarse = (int)((this->timeframe_end - this->timeframe_start) / simVars_coarse->timecontrol.current_timestep_size);
-		if (this->timeframe_start + this->nb_timesteps_fine * simVars->timecontrol.current_timestep_size < this->timeframe_end - 1e-14)
+		this->nb_timesteps_fine = (int)((this->timeframe_end - this->timeframe_start) / simVars->timecontrol.current_timestepSize);
+		this->nb_timesteps_coarse = (int)((this->timeframe_end - this->timeframe_start) / simVars_coarse->timecontrol.current_timestepSize);
+		if (this->timeframe_start + this->nb_timesteps_fine * simVars->timecontrol.current_timestepSize < this->timeframe_end - 1e-14)
 			this->nb_timesteps_fine++;
-		if (this->timeframe_start + this->nb_timesteps_coarse * simVars_coarse->timecontrol.current_timestep_size < this->timeframe_end - 1e-14)
+		if (this->timeframe_start + this->nb_timesteps_coarse * simVars_coarse->timecontrol.current_timestepSize < this->timeframe_end - 1e-14)
 			this->nb_timesteps_coarse++;
-		assert( std::abs(this->timeframe_start + this->nb_timesteps_fine * simVars->timecontrol.current_timestep_size - this->timeframe_end) < 1e-14);
-		assert( std::abs(this->timeframe_start + this->nb_timesteps_coarse * simVars_coarse->timecontrol.current_timestep_size - this->timeframe_end) < 1e-14);
+		assert( std::abs(this->timeframe_start + this->nb_timesteps_fine * simVars->timecontrol.current_timestepSize - this->timeframe_end) < 1e-14);
+		assert( std::abs(this->timeframe_start + this->nb_timesteps_coarse * simVars_coarse->timecontrol.current_timestepSize - this->timeframe_end) < 1e-14);
 
-		this->dt_fine = simVars->timecontrol.current_timestep_size;
-		this->dt_coarse = simVars->parareal.coarse_timestep_size;
+		this->dt_fine = simVars->timecontrol.current_timestepSize;
+		this->dt_coarse = simVars->parareal.coarse_timestepSize;
 
 		// set time to parareal_genericdata instances
 		this->parareal_data_start->set_time(i_timeframe_end);
@@ -606,13 +606,13 @@ public:
 		if (tsm_level == "fine")
 			timeSteppersFine->master->runTimestep(
 						io_data,
-						simVars->timecontrol.current_timestep_size,
+						simVars->timecontrol.current_timestepSize,
 						simVars->timecontrol.current_simulation_time
 					);
 		else if (tsm_level == "coarse")
 			timeSteppersCoarse->master->runTimestep(
 						io_data,
-						simVars_coarse->timecontrol.current_timestep_size,
+						simVars_coarse->timecontrol.current_timestepSize,
 						simVars_coarse->timecontrol.current_simulation_time
 					);
 		else
@@ -635,7 +635,7 @@ public:
 		simVars->timecontrol.current_simulation_time = timeframe_start;
 		simVars->timecontrol.max_simulation_time = timeframe_end;
 		simVars->timecontrol.current_timestep_nr = 0;
-		simVars->timecontrol.current_timestep_size = this->dt_fine;
+		simVars->timecontrol.current_timestepSize = this->dt_fine;
 
 		//std::cout << simVars->disc.timestepping_method << std::endl;
 		///std::cout << this->SL_tsm.size() << std::endl;
@@ -656,7 +656,7 @@ public:
 
 			this->runTimestep(this->parareal_data_fine, "fine");
 
-			simVars->timecontrol.current_simulation_time += simVars->timecontrol.current_timestep_size;
+			simVars->timecontrol.current_simulation_time += simVars->timecontrol.current_timestepSize;
 			assert(simVars->timecontrol.current_simulation_time <= timeframe_end + 1e-14);
 			nb_timesteps++;
 		}
@@ -708,7 +708,7 @@ public:
 			*(this->parareal_data_coarse_previous_timestep) = *(this->parareal_data_coarse_coarse_mesh);
 
 			this->runTimestep(this->parareal_data_coarse_coarse_mesh, "coarse");
-			simVars_coarse->timecontrol.current_simulation_time += simVars_coarse->timecontrol.current_timestep_size;
+			simVars_coarse->timecontrol.current_simulation_time += simVars_coarse->timecontrol.current_timestepSize;
 			assert(simVars_coarse->timecontrol.current_simulation_time <= timeframe_end +  1e-14);
 			nb_timesteps++;
 		}

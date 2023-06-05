@@ -21,7 +21,7 @@
 #include <sweet/core/sphere/SphereOperators.hpp>
 #include <sweet/core/sphere/SphereOperatorsComplex.hpp>
 #include <sweet/expIntegration/ExpFunctions.hpp>
-#include "helpers/SWERexiTerm_SPH.hpp"
+#include "../timeHelpers/SWERexiTerm_SPH.hpp"
 #include "PDESWESphereTS_BaseInterface.hpp"
 #include "PDESWESphereTS_l_exp_direct_special.hpp"
 #include "PDESWESphereTS_lg_exp_lc_taylor.hpp"
@@ -57,20 +57,20 @@ public:
 
 public:
 	bool setup_variant_10(
-			sweet::SphereOperators *io_ops,
+			const sweet::SphereOperators *io_ops,
 			sweet::ShackExpIntegration *i_shackExpIntegration,
 			const std::string &i_function_name,
-			double i_timestep_size,
+			double i_timestepSize,
 			bool i_use_f_sphere,
 			bool i_no_coriolis
 	);
 
 public:
 	bool setup_variant_50(
-			sweet::SphereOperators *io_ops,
+			const sweet::SphereOperators *io_ops,
 			sweet::ShackExpIntegration *i_shackExpIntegration,
 			const std::string &i_function_name,
-			double i_timestep_size,
+			double i_timestepSize,
 			bool i_use_f_sphere,
 			bool i_no_coriolis,
 			int i_timestepping_order
@@ -78,11 +78,11 @@ public:
 
 public:
 	bool setup_variant_100(
-			sweet::SphereOperators *io_ops,
+			const sweet::SphereOperators *io_ops,
 			sweet::ShackExpIntegration *i_shackExpIntegration,
 			const std::string &i_function_name,
 			const std::string &i_exp_method,
-			double i_timestep_size,
+			double i_timestepSize,
 			bool i_use_f_sphere,
 			bool i_no_coriolis,
 			int i_timestepping_order,
@@ -253,7 +253,7 @@ public:
 		sweet::SphereData_Spectral &io_u0,
 		sweet::SphereData_Spectral &io_v0,
 
-		double i_timestep_size,	///< timestep size
+		double i_timestepSize,	///< timestep size
 
 		const sweet::ShackDictionary &i_parameters
 	);

@@ -129,7 +129,7 @@ bool PDESWESphereTS_lg_exp_lc_n_erk::setup_auto(
 			shackExpIntegration,
 			shackPDESWETimeDisc->timestepping_order,
 			shackPDESWETimeDisc->timestepping_order2,
-			shackTimestepControl->current_timestep_size,
+			shackTimestepControl->current_timestepSize,
 			version
 		);
 }
@@ -139,11 +139,11 @@ bool PDESWESphereTS_lg_exp_lc_n_erk::setup_auto(
  * Setup
  */
 bool PDESWESphereTS_lg_exp_lc_n_erk::setup_main(
-		sweet::SphereOperators *io_ops,
+		const sweet::SphereOperators *io_ops,
 		sweet::ShackExpIntegration *i_shackExpIntegration,
 		int i_timestepping_order,
 		int i_timestepping_order2,
-		double i_timestep_size,
+		double i_timestepSize,
 		int i_version_id
 )
 {
@@ -153,7 +153,7 @@ bool PDESWESphereTS_lg_exp_lc_n_erk::setup_main(
 	timestepping_order = i_timestepping_order;
 	timestepping_order2 = i_timestepping_order2;
 
-	timestep_size = shackTimestepControl->current_timestep_size;
+	timestep_size = shackTimestepControl->current_timestepSize;
 
 	if (timestepping_order2 == 1)
 	{
@@ -161,7 +161,7 @@ bool PDESWESphereTS_lg_exp_lc_n_erk::setup_main(
 				ops,
 				i_shackExpIntegration,
 				"phi0",
-				i_timestep_size,
+				i_timestepSize,
 				false,
 				true
 			);
@@ -174,7 +174,7 @@ bool PDESWESphereTS_lg_exp_lc_n_erk::setup_main(
 					ops,
 					i_shackExpIntegration,
 					"phi0",
-					i_timestep_size*0.5,
+					i_timestepSize*0.5,
 					false,
 					true
 			);
@@ -185,7 +185,7 @@ bool PDESWESphereTS_lg_exp_lc_n_erk::setup_main(
 					ops,
 					i_shackExpIntegration,
 					"phi0",
-					i_timestep_size,
+					i_timestepSize,
 					false,
 					true
 			);

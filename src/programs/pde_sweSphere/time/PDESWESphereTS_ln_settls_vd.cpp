@@ -119,7 +119,7 @@ bool PDESWESphereTS_ln_settls_vd::setup_auto(
 
 
 bool PDESWESphereTS_ln_settls_vd::setup_main(
-		sweet::SphereOperators *io_ops,
+		const sweet::SphereOperators *io_ops,
 		int i_timestepping_order,
 		LinearCoriolisTreatment_enum i_coriolis_treatment,
 		NLRemainderTreatment_enum i_nonlinear_divergence_treatment,
@@ -160,7 +160,7 @@ bool PDESWESphereTS_ln_settls_vd::setup_main(
 			swe_sphere_ts_l_irk.setup(
 					ops,
 					1,
-					shackTimestepControl->current_timestep_size
+					shackTimestepControl->current_timestepSize
 				);
 		}
 		else
@@ -169,7 +169,7 @@ bool PDESWESphereTS_ln_settls_vd::setup_main(
 			swe_sphere_ts_l_irk.setup(
 					ops,
 					1,
-					0.5 * shackTimestepControl->current_timestep_size
+					0.5 * shackTimestepControl->current_timestepSize
 				);
 		}
 	}
@@ -180,7 +180,7 @@ bool PDESWESphereTS_ln_settls_vd::setup_main(
 			swe_sphere_ts_lg_irk.setup(
 					ops,
 					1,
-					shackTimestepControl->current_timestep_size
+					shackTimestepControl->current_timestepSize
 				);
 		}
 		else
@@ -189,7 +189,7 @@ bool PDESWESphereTS_ln_settls_vd::setup_main(
 			swe_sphere_ts_lg_irk.setup(
 					ops,
 					1,
-					0.5 * shackTimestepControl->current_timestep_size
+					0.5 * shackTimestepControl->current_timestepSize
 				);
 		}
 	}

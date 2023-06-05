@@ -14,7 +14,7 @@
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
 #include <sweet/core/sphere/SphereOperators.hpp>
 #include <sweet/core/sphere/SphereOperatorsComplex.hpp>
-#include "../helpers/SWESphBandedMatrixPhysicalComplex.hpp"
+#include "SWESphBandedMatrixPhysicalComplex.hpp"
 
 
 
@@ -166,7 +166,7 @@ public:
 			double i_coriolis_omega,
 			double i_f0,
 			double i_avg_geopotential,
-			double i_timestep_size,
+			double i_timestepSize,
 
 			bool i_use_f_sphere,
 			bool i_no_coriolis
@@ -177,7 +177,7 @@ public:
 		sphere_radius = i_radius;
 		gh0 = i_avg_geopotential;
 		no_coriolis = i_no_coriolis;
-		timestep_size = i_timestep_size;
+		timestep_size = i_timestepSize;
 		use_f_sphere = i_use_f_sphere;
 
 		if (use_f_sphere)

@@ -90,7 +90,7 @@ public:
 		) override;
 
 	bool setup_main(
-			sweet::SphereOperators *io_ops,
+			const sweet::SphereOperators *io_ops,
 			int i_timestepping_order,
 			LinearCoriolisTreatment_enum i_coriolis_treatment,// = PDESWESphereTS_ln_settls::CORIOLIS_LINEAR,		// "ignore", "linear", "nonlinear", "semi-lagrangian"
 			NLRemainderTreatment_enum i_nonlinear_divergence_treatment,// = PDESWESphereTS_ln_settls::NL_DIV_NONLINEAR,	// "ignore", "nonlinear"

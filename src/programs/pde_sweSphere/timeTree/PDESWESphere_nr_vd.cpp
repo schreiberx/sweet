@@ -6,8 +6,7 @@
 
 PDESWESphere_nr_vd::PDESWESphere_nr_vd()	:
 	shackPDESWESphere(nullptr),
-	ops(nullptr),
-	dt(-1)
+	ops(nullptr)
 {
 	setEvalAvailable("tendencies");
 }
@@ -35,11 +34,6 @@ const std::vector<std::string> PDESWESphere_nr_vd::getNodeNames()
 
 }
 
-std::shared_ptr<sweet::DESolver_TimeTreeNode_Base> PDESWESphere_nr_vd::getNewInstance()
-{
-	return std::shared_ptr<sweet::DESolver_TimeTreeNode_Base>(new PDESWESphere_nr_vd);
-}
-
 
 bool PDESWESphere_nr_vd::setupConfigAndGetTimeStepperEval(
 		const sweet::DESolver_Config_Base &i_deTermConfig,
@@ -52,7 +46,7 @@ bool PDESWESphere_nr_vd::setupConfigAndGetTimeStepperEval(
 	ops = myConfig.ops;
 
 	// default setup
-	DESolver_TimeTreeNode_Base::_helperSetupConfigAndGetTimeStepperEval(
+	DESolver_TimeTreeNode_Base::_helperGetTimeStepperEval(
 			i_timeStepperEvalName,
 			o_timeStepper
 		);
@@ -61,13 +55,9 @@ bool PDESWESphere_nr_vd::setupConfigAndGetTimeStepperEval(
 	return true;
 }
 
-void PDESWESphere_nr_vd::setTimeStepSize(double i_dt)
-{
-	dt = i_dt;
-}
-
 void PDESWESphere_nr_vd::clear()
 {
+	DESolver_TimeTreeNode_NodeLeafHelper::clear();
 }
 
 /*
@@ -76,7 +66,7 @@ void PDESWESphere_nr_vd::clear()
 void PDESWESphere_nr_vd::_eval_tendencies(
 		const sweet::DESolver_DataContainer_Base &i_U_,
 		sweet::DESolver_DataContainer_Base &o_U_,
-		double i_time_stamp
+		double i_timeStamp
 )
 {
 	const PDESWESphere_DataContainer &i_U = cast(i_U_);
@@ -146,7 +136,7 @@ void PDESWESphere_nr_vd::_eval_tendencies(
 		euler_timestep_update_na(
 				i_U.phi_pert, i_U.vrt, i_U.div,
 				phi_tmp, vrt_tmp, div_tmp,
-				i_time_stamp
+				i_timeStamp
 			);
 #else
 		phi_tmp = ops->V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, i_U.phi_pert.toPhys());

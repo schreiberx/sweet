@@ -70,7 +70,7 @@ public:
 		if (iter == registry.end())
 			return error.set("Timestepper with string "+i_ts_string+" not found");
 
-		o_timestepper_instance = iter->second->getNewInstance();
+		o_timestepper_instance = iter->second->getInstanceNew();
 		return true;
 	}
 

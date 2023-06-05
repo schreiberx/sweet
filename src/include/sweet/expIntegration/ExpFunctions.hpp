@@ -152,6 +152,10 @@ public:
 		return true;
 	}
 
+	bool isSetup()
+	{
+		return function_id != INVALID;
+	}
 
 #if SWEET_QUADMATH
 	/**************************************************************

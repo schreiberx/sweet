@@ -49,7 +49,7 @@ public:
 	ShackPDESWESphereBenchmarks *shackPDESWEBenchmark;
 	ShackPDESWESphere *shackPDESWESphere;
 
-	sweet::SphereOperators *ops;
+	const sweet::SphereOperators *ops;
 
 	std::string timestepping_method;
 	int timestepping_order;

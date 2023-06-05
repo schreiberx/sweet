@@ -354,8 +354,8 @@ public:
 
 		// size of coarse time step
 		double time_slice_size = pVars->max_simulation_time / pVars->coarse_slices;
-		if (pVars->coarse_timestep_size < 0)
-			pVars->coarse_timestep_size = time_slice_size;
+		if (pVars->coarse_timestepSize < 0)
+			pVars->coarse_timestepSize = time_slice_size;
 
 
 		// convert to pararealsimulationInstances to get Parareal interfaces

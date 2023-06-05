@@ -162,7 +162,7 @@ public:
 		shackProgArgDict(i_argc, i_argv),
 		shackPlaneDataOps(nullptr)
 	{
-		ERROR_CHECK_COND_RETURN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN(shackProgArgDict);
 	}
 
 	bool setup(
@@ -321,13 +321,13 @@ int main(int i_argc, char *i_argv[])
 
 	sweet::ShackProgArgDictionary shackProgArgDict(i_argc, i_argv);
 	shackProgArgDict.setup();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(shackProgArgDict);
 
 	sweet::ShackPlaneDataOps *shackPlaneDataOps = shackProgArgDict.getAutoRegistration<sweet::ShackPlaneDataOps>();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(shackProgArgDict);
 
 	shackProgArgDict.processProgramArguments();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(shackProgArgDict);
 
 
 	int initialSpectralModes = shackPlaneDataOps->space_res_spectral[0];
@@ -362,7 +362,7 @@ int main(int i_argc, char *i_argv[])
 			{
 
 				Core_planeSamplerInterpolation simulation(i_argc, i_argv);
-				ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
+				ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(simulation);
 
 				int specModes_[2] = {specModes, specModes};
 				int specModesOversampled_[2] = {specModes*oversamplingFactor, specModes*oversamplingFactor};
@@ -373,10 +373,10 @@ int main(int i_argc, char *i_argv[])
 						specModes_,
 						specModesOversampled_
 					);
-				ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
+				ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(simulation);
 
 				simulation.run_tests();
-				ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
+				ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(simulation);
 
 				std::cout << "Error: " << simulation.max_error << std::endl;
 				if (prev_max_error >= 0)
@@ -394,7 +394,7 @@ int main(int i_argc, char *i_argv[])
 				prev_max_error = simulation.max_error;
 
 				simulation.clear();
-				ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
+				ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(simulation);
 
 			}
 		}

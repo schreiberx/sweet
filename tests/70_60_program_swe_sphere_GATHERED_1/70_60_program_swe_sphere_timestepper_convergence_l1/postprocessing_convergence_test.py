@@ -114,7 +114,7 @@ for tagname_y in tagnames_y:
 
             if 'vrt' in tagname_y or 'div' in tagname_y:
 
-                if 'exp' in group_name:
+                if 'exp' in group_name.lower():
                     test_type = 'error'
                     error_tolerance_error = 1e-12
 
@@ -189,7 +189,7 @@ for tagname_y in tagnames_y:
                     if y > error_tolerance_error:
                         print("Error: "+str(y))
                         if len(sys.argv) <= 1:
-                             raise Exception("Error exceeds tolerance of "+str(error_tolerance_error))
+                            raise Exception("Error exceeds tolerance of "+str(error_tolerance_error))
 
                 else:
                     raise Exception("Unknown test type "+test_type)

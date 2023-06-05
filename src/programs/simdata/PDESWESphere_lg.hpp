@@ -68,7 +68,7 @@ private:
 
 	}
 
-	std::shared_ptr<sweet::DESolver_TimeTreeNode_Base> getNewInstance() override
+	std::shared_ptr<sweet::DESolver_TimeTreeNode_Base> getInstanceNew() override
 	{
 		return std::shared_ptr<sweet::DESolver_TimeTreeNode_Base>(new PDESWESphere_lg);
 	}
@@ -108,7 +108,7 @@ private:
 	void eval_tendencies(
 			const sweet::DESolver_DataContainer_Base &i_u,
 			sweet::DESolver_DataContainer_Base &o_u,
-			double i_time_stamp
+			double i_timeStamp
 	)	override
 	{
 		assert(ops != nullptr);

@@ -288,7 +288,7 @@ public:
 		shackPDESWEPlaneBenchmarks(nullptr),
 		shackPDESWEPlaneDiagnostics(nullptr)
 	{
-		ERROR_CHECK_COND_RETURN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN(shackProgArgDict);
 	}
 
 
@@ -387,7 +387,7 @@ public:
 #if 0
 		pdeSWEPlaneTimeSteppers.timestepper->runTimestep(
 				dataAndOps.prog_h_pert, dataAndOps.prog_u, dataAndOps.prog_v,
-				shackTimestepControl->current_timestep_size,
+				shackTimestepControl->current_timestepSize,
 				shackTimestepControl->current_simulation_time
 			);
 #endif
@@ -650,7 +650,7 @@ public:
 
 		pdeSWEPlaneTimeSteppers.timestepper->runTimestep(
 				dataAndOps.prog_h_pert, dataAndOps.prog_u, dataAndOps.prog_v,
-				shackTimestepControl->current_timestep_size,
+				shackTimestepControl->current_timestepSize,
 				shackTimestepControl->current_simulation_time
 			);
 
@@ -1168,7 +1168,7 @@ public:
 				shackTimestepControl->current_simulation_time,
 				shackTimestepControl->current_simulation_time/(60.0*60.0*24.0),
 				shackTimestepControl->current_timestep_nr,
-				shackTimestepControl->current_timestep_size,
+				shackTimestepControl->current_timestepSize,
 				description,
 				shackPDESWEPlaneDiagnostics->total_mass,
 				shackPDESWEPlaneDiagnostics->total_energy,

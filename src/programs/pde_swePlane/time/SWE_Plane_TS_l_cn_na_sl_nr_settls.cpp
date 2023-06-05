@@ -143,7 +143,7 @@ void SWE_Plane_TS_l_cn_na_sl_nr_settls::runTimestep(
 			SWEETError("Implicit diffusion only supported with spectral space activated");
 #else
 			// Add diffusion (stabilisation)
-			hdiv = ops->implicit_diffusion(hdiv, shackTimestepControl->current_timestep_size*shackPDESWEPlane->viscosity, shackPDESWEPlane->viscosity_order);
+			hdiv = ops->implicit_diffusion(hdiv, shackTimestepControl->current_timestepSize*shackPDESWEPlane->viscosity, shackPDESWEPlane->viscosity_order);
 #endif
 		}
 		// Average

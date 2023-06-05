@@ -26,11 +26,11 @@ public:
 		) override;
 
 	bool setup_main(
-			sweet::SphereOperators *io_ops,
+			const sweet::SphereOperators *io_ops,
 			sweet::ShackExpIntegration *i_shackExpIntegration,
 			int i_timestepping_order,
 			int i_timestepping_order2,
-			double i_timestep_size,
+			double i_timestepSize,
 			int i_version_id
 	);
 

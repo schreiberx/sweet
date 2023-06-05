@@ -71,7 +71,7 @@ bool PDESWESphereTS_lg_exp_lc_n_etd_uv::setup_auto(
 			ops,
 			shackExpIntegration,
 			shackPDESWETimeDisc->timestepping_order,
-			shackTimestepControl->current_timestep_size,
+			shackTimestepControl->current_timestepSize,
 			_with_na,
 			_with_nr
 		);
@@ -80,10 +80,10 @@ bool PDESWESphereTS_lg_exp_lc_n_etd_uv::setup_auto(
 
 
 bool PDESWESphereTS_lg_exp_lc_n_etd_uv::setup_main(
-		sweet::SphereOperators *io_ops,
+		const sweet::SphereOperators *io_ops,
 		sweet::ShackExpIntegration *i_shackExpIntegration,
 		int i_timestepping_order,
-		double i_timestep_size,
+		double i_timestepSize,
 		bool i_with_na,
 		bool i_with_nr
 )
@@ -98,14 +98,14 @@ bool PDESWESphereTS_lg_exp_lc_n_etd_uv::setup_main(
 
 	if (timestepping_order == 0 || timestepping_order == 1)
 	{
-		ts_phi0_exp.setup_variant_50(ops, i_shackExpIntegration, "phi0", i_timestep_size, false, true, timestepping_order);	/* NO Coriolis */
-		ts_phi1_exp.setup_variant_50(ops, i_shackExpIntegration, "phi1", i_timestep_size, false, true, timestepping_order);
+		ts_phi0_exp.setup_variant_50(ops, i_shackExpIntegration, "phi0", i_timestepSize, false, true, timestepping_order);	/* NO Coriolis */
+		ts_phi1_exp.setup_variant_50(ops, i_shackExpIntegration, "phi1", i_timestepSize, false, true, timestepping_order);
 	}
 	else if (timestepping_order == 2)
 	{
-		ts_phi0_exp.setup_variant_50(ops, i_shackExpIntegration, "phi0", i_timestep_size, false, true, timestepping_order);	/* NO Coriolis */
-		ts_phi1_exp.setup_variant_50(ops, i_shackExpIntegration, "phi1", i_timestep_size, false, true, timestepping_order);
-		ts_phi2_exp.setup_variant_50(ops, i_shackExpIntegration, "phi2", i_timestep_size, false, true, timestepping_order);
+		ts_phi0_exp.setup_variant_50(ops, i_shackExpIntegration, "phi0", i_timestepSize, false, true, timestepping_order);	/* NO Coriolis */
+		ts_phi1_exp.setup_variant_50(ops, i_shackExpIntegration, "phi1", i_timestepSize, false, true, timestepping_order);
+		ts_phi2_exp.setup_variant_50(ops, i_shackExpIntegration, "phi2", i_timestepSize, false, true, timestepping_order);
 
 		NU_phi_prev.setup(ops->sphereDataConfig);
 		NU_vrt_prev.setup(ops->sphereDataConfig);
@@ -113,10 +113,10 @@ bool PDESWESphereTS_lg_exp_lc_n_etd_uv::setup_main(
 	}
 	else if (timestepping_order == 3)
 	{
-		ts_phi0_exp.setup_variant_50(ops, i_shackExpIntegration, "phi0", i_timestep_size, false, true, timestepping_order);	/* NO Coriolis */
-		ts_phi1_exp.setup_variant_50(ops, i_shackExpIntegration, "phi1", i_timestep_size, false, true, timestepping_order);
-		ts_phi2_exp.setup_variant_50(ops, i_shackExpIntegration, "phi2", i_timestep_size, false, true, timestepping_order);
-		ts_phi3_exp.setup_variant_50(ops, i_shackExpIntegration, "phi3", i_timestep_size, false, true, timestepping_order);
+		ts_phi0_exp.setup_variant_50(ops, i_shackExpIntegration, "phi0", i_timestepSize, false, true, timestepping_order);	/* NO Coriolis */
+		ts_phi1_exp.setup_variant_50(ops, i_shackExpIntegration, "phi1", i_timestepSize, false, true, timestepping_order);
+		ts_phi2_exp.setup_variant_50(ops, i_shackExpIntegration, "phi2", i_timestepSize, false, true, timestepping_order);
+		ts_phi3_exp.setup_variant_50(ops, i_shackExpIntegration, "phi3", i_timestepSize, false, true, timestepping_order);
 
 		NU_phi_prev.setup(ops->sphereDataConfig);
 		NU_vrt_prev.setup(ops->sphereDataConfig);

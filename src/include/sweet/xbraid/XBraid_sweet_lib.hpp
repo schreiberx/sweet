@@ -582,12 +582,12 @@ public:
 
 			// Configure timesteppers with the correct timestep for this level
 			this->shacksTimestepControl_levels[level]->printShack();
-			this->shacksTimestepControl_levels[level]->current_timestep_size = this->shacksTimestepControl_levels[level]->current_timestep_size *
+			this->shacksTimestepControl_levels[level]->current_timestepSize = this->shacksTimestepControl_levels[level]->current_timestepSize *
 												std::pow(this->shackXBraid->xbraid_cfactor, level);
 			this->shacksTimestepControl_levels[level]->printShack();
 
 			if (rank == 0)
-				std::cout << "Timestep size at level " << level << " : " << this->shacksTimestepControl_levels[level]->current_timestep_size << std::endl;
+				std::cout << "Timestep size at level " << level << " : " << this->shacksTimestepControl_levels[level]->current_timestepSize << std::endl;
 
 #if SWEET_XBRAID_SCALAR
 			ODEScalarTimeSteppers* tsm = new ODEScalarTimeSteppers;
@@ -652,7 +652,7 @@ public:
 #endif
 
 			// get back the original timestep size
-			////////this->simVars->timecontrol.current_timestep_size = dt;
+			////////this->simVars->timecontrol.current_timestepSize = dt;
 
 			this->timeSteppers.push_back(tsm);
 
@@ -709,7 +709,7 @@ public:
 		double t = 0;
 		while (t < this->shackTimestepControl->max_simulation_time - 1e-10)
 		{
-			double dt = this->shackTimestepControl->current_timestep_size;
+			double dt = this->shackTimestepControl->current_timestepSize;
 			double dt2;
 			if ( t + dt < this->shackTimestepControl->max_simulation_time - 1e-10)
 				dt2 = dt;
@@ -1058,7 +1058,7 @@ public:
 
 		// TODO: check if this is thread safe
 		/////this->simVars->timecontrol.current_simulation_time = tstart;
-		/////this->simVars->timecontrol.current_timestep_size = tstop - tstart;
+		/////this->simVars->timecontrol.current_timestepSize = tstop - tstart;
 		// TODO
 
 		//////std::cout << rank << " " << iter << " " << level << " " << tstart << " " << tstop << std::endl;

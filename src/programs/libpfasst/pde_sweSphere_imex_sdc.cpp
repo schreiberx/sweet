@@ -55,44 +55,44 @@ int main(int i_argc, char *i_argv[])
 
     sweet::ShackProgArgDictionary shackProgArgDict(i_argc, i_argv);
     shackProgArgDict.setup();
-    ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
+    ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(shackProgArgDict);
 
     sweet::ShackSphereDataOps *shackSphereDataOps = shackProgArgDict.getAutoRegistration<sweet::ShackSphereDataOps>();
-    ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
+    ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(shackProgArgDict);
 
     ShackPDESWESphere *shackPDESWESphere = shackProgArgDict.getAutoRegistration<ShackPDESWESphere>();
-    ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
+    ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(shackProgArgDict);
 
     ShackLibPFASST *shackLibPFASST = shackProgArgDict.getAutoRegistration<ShackLibPFASST>();
-    ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
+    ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(shackProgArgDict);
 
     // sweet::ShackTimestepControl *shackTimestepControl =
     shackProgArgDict.getAutoRegistration<sweet::ShackTimestepControl>();
-    ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
+    ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(shackProgArgDict);
 
     // ShackPDESWESphereBenchmarks *shackBenchmarks =
     shackProgArgDict.getAutoRegistration<ShackPDESWESphereBenchmarks>();
-    ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
+    ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(shackProgArgDict);
 
     // sweet::ShackIOData *shackIOData =
     shackProgArgDict.getAutoRegistration<sweet::ShackIOData>();
-    ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
+    ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(shackProgArgDict);
 
     // ShackPDESWESphereTimeDiscretization *shackTimeDisc =
     shackProgArgDict.getAutoRegistration<ShackPDESWESphereTimeDiscretization>();
-    ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
+    ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(shackProgArgDict);
 
     shackProgArgDict.processProgramArguments();
-    ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
+    ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(shackProgArgDict);
 
     shackProgArgDict.checkAllArgumentsProcessed();
-    ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
+    ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(shackProgArgDict);
 
     shackProgArgDict.printShackData();
 
     sweet::SphereData_Config sphereData_Config;
     sphereData_Config.setupAuto(shackSphereDataOps);
-    ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(sphereData_Config);
+    ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(sphereData_Config);
 
     LevelSingleton levelSingleton;
 
@@ -159,7 +159,7 @@ int main(int i_argc, char *i_argv[])
         &nfields,                                            // number of vector fields
         &nvars_per_field,                                    // number of dofs per vector field
         &(pd_ctx.shackTimestepControl->max_simulation_time), // simulation time
-        &(pd_ctx.shackTimestepControl->current_timestep_size));
+        &(pd_ctx.shackTimestepControl->current_timestepSize));
 
     MPI_Finalize();
 }

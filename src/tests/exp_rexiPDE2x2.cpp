@@ -190,14 +190,14 @@ int main(
 {
 	sweet::ShackProgArgDictionary shackProgArgDict(i_argc, i_argv);
 	shackProgArgDict.setup();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(shackProgArgDict);
 
 	sweet::ShackExpIntegration *shackExpIntegration = shackProgArgDict.getAutoRegistration<sweet::ShackExpIntegration>();
 	sweet::ShackIOData *shackIOData = shackProgArgDict.getAutoRegistration<sweet::ShackIOData>();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(shackProgArgDict);
 
 	shackProgArgDict.processProgramArguments();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(shackProgArgDict);
 
 	shackProgArgDict.printShackData();
 

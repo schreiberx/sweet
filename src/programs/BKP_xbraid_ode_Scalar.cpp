@@ -29,8 +29,8 @@ int main(int i_argc, char *i_argv[])
 		MPI_Comm comm = MPI_COMM_WORLD;
 		MPI_Comm comm_x, comm_t;
 
-		int nt = (int) (shackDict.timecontrol.max_simulation_time / shackDict.timecontrol.current_timestep_size);
-                if (nt * shackDict.timecontrol.current_timestep_size < shackDict.timecontrol.max_simulation_time - 1e-10)
+		int nt = (int) (shackDict.timecontrol.max_simulation_time / shackDict.timecontrol.current_timestepSize);
+                if (nt * shackDict.timecontrol.current_timestepSize < shackDict.timecontrol.max_simulation_time - 1e-10)
 			nt++;
 		sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., shackDict.timecontrol.max_simulation_time, nt, &shackDict);
 
@@ -40,7 +40,7 @@ int main(int i_argc, char *i_argv[])
 			app.setup();
 
 			BraidUtil braid_util;
-			int test = braid_util.TestAll(&app, comm, stdout, 0., shackDict.timecontrol.current_timestep_size, shackDict.timecontrol.current_timestep_size * 2);
+			int test = braid_util.TestAll(&app, comm, stdout, 0., shackDict.timecontrol.current_timestepSize, shackDict.timecontrol.current_timestepSize * 2);
 			if (test == 0)
 				SWEETError("Tests failed!");
 			else
@@ -60,21 +60,21 @@ int main(int i_argc, char *i_argv[])
 
 
 	ProgramODEScalar simulation(i_argc, i_argv);
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(simulation);
 
 	simulation.setup();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(simulation);
 
 	{
 		simulation.shackTimestepControl->validateMaxSimulationTimeOrTimestepNr();
-		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(*(simulation.shackTimestepControl));
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(*(simulation.shackTimestepControl));
 
 		while (!simulation.should_quit())
 			simulation.runTimestep();
 	}
 
 	simulation.printSimulationErrors();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(simulation);
 
 	std::cout << "FIN" << std::endl;
 	return 0;

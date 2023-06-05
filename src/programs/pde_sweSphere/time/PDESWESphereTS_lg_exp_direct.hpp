@@ -16,7 +16,7 @@
 #include <sweet/core/sphere/SphereData_SpectralComplex.hpp>
 #include <sweet/core/sphere/SphereOperators.hpp>
 #include <sweet/core/sphere/SphereOperatorsComplex.hpp>
-#include "helpers/SWERexiTerm_SPH.hpp"
+#include "../timeHelpers/SWERexiTerm_SPH.hpp"
 
 #include "PDESWESphereTS_BaseInterface.hpp"
 
@@ -51,7 +51,7 @@ public:
 
 public:
 	bool setup_main(
-			sweet::SphereOperators *io_ops,
+			const sweet::SphereOperators *io_ops,
 			const std::string &i_function_name
 	);
 
@@ -68,6 +68,7 @@ private:
 
 	const sweet::SphereData_Config *sphereDataConfig;
 
+public:
 	sweet::ExpFunctions<double> expFunctions;
 
 
@@ -130,7 +131,7 @@ public:
 		sweet::SphereData_Spectral &io_u0,
 		sweet::SphereData_Spectral &io_v0,
 
-		double i_timestep_size,	///< timestep size
+		double i_timestepSize,	///< timestep size
 
 		const sweet::ShackDictionary &i_parameters
 	);

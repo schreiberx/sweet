@@ -198,7 +198,7 @@ public:
 		shackBenchmarks(nullptr),
 		shackPDESWESphere(nullptr)
 	{
-		ERROR_CHECK_COND_RETURN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN(shackProgArgDict);
 	}
 
 
@@ -355,7 +355,7 @@ public:
 			);
 			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(timeSteppersNewTS);
 
-			timeSteppersNewTS.timeIntegrator->setTimeStepSize(shackTimestepControl->current_timestep_size);
+			timeSteppersNewTS.timeIntegrator->setTimeStepSize(shackTimestepControl->current_timestepSize);
 
 			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(timeSteppersNewTS);
 		}
@@ -535,7 +535,7 @@ public:
 		{
 			timeSteppers.timestepper->runTimestep(
 					dataConfigOps.prog.phi_pert, dataConfigOps.prog.vrt, dataConfigOps.prog.div,
-					shackTimestepControl->current_timestep_size,
+					shackTimestepControl->current_timestepSize,
 					shackTimestepControl->current_simulation_time
 				);
 		}
@@ -763,7 +763,7 @@ public:
 			std::cout << "* Other timing information (direct)" << std::endl;
 			std::cout << "***************************************************" << std::endl;
 			std::cout << "[MULE] shackTimestepControl->current_timestep_nr: " << shackTimestepControl->current_timestep_nr << std::endl;
-			std::cout << "[MULE] shackTimestepControl->current_timestep_size: " << shackTimestepControl->current_timestep_size << std::endl;
+			std::cout << "[MULE] shackTimestepControl->current_timestepSize: " << shackTimestepControl->current_timestepSize << std::endl;
 			std::cout << std::endl;
 			std::cout << "***************************************************" << std::endl;
 			std::cout << "* Other timing information (derived)" << std::endl;
@@ -948,7 +948,7 @@ public:
 		ss << "min=" << dataConfigOps.vis_plane_data.physical_reduce_min() << sep;
 
 		ss << "time.step.nr="	<< shackTimestepControl->current_timestep_nr << sep;
-		ss << "time.step.size="	<< shackTimestepControl->current_timestep_size << sep;
+		ss << "time.step.size="	<< shackTimestepControl->current_timestepSize << sep;
 
 		if (shackPDESWESphere->compute_diagnostics)
 		{
@@ -1041,7 +1041,7 @@ public:
 
 		shackIOData->output_next_sim_seconds = 0;
 
-		if (shackTimestepControl->current_timestep_size <= 0)
+		if (shackTimestepControl->current_timestepSize <= 0)
 			SWEETError("Only fixed time step size supported");
 
 		// use dealiased physical space for setup
@@ -1113,12 +1113,12 @@ public:
 			timestepHandleOutput();
 #endif
 
-		if (shackTimestepControl->current_simulation_time + shackTimestepControl->current_timestep_size > shackTimestepControl->max_simulation_time)
-			shackTimestepControl->current_timestep_size = shackTimestepControl->max_simulation_time - shackTimestepControl->current_simulation_time;
+		if (shackTimestepControl->current_simulation_time + shackTimestepControl->current_timestepSize > shackTimestepControl->max_simulation_time)
+			shackTimestepControl->current_timestepSize = shackTimestepControl->max_simulation_time - shackTimestepControl->current_simulation_time;
 
 		timeSteppers.timestepper->runTimestep(
 				prog_phi_pert, prog_vrt, prog_div,
-				shackTimestepControl->current_timestep_size,
+				shackTimestepControl->current_timestepSize,
 				shackTimestepControl->current_simulation_time
 			);
 
@@ -1128,17 +1128,17 @@ public:
 
 		if (shackPDESWESphere->viscosity != 0 && shackDict.misc.use_nonlinear_only_visc == 0)
 		{
-			///prog_vrt = op.implicit_diffusion(prog_vrt, shackTimestepControl->current_timestep_size*shackPDESWESphere->viscosity, shackPDESWESphere->sphere_radius);
-			///prog_div = op.implicit_diffusion(prog_div, shackTimestepControl->current_timestep_size*shackPDESWESphere->viscosity, shackPDESWESphere->sphere_radius);
-			///prog_phi_pert = op.implicit_diffusion(prog_phi_pert, shackTimestepControl->current_timestep_size*shackPDESWESphere->viscosity, shackPDESWESphere->sphere_radius);
-			prog_vrt = op.implicit_hyperdiffusion(prog_vrt, shackTimestepControl->current_timestep_size*shackPDESWESphere->viscosity, shackPDESWESphere->viscosity_order, shackPDESWESphere->sphere_radius);
-			prog_div = op.implicit_hyperdiffusion(prog_div, shackTimestepControl->current_timestep_size*shackPDESWESphere->viscosity, shackPDESWESphere->viscosity_order, shackPDESWESphere->sphere_radius);
-			prog_phi_pert = op.implicit_hyperdiffusion(prog_phi_pert, shackTimestepControl->current_timestep_size*shackPDESWESphere->viscosity, shackPDESWESphere->viscosity_order, shackPDESWESphere->sphere_radius);
+			///prog_vrt = op.implicit_diffusion(prog_vrt, shackTimestepControl->current_timestepSize*shackPDESWESphere->viscosity, shackPDESWESphere->sphere_radius);
+			///prog_div = op.implicit_diffusion(prog_div, shackTimestepControl->current_timestepSize*shackPDESWESphere->viscosity, shackPDESWESphere->sphere_radius);
+			///prog_phi_pert = op.implicit_diffusion(prog_phi_pert, shackTimestepControl->current_timestepSize*shackPDESWESphere->viscosity, shackPDESWESphere->sphere_radius);
+			prog_vrt = op.implicit_hyperdiffusion(prog_vrt, shackTimestepControl->current_timestepSize*shackPDESWESphere->viscosity, shackPDESWESphere->viscosity_order, shackPDESWESphere->sphere_radius);
+			prog_div = op.implicit_hyperdiffusion(prog_div, shackTimestepControl->current_timestepSize*shackPDESWESphere->viscosity, shackPDESWESphere->viscosity_order, shackPDESWESphere->sphere_radius);
+			prog_phi_pert = op.implicit_hyperdiffusion(prog_phi_pert, shackTimestepControl->current_timestepSize*shackPDESWESphere->viscosity, shackPDESWESphere->viscosity_order, shackPDESWESphere->sphere_radius);
 		}
 
 
 		// advance time step and provide information to parameters
-		shackTimestepControl->current_simulation_time += shackTimestepControl->current_timestep_size;
+		shackTimestepControl->current_simulation_time += shackTimestepControl->current_timestepSize;
 		shackTimestepControl->current_timestep_nr++;
 
 #if SWEET_GUI
@@ -1292,10 +1292,10 @@ int main_real(int i_argc, char *i_argv[])
 				int N_spectral[2];
 
 				double frac;
-				if ( shackDict.parareal.coarse_timestep_size > 0)
-					frac = shackTimestepControl->current_timestep_size / shackDict.parareal.coarse_timestep_size;
+				if ( shackDict.parareal.coarse_timestepSize > 0)
+					frac = shackTimestepControl->current_timestepSize / shackDict.parareal.coarse_timestepSize;
 				else
-					frac = shackTimestepControl->current_timestep_size / (shackTimestepControl->max_simulation_time / shackDict.parareal.coarse_slices );
+					frac = shackTimestepControl->current_timestepSize / (shackTimestepControl->max_simulation_time / shackDict.parareal.coarse_slices );
 				for (int j = 0; j < 2; j++)
 					N_spectral[j] = std::max(4, int(shackDict.disc.space_res_spectral[j] * frac));
 
@@ -1415,8 +1415,8 @@ int main_real(int i_argc, char *i_argv[])
 
 			//////braid_Core core;
 			///sweet_App* app = (sweet_App *) malloc(sizeof(sweet_App))
-			int nt = (int) (shackTimestepControl->max_simulation_time / shackTimestepControl->current_timestep_size);
-                        if (nt * shackTimestepControl->current_timestep_size < shackTimestepControl->max_simulation_time - 1e-10)
+			int nt = (int) (shackTimestepControl->max_simulation_time / shackTimestepControl->current_timestepSize);
+                        if (nt * shackTimestepControl->current_timestepSize < shackTimestepControl->max_simulation_time - 1e-10)
 				nt++;
 			///sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., shackTimestepControl->max_simulation_time, nt, &shackDict, sphereDataConfig, &op);
 			sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., shackTimestepControl->max_simulation_time, nt, &shackDict, sphereDataConfigs, ops);
@@ -1427,7 +1427,7 @@ int main_real(int i_argc, char *i_argv[])
 				app.setup();
 
 				BraidUtil braid_util;
-				int test = braid_util.TestAll(&app, comm, stdout, 0., shackTimestepControl->current_timestep_size, shackTimestepControl->current_timestep_size * 2);
+				int test = braid_util.TestAll(&app, comm, stdout, 0., shackTimestepControl->current_timestepSize, shackTimestepControl->current_timestepSize * 2);
 				////int test = braid_util.TestBuf(app, comm, stdout, 0.);
 				if (test == 0)
 					SWEETError("Tests failed!");
@@ -1575,7 +1575,7 @@ int main_real(int i_argc, char *i_argv[])
 		std::cout << "* Other timing information (direct)" << std::endl;
 		std::cout << "***************************************************" << std::endl;
 		std::cout << "[MULE] shackTimestepControl->current_timestep_nr: " << shackTimestepControl->current_timestep_nr << std::endl;
-		std::cout << "[MULE] shackTimestepControl->current_timestep_size: " << shackTimestepControl->current_timestep_size << std::endl;
+		std::cout << "[MULE] shackTimestepControl->current_timestepSize: " << shackTimestepControl->current_timestepSize << std::endl;
 		std::cout << std::endl;
 		std::cout << "***************************************************" << std::endl;
 		std::cout << "* Other timing information (derived)" << std::endl;

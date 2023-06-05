@@ -95,16 +95,16 @@ int main(
 	sweet::ShackTimestepControl *shackTimestepControl = shackDict.getAutoRegistration<sweet::ShackTimestepControl>();
 	ShackREXITest *shackREXITest = shackDict.getAutoRegistration<ShackREXITest>();
 	sweet::ShackExpIntegration *shackExpIntegration =  shackDict.getAutoRegistration<sweet::ShackExpIntegration>();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(shackDict);
 
 	shackDict.processProgramArguments();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(shackDict);
 
 	shackTimestepControl->validateTimestepSize();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(*shackTimestepControl);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(*shackTimestepControl);
 
 	shackREXITest->validateLambda();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(*shackREXITest);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(*shackREXITest);
 
 	/*
 	 * Load analytical function
@@ -176,7 +176,7 @@ int main(
 
 		for (	shackTimestepControl->current_simulation_time = 0;
 				shackTimestepControl->current_simulation_time < shackTimestepControl->max_simulation_time*(1.0-1e-12);
-				shackTimestepControl->current_simulation_time += shackTimestepControl->current_timestep_size
+				shackTimestepControl->current_simulation_time += shackTimestepControl->current_timestepSize
 		)
 		{
 			computeAndOutputError(U);
@@ -186,7 +186,7 @@ int main(
 				std::complex<double> approx = rexiCoeffs->gamma*U;
 
 				for (std::size_t i = 0; i < rexiCoeffs->alphas.size(); i++)
-					approx += rexiCoeffs->betas[i]/(shackREXITest->lambda*shackTimestepControl->current_timestep_size + rexiCoeffs->alphas[i])*U;
+					approx += rexiCoeffs->betas[i]/(shackREXITest->lambda*shackTimestepControl->current_timestepSize + rexiCoeffs->alphas[i])*U;
 
 				U = approx;
 			}

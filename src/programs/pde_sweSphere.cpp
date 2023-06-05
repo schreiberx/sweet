@@ -43,10 +43,10 @@ int main_mpi(int i_argc, char *i_argv[])
 #endif
 
 	ProgramPDESWESphere simulation(i_argc, i_argv);
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(simulation);
 
 	simulation.setup();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(simulation);
 
 
 #if SWEET_GUI
@@ -58,7 +58,7 @@ int main_mpi(int i_argc, char *i_argv[])
 #endif
 	{
 		simulation.shackTimestepControl->validateMaxSimulationTimeOrTimestepNr();
-		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(*(simulation.shackTimestepControl));
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(*(simulation.shackTimestepControl));
 
 		if (simulation.shackPDESWESphere->normal_mode_analysis_generation > 0)
 		{
@@ -107,7 +107,7 @@ int main_mpi(int i_argc, char *i_argv[])
 	// End of run output results
 	simulation.output_timings();
 
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(simulation);
 
 	if (isMPIRoot())
 		std::cout << "FIN" << std::endl;

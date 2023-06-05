@@ -37,10 +37,10 @@ public:
 	int current_timestep_nr = 0;
 
 	/// Time step size used during setup
-	//double setup_timestep_size = -1;
+	//double setup_timestepSize = -1;
 
 	/// Current time step size
-	double current_timestep_size = -1;
+	double current_timestepSize = -1;
 
 	/// Time in simulation
 	double current_simulation_time = 0;
@@ -100,7 +100,7 @@ public:
 
 	bool validateTimestepSize()
 	{
-		if (!(current_timestep_size > 0))
+		if (!(current_timestepSize > 0))
 			return error.set("Timestep size not set, use --dt=[float]");
 
 		return true;
@@ -120,7 +120,7 @@ public:
 			return false;
 
 		// Check whether there might be some numerical issues of round-off errors in the last time step
-		double diff = max_simulation_time - (current_simulation_time + current_timestep_size);
+		double diff = max_simulation_time - (current_simulation_time + current_timestepSize);
 
 		/*
 		 * Check if we're not close to the maximum simulation time and return
@@ -133,7 +133,7 @@ public:
 		 * This might also change the time step size if it's not necessary,
 		 * but we avoid yet another if condition.
 		 */
-		current_timestep_size = max_simulation_time - current_simulation_time;
+		current_timestepSize = max_simulation_time - current_simulation_time;
 
 		return true;
 	}
@@ -141,7 +141,7 @@ public:
 	bool timestepHelperEnd()
 	{
 		// advance in time
-		current_simulation_time += current_timestep_size;
+		current_simulation_time += current_timestepSize;
 		current_timestep_nr++;
 
 		return false;
@@ -182,16 +182,16 @@ public:
 
 	bool processProgramArguments(ProgramArguments &i_pa)
 	{
-		i_pa.getArgumentValueByKey("--dt", current_timestep_size);
+		i_pa.getArgumentValueByKey("--dt", current_timestepSize);
 		i_pa.getArgumentValueByKey("--max-wallclock-time", max_wallclock_time);
 		i_pa.getArgumentValueByKey("-t", max_simulation_time);
 		i_pa.getArgumentValueByKey("-T", max_timesteps_nr);
 
-		//setup_timestep_size = current_timestep_size;
+		//setup_timestepSize = current_timestepSize;
 
 		current_timestep_nr = 0;
 		current_simulation_time = 0;
-		//current_timestep_size = setup_timestep_size;
+		//current_timestepSize = setup_timestepSize;
 
 		ERROR_FORWARD_ALWAYS_RETURN_BOOLEAN(i_pa);
 	}
@@ -204,8 +204,8 @@ public:
 		std::cout << "TIMECONTROL:" << std::endl;
 		std::cout << " + run_simulation_timesteps: " << run_simulation_timesteps << std::endl;
 		std::cout << " + current_timestep_nr: " << current_timestep_nr << std::endl;
-		//std::cout << " + setup_timestep_size: " << setup_timestep_size << std::endl;
-		std::cout << " + current_timestep_size: " << current_timestep_size << std::endl;
+		//std::cout << " + setup_timestepSize: " << setup_timestepSize << std::endl;
+		std::cout << " + current_timestepSize: " << current_timestepSize << std::endl;
 		std::cout << " + current_simulation_time: " << current_simulation_time << std::endl;
 		std::cout << " + max_timesteps_nr: " << max_timesteps_nr << std::endl;
 		std::cout << " + max_simulation_time: " << max_simulation_time << std::endl;

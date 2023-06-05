@@ -47,7 +47,7 @@ bool PDESWESphereTS_ln_erk_split_vd::setup_auto(
 
 
 bool PDESWESphereTS_ln_erk_split_vd::setup_main(
-		sweet::SphereOperators *io_ops,
+		const sweet::SphereOperators *io_ops,
 		int i_order,		///< order of RK time stepping method
 		bool i_use_lg,
 		bool i_use_lc,

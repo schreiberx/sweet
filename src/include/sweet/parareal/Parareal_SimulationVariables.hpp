@@ -77,7 +77,7 @@ public:
 	 * Time step size for coarse propagator
 	 * If == -1 then coarse timestep = time slice length
 	 */
-	double coarse_timestep_size = -1;
+	double coarse_timestepSize = -1;
 
 	/**
 	 * Read reference csv files
@@ -145,7 +145,7 @@ public:
 		i_pa.getArgumentValueByKey("--parareal-coarse-timestepping-method", coarse_timestepping_method);
 		i_pa.getArgumentValueByKey("--parareal-coarse-timestepping-order", coarse_timestepping_order);
 		i_pa.getArgumentValueByKey("--parareal-coarse-timestepping-order2", coarse_timestepping_order2);
-		i_pa.getArgumentValueByKey("--parareal-coarse-timestep-size", coarse_timestep_size);
+		i_pa.getArgumentValueByKey("--parareal-coarse-timestep-size", coarse_timestepSize);
 		i_pa.getArgumentValueByKey("--parareal-load-ref-csv-files", load_ref_csv_files);
 		i_pa.getArgumentValueByKey("--parareal-path-ref-csv-files", path_ref_csv_files);
 		i_pa.getArgumentValueByKey("--parareal-load-fine-csv-files", load_fine_csv_files);
@@ -175,7 +175,7 @@ public:
 		std::cout << " + coarse_timestepping_method: " << coarse_timestepping_method << std::endl;
 		std::cout << " + coarse_timestepping_method_order: " << coarse_timestepping_order << std::endl;
 		std::cout << " + coarse_timestepping_method_order2: " << coarse_timestepping_order2 << std::endl;
-		std::cout << " + coarse_timestep_size: " << coarse_timestep_size << std::endl;
+		std::cout << " + coarse_timestepSize: " << coarse_timestepSize << std::endl;
 		std::cout << " + load_ref_csv_files: " << load_ref_csv_files << std::endl;
 		std::cout << " + path_ref_csv_files: " << path_ref_csv_files << std::endl;
 		std::cout << " + load_fine_csv_files: " << load_fine_csv_files << std::endl;

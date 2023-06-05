@@ -131,7 +131,7 @@ public:
 		shackTimestepControl(nullptr),
 		shackTimeDisc(nullptr)
 	{
-		ERROR_CHECK_COND_RETURN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN(shackProgArgDict);
 	}
 
 
@@ -313,7 +313,7 @@ public:
 
 		timeSteppers.master->runTimestep(
 				dataConfigOps.prog_h, dataConfigOps.prog_u, dataConfigOps.prog_v,
-				shackTimestepControl->current_timestep_size,
+				shackTimestepControl->current_timestepSize,
 				shackTimestepControl->current_simulation_time
 			);
 
@@ -414,7 +414,7 @@ public:
 				shackTimestepControl->current_simulation_time,
 				shackTimestepControl->current_simulation_time/(60.0*60.0*24.0),
 				shackTimestepControl->current_timestep_nr,
-				shackTimestepControl->current_timestep_size,
+				shackTimestepControl->current_timestepSize,
 				description,
 				vis_plane_data.physical_reduce_max(),
 				vis_plane_data.physical_reduce_min()

@@ -40,14 +40,14 @@ bool PDESWESphereTS_lg_0_lc_n_erk_bv::setup_auto(
 }
 
 bool PDESWESphereTS_lg_0_lc_n_erk_bv::setup_main(
-		sweet::SphereOperators *io_ops,
+		const sweet::SphereOperators *io_ops,
 		int i_timestepping_order	///< order of RK time stepping method
 )
 {
 	ops = io_ops;
 
 	timestepping_order = i_timestepping_order;
-	timestep_size = shackTimestepControl->current_timestep_size;
+	timestep_size = shackTimestepControl->current_timestepSize;
 
 	setupFG();
 

@@ -8,7 +8,7 @@
 #include <sweet/core/sphere/SphereData_Config.hpp>
 #include <sweet/core/sphere/SphereOperators.hpp>
 #include <sweet/core/TimeStepSizeChanged.hpp>
-#include "helpers/SWESphBandedMatrixPhysicalReal.hpp"
+#include "../timeHelpers/SWESphBandedMatrixPhysicalReal.hpp"
 
 
 bool PDESWESphereTS_l_irk::implementsTimesteppingMethod(const std::string &i_timestepping_method)
@@ -51,7 +51,7 @@ bool PDESWESphereTS_l_irk::setup_auto(
 		return setup_main(
 				io_ops,
 				shackPDESWETimeDisc->timestepping_order,
-				shackTimestepControl->current_timestep_size,
+				shackTimestepControl->current_timestepSize,
 				0.5,
 				false
 			);
@@ -61,7 +61,7 @@ bool PDESWESphereTS_l_irk::setup_auto(
 		return setup_main(
 				io_ops,
 				shackPDESWETimeDisc->timestepping_order,
-				shackTimestepControl->current_timestep_size,
+				shackTimestepControl->current_timestepSize,
 				0.5,
 				true
 			);
@@ -74,9 +74,9 @@ bool PDESWESphereTS_l_irk::setup_auto(
 }
 
 bool PDESWESphereTS_l_irk::setup(
-		sweet::SphereOperators *io_ops,
+		const sweet::SphereOperators *io_ops,
 		int i_timestep_order,
-		double i_timestep_size
+		double i_timestepSize
 )
 {
 	ops = io_ops;
@@ -84,7 +84,7 @@ bool PDESWESphereTS_l_irk::setup(
 	return setup_main(
 			io_ops,
 			i_timestep_order,
-			i_timestep_size,
+			i_timestepSize,
 			shackPDESWETimeDisc->timestepping_crank_nicolson_filter,
 			false
 		);
@@ -92,9 +92,9 @@ bool PDESWESphereTS_l_irk::setup(
 
 
 bool PDESWESphereTS_l_irk::setup_main(
-		sweet::SphereOperators *io_ops,
+		const sweet::SphereOperators *io_ops,
 		int i_timestepping_order,
-		double i_timestep_size,
+		double i_timestepSize,
 		double i_crank_nicolson_damping_factor,
 		bool i_no_coriolis
 )
@@ -102,7 +102,7 @@ bool PDESWESphereTS_l_irk::setup_main(
 	ops = io_ops;
 
 	timestepping_order = i_timestepping_order;
-	timestep_size = i_timestep_size;
+	timestep_size = i_timestepSize;
 	crank_nicolson_damping_factor = i_crank_nicolson_damping_factor;
 
 	use_f_sphere = shackPDESWESphere->sphere_use_fsphere;
@@ -138,7 +138,7 @@ bool PDESWESphereTS_l_irk::setup_main(
 
 	sphere_radius = shackSphereDataOps->sphere_radius;
 
-	update_coefficients(i_timestep_size);
+	update_coefficients(i_timestepSize);
 	return true;
 }
 
@@ -241,9 +241,9 @@ void PDESWESphereTS_l_irk::solveImplicit(
 
 
 
-void PDESWESphereTS_l_irk::update_coefficients(double i_timestep_size)
+void PDESWESphereTS_l_irk::update_coefficients(double i_timestepSize)
 {
-	timestep_size = i_timestep_size;
+	timestep_size = i_timestepSize;
 
 	double 	gh0 = shackPDESWESphere->gravitation*shackPDESWESphere->h0;
 

@@ -70,7 +70,7 @@ extern "C"
 
         // update timecontrol information
         i_ctx->shackTimestepControl->current_timestep_nr = i_current_step + 1;
-        auto current_dt = i_ctx->shackTimestepControl->current_timestep_size;
+        auto current_dt = i_ctx->shackTimestepControl->current_timestepSize;
         i_ctx->shackTimestepControl->current_simulation_time = (i_current_step + 1) * current_dt;
 
         // check if we should write output

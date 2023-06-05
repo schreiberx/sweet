@@ -32,28 +32,28 @@ int main(int i_argc, char *i_argv[])
 {
 	sweet::ShackProgArgDictionary shackProgArgDict(i_argc, i_argv);
 	shackProgArgDict.setup();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(shackProgArgDict);
 
 	sweet::ShackSphereDataOps *shackSphereDataOps = shackProgArgDict.getAutoRegistration<sweet::ShackSphereDataOps>();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(shackProgArgDict);
 
 	sweet::ShackTimestepControl *shackTimestepControl = shackProgArgDict.getAutoRegistration<sweet::ShackTimestepControl>();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(shackProgArgDict);
 
 	sweet::ShackTimesteppingSemiLagrangianSphereData *shackTimesteppingSemiLagrangianSphereData = shackProgArgDict.getAutoRegistration<sweet::ShackTimesteppingSemiLagrangianSphereData>();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(shackProgArgDict);
 
 	ShackPDEAdvectionSphereTimeDiscretization *shackTimeDisc = shackProgArgDict.getAutoRegistration<ShackPDEAdvectionSphereTimeDiscretization>();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(shackProgArgDict);
 
 	shackProgArgDict.processProgramArguments();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(shackProgArgDict);
 
 	shackProgArgDict.printShackData();
 
 	int initial_spectral_modes = shackSphereDataOps->space_res_spectral[0];
 
-	if (shackTimestepControl->current_timestep_size < 0)
+	if (shackTimestepControl->current_timestepSize < 0)
 		SWEETError("Timestep size not set");
 
 	int max_modes = 256;
@@ -66,8 +66,8 @@ int main(int i_argc, char *i_argv[])
 	double prev_max_error = -1;
 	for (int i = initial_spectral_modes; i <= max_modes; i *= 2)
 	{
-		shackTimestepControl->current_timestep_size *= 0.5;
-		//shackTimestepControl->setup_timestep_size = shackTimestepControl->current_timestep_size;
+		shackTimestepControl->current_timestepSize *= 0.5;
+		//shackTimestepControl->setup_timestepSize = shackTimestepControl->current_timestepSize;
 
 		if (shackTimeDisc->timestepping_method == "na_sl")
 		{
@@ -93,7 +93,7 @@ int main(int i_argc, char *i_argv[])
 			sphereDataConfigInstance.setupAuto(
 					shackSphereDataOps
 			);
-			ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(sphereDataConfigInstance);
+			ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(sphereDataConfigInstance);
 
 			sweet::SphereData_Config *sphereDataConfig = &sphereDataConfigInstance;
 
@@ -151,7 +151,7 @@ int main(int i_argc, char *i_argv[])
 		shackSphereDataOps->printShack();
 		std::cout << std::endl;
 
-		std::cout << "Testing with dt=" << shackTimestepControl->current_timestep_size << std::endl;
+		std::cout << "Testing with dt=" << shackTimestepControl->current_timestepSize << std::endl;
 
 		ProgramPDEAdvectionSphere simulation(i_argc, i_argv);
 
@@ -167,7 +167,7 @@ int main(int i_argc, char *i_argv[])
 		simulation.shackSphereDataOps->space_res_spectral[1] = shackSphereDataOps->space_res_spectral[1];
 
 		// time step size
-		simulation.shackTimestepControl->current_timestep_size = shackTimestepControl->current_timestep_size;
+		simulation.shackTimestepControl->current_timestepSize = shackTimestepControl->current_timestepSize;
 
 		// Setup the data and operators
 		simulation.setup_3_dataOpsEtc();

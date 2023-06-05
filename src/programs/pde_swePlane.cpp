@@ -137,10 +137,10 @@ int main(int i_argc, char *i_argv[])
 				int N_physical[2] = {-1, -1};
 				int N_spectral[2];
 				double frac;
-				if ( shackDict.parareal.coarse_timestep_size > 0)
-					frac = shackDict.timecontrol.current_timestep_size / shackDict.parareal.coarse_timestep_size;
+				if ( shackDict.parareal.coarse_timestepSize > 0)
+					frac = shackDict.timecontrol.current_timestepSize / shackDict.parareal.coarse_timestepSize;
 				else
-					frac = shackDict.timecontrol.current_timestep_size / (shackDict.timecontrol.max_simulation_time / shackDict.parareal.coarse_slices );
+					frac = shackDict.timecontrol.current_timestepSize / (shackDict.timecontrol.max_simulation_time / shackDict.parareal.coarse_slices );
 				for (int j = 0; j < 2; j++)
 					N_spectral[j] = std::max(4, int(shackDict.disc.space_res_spectral[j] * frac));
 				planeDataConfigs.push_back(new PlaneDataConfig);
@@ -238,8 +238,8 @@ int main(int i_argc, char *i_argv[])
 
 			//////braid_Core core;
 			///sweet_App* app = (sweet_App *) malloc(sizeof(sweet_App))
-			int nt = (int) (shackDict.timecontrol.max_simulation_time / shackDict.timecontrol.current_timestep_size);
-                        if (nt * shackDict.timecontrol.current_timestep_size < shackDict.timecontrol.max_simulation_time - 1e-10)
+			int nt = (int) (shackDict.timecontrol.max_simulation_time / shackDict.timecontrol.current_timestepSize);
+                        if (nt * shackDict.timecontrol.current_timestepSize < shackDict.timecontrol.max_simulation_time - 1e-10)
 				nt++;
 			///sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., shackDict.timecontrol.max_simulation_time, nt, &shackDict, planeDataConfig, &op);
 			sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., shackDict.timecontrol.max_simulation_time, nt, &shackDict, planeDataConfigs, ops);
@@ -250,7 +250,7 @@ int main(int i_argc, char *i_argv[])
 				app.setup();
 
 				BraidUtil braid_util;
-				int test = braid_util.TestAll(&app, comm, stdout, 0., shackDict.timecontrol.current_timestep_size, shackDict.timecontrol.current_timestep_size * 2);
+				int test = braid_util.TestAll(&app, comm, stdout, 0., shackDict.timecontrol.current_timestepSize, shackDict.timecontrol.current_timestepSize * 2);
 				////int test = braid_util.TestBuf(app, comm, stdout, 0.);
 				if (test == 0)
 					SWEETError("Tests failed!");
@@ -292,10 +292,10 @@ int main_mpi(int i_argc, char *i_argv[])
 	StopwatchBox::getInstance().main.start();
 
 	ProgramPDESWEPlane simulation(i_argc, i_argv);
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(simulation);
 
 	simulation.setup();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(simulation);
 
 #if SWEET_MPI
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
@@ -315,7 +315,7 @@ int main_mpi(int i_argc, char *i_argv[])
 #endif
 
 		simulation.shackTimestepControl->validateMaxSimulationTimeOrTimestepNr();
-		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(*(simulation.shackTimestepControl));
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(*(simulation.shackTimestepControl));
 
 		if (simulation.shackPDESWEPlane->normal_mode_analysis_generation > 0)
 		{
@@ -341,7 +341,7 @@ int main_mpi(int i_argc, char *i_argv[])
 
 			StopwatchBox::getInstance().main_timestepping.stop();
 		}
-		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(simulation);
 	}
 
 	if (isMPIRoot())
@@ -353,7 +353,7 @@ int main_mpi(int i_argc, char *i_argv[])
 		std::cout << "***************************************************" << std::endl;
 		std::cout << "Number of time steps: " << simulation.shackTimestepControl->current_timestep_nr << std::endl;
 		std::cout << "Time per time step: " << StopwatchBox::getInstance().main_timestepping()/(double)simulation.shackTimestepControl->current_timestep_nr << " sec/ts" << std::endl;
-		std::cout << "Last time step size: " << simulation.shackTimestepControl->current_timestep_size << std::endl;
+		std::cout << "Last time step size: " << simulation.shackTimestepControl->current_timestepSize << std::endl;
 
 		simulation.computeErrors();
 		simulation.printErrors();

@@ -39,7 +39,7 @@ bool PDESWESphereTS_l_irk_na_sl_settls_vd_only::setup_auto(
 
 
 bool PDESWESphereTS_l_irk_na_sl_settls_vd_only::setup_main(
-	sweet::SphereOperators *io_ops,
+	const sweet::SphereOperators *io_ops,
 	int i_timestepping_order
 )
 {
@@ -60,7 +60,7 @@ bool PDESWESphereTS_l_irk_na_sl_settls_vd_only::setup_main(
 	swe_sphere_ts_l_irk.setup_main(
 			ops,
 			1,
-			0.5 * shackTimestepControl->current_timestep_size,
+			0.5 * shackTimestepControl->current_timestepSize,
 			shackPDESWETimeDisc->timestepping_crank_nicolson_filter,
 			false
 		);

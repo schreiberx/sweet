@@ -12,7 +12,7 @@ namespace sweet
 {
 
 class DESolver_TimeStepper_ExplicitRungeKutta	:
-	public DESolver_TimeTreeNode_NodeInteriorHelper
+	public DESolver_TimeTreeNode_NodeInteriorHelper<DESolver_TimeStepper_ExplicitRungeKutta>
 {
 private:
 	/*
@@ -153,10 +153,6 @@ public:
 			switch(a->argType)
 			{
 			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_KEY_FUNCTION:
-				if (a->key != "fun")
-					return error.set("Only key 'fun' supported for a function!"+a->getNewLineDebugMessage());
-				// continue with ARG_TYPE_FUNCTION
-
 			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_FUNCTION:
 				if (_timeTreeNodes.size() != 0)
 					return error.set("a 2nd timestepper was provided!"+a->getNewLineDebugMessage());
@@ -170,11 +166,24 @@ public:
 				ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(i_tsAssemblation);
 				break;
 
+			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_VALUE:
+				if (_timeTreeNodes.size() > 0)
+					return error.set("Only one DETerm is supported"+a->getNewLineDebugMessage());
+
+				_timeTreeNodes.push_back(std::shared_ptr<sweet::DESolver_TimeTreeNode_Base>());
+
+				i_tsAssemblation.assembleTimeTreeNodeByName(
+						a->value,
+						_timeTreeNodes.back()
+					);
+				ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(i_tsAssemblation);
+				break;
+
 			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_KEY_VALUE:
 				if (a->key == "order" || a->key == "o")
 				{
 					a->getValue(_order);
-					ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*a);
+					ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(i_tsAssemblation);
 					break;
 				}
 
@@ -185,19 +194,6 @@ public:
 				}
 
 				return error.set("Key not supported"+a->getNewLineDebugMessage());
-				break;
-
-			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_VALUE:
-				if (_timeTreeNodes.size() != 0)
-					return error.set("Only one DETerm is supported"+a->getNewLineDebugMessage());
-
-				_timeTreeNodes.push_back(std::shared_ptr<sweet::DESolver_TimeTreeNode_Base>());
-
-				i_tsAssemblation.assembleTimeTreeNodeByName(
-						a->value,
-						_timeTreeNodes.back()
-					);
-				ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*a);
 				break;
 
 			default:
@@ -225,6 +221,7 @@ public:
 				o_timeStepper,
 				"tendencies"
 			);
+
 
 		/*
 		 * Setup buffers for RK stage solutions
@@ -256,26 +253,32 @@ public:
 		DESolver_TimeTreeNode_NodeInteriorHelper::clear();
 	}
 
-	std::shared_ptr<DESolver_TimeTreeNode_Base> getNewInstance()	override
+	std::shared_ptr<DESolver_TimeTreeNode_Base> getInstanceNew()	override
 	{
 		return std::shared_ptr<DESolver_TimeTreeNode_Base>(new DESolver_TimeStepper_ExplicitRungeKutta);
 	}
 
+	std::shared_ptr<DESolver_TimeTreeNode_Base> getInstanceCopy()	override
+	{
+		return std::shared_ptr<DESolver_TimeTreeNode_Base>(new DESolver_TimeStepper_ExplicitRungeKutta(*this));
+	}
+
+
 	void _eval_integration(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
-			double i_simulation_time
+			double i_simulationTime
 	)	override
 	{
 		switch(_rkMethodID)
 		{
-		case ERK1:	_eval_timeIntegration_ERK1(i_U, o_U, i_simulation_time);	return;
-		case ERK2_MIDPOINT:	_eval_timeIntegration_ERK2_Midpoint(i_U, o_U, i_simulation_time);	return;
-		case ERK2_HEUN:	_eval_timeIntegration_ERK2_Heun(i_U, o_U, i_simulation_time);	return;
-		case ERK2_RALSTON:	_eval_timeIntegration_ERK2_Ralston(i_U, o_U, i_simulation_time);	return;
-		case ERK2_RALSTON_CC:	_eval_timeIntegration_ERK2_RalstonCC(i_U, o_U, i_simulation_time);	return;
-		case ERK3:	_eval_timeIntegration_ERK3(i_U, o_U, i_simulation_time);	return;
-		case ERK4:	_eval_timeIntegration_ERK4(i_U, o_U, i_simulation_time);	return;
+		case ERK1:	_eval_timeIntegration_ERK1(i_U, o_U, i_simulationTime);	return;
+		case ERK2_MIDPOINT:	_eval_timeIntegration_ERK2_Midpoint(i_U, o_U, i_simulationTime);	return;
+		case ERK2_HEUN:	_eval_timeIntegration_ERK2_Heun(i_U, o_U, i_simulationTime);	return;
+		case ERK2_RALSTON:	_eval_timeIntegration_ERK2_Ralston(i_U, o_U, i_simulationTime);	return;
+		case ERK2_RALSTON_CC:	_eval_timeIntegration_ERK2_RalstonCC(i_U, o_U, i_simulationTime);	return;
+		case ERK3:	_eval_timeIntegration_ERK3(i_U, o_U, i_simulationTime);	return;
+		case ERK4:	_eval_timeIntegration_ERK4(i_U, o_U, i_simulationTime);	return;
 		default: ;
 		}
 	}
@@ -284,24 +287,24 @@ private:
 	void _eval_timeIntegration_ERK1(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
-			double i_simulation_time
+			double i_simulationTime
 	)
 	{
 		evalTimeStepper(
 				0,
 				i_U,
 				*_rkStageDataContainer[0],
-				i_simulation_time
+				i_simulationTime
 			);
 
-		o_U.op_setVectorPlusScalarMulVector(i_U, _timestep_size, *_rkStageDataContainer[0]);
+		o_U.op_setVectorPlusScalarMulVector(i_U, _timestepSize, *_rkStageDataContainer[0]);
 	}
 
 private:
 	void _eval_timeIntegration_ERK2_Midpoint(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
-			double i_simulation_time
+			double i_simulationTime
 	)
 	{
 		// See https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods#Explicit_Runge.E2.80.93Kutta_methods
@@ -322,7 +325,7 @@ private:
 				0,
 				i_U,
 				*_rkStageDataContainer[0],
-				i_simulation_time
+				i_simulationTime
 			);
 
 		// STAGE 2
@@ -334,7 +337,7 @@ private:
 				0,
 				*_tmpDataContainer[0],
 				*_rkStageDataContainer[1],
-				i_simulation_time + c[0]*dt
+				i_simulationTime + c[0]*dt
 			);
 
 		o_U.op_setVectorPlusScalarMulVector(i_U, dt*b[1], *_rkStageDataContainer[1]);
@@ -344,7 +347,7 @@ private:
 	void _eval_timeIntegration_ERK2_Heun(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
-			double i_simulation_time
+			double i_simulationTime
 	)
 	{
 		// See https://en.wikipedia.org/wiki/Heun%27s_method
@@ -363,7 +366,7 @@ private:
 		evalTimeStepper(
 				i_U,
 				*_rkStageDataContainer[0],
-				i_simulation_time
+				i_simulationTime
 			);
 
 		// STAGE 2
@@ -374,7 +377,7 @@ private:
 		evalTimeStepper(
 				*_tmpDataContainer[0],
 				*_rkStageDataContainer[1],
-				i_simulation_time + c[0]*dt
+				i_simulationTime + c[0]*dt
 			);
 
 		o_U.op_setVectorPlusScalarMulVector(i_U, dt*b[0], *_rkStageDataContainer[0]);
@@ -386,7 +389,7 @@ private:
 	void _eval_timeIntegration_ERK2_Ralston(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
-			double i_simulation_time
+			double i_simulationTime
 	)
 	{
 		/*
@@ -409,7 +412,7 @@ private:
 		evalTimeStepper(
 				i_U,
 				*_rkStageDataContainer[0],
-				i_simulation_time
+				i_simulationTime
 		);
 
 		// STAGE 2
@@ -420,7 +423,7 @@ private:
 		evalTimeStepper(
 				*_tmpDataContainer[0],
 				*_rkStageDataContainer[1],
-				i_simulation_time + c[0]*dt
+				i_simulationTime + c[0]*dt
 			);
 
 		o_U.op_setVectorPlusScalarMulVector(i_U, dt*b[0], *_rkStageDataContainer[0]);
@@ -527,9 +530,9 @@ private:
 			);
 
 		// Closure
-		o_U.op_setVectorPlusScalarMulVector(i_U, _timestep_size*b[0], *_rkStageDataContainer[0]);
-		o_U.op_addScalarMulVector(_timestep_size*b[1], *_rkStageDataContainer[1]);
-		o_U.op_addScalarMulVector(_timestep_size*b[2], *_rkStageDataContainer[2]);
+		o_U.op_setVectorPlusScalarMulVector(i_U, _timestepSize*b[0], *_rkStageDataContainer[0]);
+		o_U.op_addScalarMulVector(_timestepSize*b[1], *_rkStageDataContainer[1]);
+		o_U.op_addScalarMulVector(_timestepSize*b[2], *_rkStageDataContainer[2]);
 	}
 
 private:
@@ -598,10 +601,10 @@ private:
 			);
 
 		// Closure
-		o_U.op_setVectorPlusScalarMulVector(i_U, _timestep_size*b[0], *_rkStageDataContainer[0]);
-		o_U.op_addScalarMulVector(_timestep_size*b[1], *_rkStageDataContainer[1]);
-		o_U.op_addScalarMulVector(_timestep_size*b[2], *_rkStageDataContainer[2]);
-		o_U.op_addScalarMulVector(_timestep_size*b[3], *_rkStageDataContainer[3]);
+		o_U.op_setVectorPlusScalarMulVector(i_U, _timestepSize*b[0], *_rkStageDataContainer[0]);
+		o_U.op_addScalarMulVector(_timestepSize*b[1], *_rkStageDataContainer[1]);
+		o_U.op_addScalarMulVector(_timestepSize*b[2], *_rkStageDataContainer[2]);
+		o_U.op_addScalarMulVector(_timestepSize*b[3], *_rkStageDataContainer[3]);
 	}
 
 	void print(const std::string &i_prefix = "")

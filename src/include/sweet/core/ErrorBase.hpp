@@ -21,8 +21,14 @@
  * Do an error check.
  * If there's an error: forward error and return with EXIT_FAILURE
  */
-#define ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(classWithError)	\
+#define ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(classWithError)	\
 	{ if ((classWithError).error.exists()) { (classWithError).error.print(); return EXIT_FAILURE; } }
+
+/*
+ * Do an error check and return in case of an error
+ */
+#define ERROR_CHECK_COND_RETURN_BOOLEAN(classWithError)	\
+	{ if ((classWithError).error.exists()) { return false; } }
 
 
 /*
@@ -30,7 +36,7 @@
  * If there's an error: forward error and return
  * If there's no error: continue
  */
-#define ERROR_CHECK_COND_RETURN(classWithError) \
+#define ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN(classWithError) \
 	{ if ((classWithError).error.exists()) { error.forward((classWithError).error); return; } }
 
 

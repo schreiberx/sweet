@@ -12,8 +12,7 @@ namespace sweet
 {
 
 class DESolver_TimeStepper_StrangSplitting	:
-		//public DESolver_TimeTreeNode_Base,
-		public DESolver_TimeTreeNode_NodeInteriorHelper
+		public DESolver_TimeTreeNode_NodeInteriorHelper<DESolver_TimeStepper_StrangSplitting>
 {
 private:
 	// Order of Strang splitting
@@ -46,7 +45,7 @@ public:
 		for (auto &i : _timeTreeNodes)
 		{
 			i->shackRegistration(io_shackDict);
-			ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(*i);
+			ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(*i);
 		}
 
 		return true;
@@ -87,6 +86,16 @@ public:
 				ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(i_tsAssemblation);
 				break;
 
+			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_VALUE:
+				_timeTreeNodes.push_back(std::shared_ptr<sweet::DESolver_TimeTreeNode_Base>());
+
+				i_tsAssemblation.assembleTimeTreeNodeByName(
+						a->value,
+						_timeTreeNodes.back()
+					);
+				ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(i_tsAssemblation);
+				break;
+
 			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_KEY_FUNCTION:
 				return error.set("Key with functions not supported"+a->getNewLineDebugMessage());
 				break;
@@ -96,21 +105,11 @@ public:
 				{
 					a->getValue(_order);
 					std::cout << _order << std::endl;
-					ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*a);
+					ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(i_tsAssemblation);
 					break;
 				}
 
 				return error.set("Key not supported"+a->getNewLineDebugMessage());
-				break;
-
-			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_VALUE:
-				_timeTreeNodes.push_back(std::shared_ptr<sweet::DESolver_TimeTreeNode_Base>());
-
-				i_tsAssemblation.assembleTimeTreeNodeByName(
-						a->value,
-						_timeTreeNodes.back()
-					);
-				ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(i_tsAssemblation);
 				break;
 
 			default:
@@ -149,30 +148,51 @@ public:
 		return true;
 	}
 
-	std::shared_ptr<DESolver_TimeTreeNode_Base> getNewInstance()	override
+	inline
+	void setTimeStepSize(double i_dt)	override
 	{
-		return std::shared_ptr<DESolver_TimeTreeNode_Base>(new DESolver_TimeStepper_StrangSplitting);
+		_timestepSize = i_dt;
+
+		if (_order == 1)
+		{
+			for (auto &i : _timeTreeNodes)
+			{
+				i->setTimeStepSize(i_dt);
+			}
+			return;
+		}
+
+		if (_order == 2)
+		{
+			_timeTreeNodes[0]->setTimeStepSize(i_dt*0.5);
+			_timeTreeNodes[1]->setTimeStepSize(i_dt);
+			return;
+		}
+
+		SWEETError("Internal error");
 	}
+
+
 
 
 	void _eval_integration(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
-			double i_simulation_time
+			double i_simulationTime
 	)	override
 	{
 		if (_order == 1)
 		{
-			_timeTreeNodes[0]->_eval_integration(i_U, *_tmpDataContainer[0], i_simulation_time);
-			_timeTreeNodes[1]->_eval_integration(*_tmpDataContainer[0], o_U, i_simulation_time);
+			_timeTreeNodes[0]->_eval_integration(i_U, *_tmpDataContainer[0], i_simulationTime);
+			_timeTreeNodes[1]->_eval_integration(*_tmpDataContainer[0], o_U, i_simulationTime);
 			return;
 		}
 		
 		if (_order == 2)
 		{
-			_timeTreeNodes[0]->_eval_integration(i_U, *_tmpDataContainer[0], i_simulation_time);
-			_timeTreeNodes[1]->_eval_integration(*_tmpDataContainer[0], *_tmpDataContainer[1], i_simulation_time);
-			_timeTreeNodes[0]->_eval_integration(*_tmpDataContainer[1], o_U, i_simulation_time+0.5*dt);
+			_timeTreeNodes[0]->_eval_integration(i_U, *_tmpDataContainer[0], i_simulationTime);
+			_timeTreeNodes[1]->_eval_integration(*_tmpDataContainer[0], *_tmpDataContainer[1], i_simulationTime);
+			_timeTreeNodes[0]->_eval_integration(*_tmpDataContainer[1], o_U, i_simulationTime+0.5*dt);
 			return;
 		}
 	}

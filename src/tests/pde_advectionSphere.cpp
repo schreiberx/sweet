@@ -13,20 +13,20 @@
 int main(int i_argc, char *i_argv[])
 {
 	ProgramPDEAdvectionSphere progPDEAdvSphere(i_argc, i_argv);
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(progPDEAdvSphere);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(progPDEAdvSphere);
 
 	progPDEAdvSphere.setup();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(progPDEAdvSphere);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(progPDEAdvSphere);
 
 	// Simply test whether the clear and setup works properly
 	progPDEAdvSphere.clear();
 	progPDEAdvSphere.setup();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(progPDEAdvSphere);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(progPDEAdvSphere);
 
 
 	int max_modes = 256;
 
-	double dt = progPDEAdvSphere.shackTimestepControl->current_timestep_size;
+	double dt = progPDEAdvSphere.shackTimestepControl->current_timestepSize;
 	int initial_spectral_modes = progPDEAdvSphere.shackSphereDataOps->space_res_spectral[0];
 
 	int loop_counter = 0;
@@ -44,7 +44,7 @@ int main(int i_argc, char *i_argv[])
 		/*
 		 * Overwrite parameters
 		 */
-		progPDEAdvSphere.shackTimestepControl->current_timestep_size = dt/std::pow(2.0, loop_counter);
+		progPDEAdvSphere.shackTimestepControl->current_timestepSize = dt/std::pow(2.0, loop_counter);
 
 		/*
 		 * We need higher resolution for
@@ -82,7 +82,7 @@ int main(int i_argc, char *i_argv[])
 		progPDEAdvSphere.setup_3_dataOpsEtc();
 
 		std::cout << "Testing with " << progPDEAdvSphere.dataConfigOps.sphereDataConfig.getUniqueIDString() << std::endl;
-		std::cout << "Testing with dt=" << progPDEAdvSphere.shackTimestepControl->current_timestep_size << std::endl;
+		std::cout << "Testing with dt=" << progPDEAdvSphere.shackTimestepControl->current_timestepSize << std::endl;
 
 		{
 			while (!progPDEAdvSphere.should_quit())

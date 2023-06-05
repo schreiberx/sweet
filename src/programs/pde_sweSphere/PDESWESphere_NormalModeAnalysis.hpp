@@ -44,9 +44,9 @@ public:
 		const char* filename = i_shackIOData->output_file_name.c_str();
 
 		if (i_shackTimestepControl->max_timesteps_nr > 0)
-			sprintf(buffer_real, filename, "normal_modes_physical", i_shackTimestepControl->current_timestep_size*i_shackTimestepControl->max_timesteps_nr*i_shackIOData->output_time_scale);
+			sprintf(buffer_real, filename, "normal_modes_physical", i_shackTimestepControl->current_timestepSize*i_shackTimestepControl->max_timesteps_nr*i_shackIOData->output_time_scale);
 		else
-			sprintf(buffer_real, filename, "normal_modes_physical", i_shackTimestepControl->current_timestep_size*i_shackIOData->output_time_scale);
+			sprintf(buffer_real, filename, "normal_modes_physical", i_shackTimestepControl->current_timestepSize*i_shackIOData->output_time_scale);
 
 		std::ofstream file(buffer_real, std::ios_base::trunc);
 		std::cout << "Writing normal mode analysis to file '" << buffer_real << "'" << std::endl;
@@ -73,7 +73,7 @@ public:
 		if (i_shackTimestepControl->max_simulation_time > 0)
 			file << "# t " << i_shackTimestepControl->max_simulation_time << std::endl;
 		else
-			file << "# t " << (num_timesteps*i_shackTimestepControl->current_timestep_size) << std::endl;
+			file << "# t " << (num_timesteps*i_shackTimestepControl->current_timestepSize) << std::endl;
 
 #if 0
 		file << "# g " << i_shackDict.sim.gravitation << std::endl;
@@ -115,16 +115,16 @@ public:
 						SWEETError("TODO 01943934");
 						//spheredata_timestepping_explicit_leapfrog.resetAndSetup(prog_h, i_shackDict.disc.timestepping_order, i_shackDict.disc.leapfrog_robert_asselin_filter);
 
-						i_shackTimestepControl->current_timestep_size = leapfrog_start_timesteps_size;
+						i_shackTimestepControl->current_timestepSize = leapfrog_start_timesteps_size;
 
 						for (int i = 0; i < leapfrog_start_num_timesteps; i++)
 							(i_class->*i_run_timestep_method)();
 
-						i_shackTimestepControl->current_timestep_size = leapfrog_end_timestep_size;
+						i_shackTimestepControl->current_timestepSize = leapfrog_end_timestepSize;
 
 						(i_class->*i_run_timestep_method)();
 
-						i_shackTimestepControl->current_timestep_size = leapfrog_original_timestep_size;
+						i_shackTimestepControl->current_timestepSize = leapfrog_original_timestepSize;
 					}
 					else
 					{
@@ -147,7 +147,7 @@ public:
 						prog[outer_prog_id]->physical_space_data[outer_i] -= 1.0;
 
 						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-							prog[inner_prog_id]->operator*=(1.0/i_shackTimestepControl->current_timestep_size);
+							prog[inner_prog_id]->operator*=(1.0/i_shackTimestepControl->current_timestepSize);
 					}
 
 					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
@@ -199,7 +199,7 @@ public:
 							prog[outer_prog_id]->spectral_space_data[outer_i] -= 1.0;
 
 							for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-								prog[inner_prog_id]->operator*=(1.0/i_shackTimestepControl->current_timestep_size);
+								prog[inner_prog_id]->operator*=(1.0/i_shackTimestepControl->current_timestepSize);
 						}
 
 						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
@@ -260,7 +260,7 @@ public:
 						prog[outer_prog_id]->spectral_space_data[outer_i] -= 1.0;
 
 						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-							prog[inner_prog_id]->operator*=(1.0/i_shackTimestepControl->current_timestep_size);
+							prog[inner_prog_id]->operator*=(1.0/i_shackTimestepControl->current_timestepSize);
 					}
 
 					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)

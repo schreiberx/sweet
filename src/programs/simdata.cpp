@@ -207,7 +207,7 @@ bool runTests()
 		std::cout << tmp << std::endl;
 		std::cout << "***" << std::endl;
 		tssParser.genTimeSteppingTree(tmp, tsTree);
-		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(tssParser);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(tssParser);
 		tsTree.print();
 		std::cout << "***" << std::endl;
 	}
@@ -218,7 +218,7 @@ bool runTests()
 		std::cout << tmp << std::endl;
 		std::cout << "***" << std::endl;
 		tssParser.genTimeSteppingTree(tmp, tsTree);
-		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(tssParser);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(tssParser);
 		tsTree.print();
 		std::cout << "***" << std::endl;
 	}
@@ -229,7 +229,7 @@ bool runTests()
 		std::cout << tmp << std::endl;
 		std::cout << "***" << std::endl;
 		tssParser.genTimeSteppingTree(tmp, tsTree);
-		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(tssParser);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(tssParser);
 		tsTree.print();
 		std::cout << "***" << std::endl;
 	}
@@ -240,7 +240,7 @@ bool runTests()
 		std::cout << tmp << std::endl;
 		std::cout << "***" << std::endl;
 		tssParser.genTimeSteppingTree(tmp, tsTree);
-		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(tssParser);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(tssParser);
 		tsTree.print();
 		std::cout << "***" << std::endl;
 	}
@@ -251,7 +251,7 @@ bool runTests()
 		std::cout << tmp << std::endl;
 		std::cout << "***" << std::endl;
 		tssParser.genTimeSteppingTree(tmp, tsTree);
-		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(tssParser);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(tssParser);
 		tsTree.print();
 		std::cout << "***" << std::endl;
 	}
@@ -262,7 +262,7 @@ bool runTests()
 		std::cout << tmp << std::endl;
 		std::cout << "***" << std::endl;
 		tssParser.genTimeSteppingTree(tmp, tsTree);
-		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(tssParser);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(tssParser);
 		tsTree.print();
 		std::cout << "***" << std::endl;
 	}
@@ -280,16 +280,16 @@ int main(int argc, char *argv[])
 	DESolver pdeSolver;
 
 	pdeSolver.setup_1_shacks(argc, argv);
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(pdeSolver);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(pdeSolver);
 
 	pdeSolver.setup_2_config();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(pdeSolver);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(pdeSolver);
 
 	pdeSolver.setup_3_data();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(pdeSolver);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(pdeSolver);
 
 	pdeSolver.setup_4_timestepper();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(pdeSolver);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(pdeSolver);
 
 	pdeSolver.doTimestep();
 

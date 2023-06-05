@@ -27,13 +27,13 @@ int main(
 {
 	sweet::ShackProgArgDictionary shackProgArgDict(i_argc, i_argv);
 	shackProgArgDict.setup();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(shackProgArgDict);
 
 	sweet::ShackPlaneDataOps *shackPlaneDataOps = shackProgArgDict.getAutoRegistration<sweet::ShackPlaneDataOps>();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(shackProgArgDict);
 
 	shackProgArgDict.processProgramArguments();
-	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(shackProgArgDict);
 
 	shackProgArgDict.printShackData();
 
@@ -124,7 +124,7 @@ int main(
 
 		sweet::PlaneOperators ops;
 		ops.setup(planeDataConfig, shackPlaneDataOps);
-		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(ops);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXITCODE(ops);
 
 		/*
 		 * keep h in the outer regions to allocate it only once and avoid reinitialization of FFTW

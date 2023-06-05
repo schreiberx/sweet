@@ -423,7 +423,7 @@ void PDEAdvectionSphereTS_na_sl::run_timestep_1(
 	sweet::ScalarDataArray pos_lon_D(sphereDataConfig->physical_array_data_number_of_elements);
 	sweet::ScalarDataArray pos_lat_D(sphereDataConfig->physical_array_data_number_of_elements);
 
-	double dt_div_radius = shackTimestepControl->current_timestep_size / shackSphereDataOps->sphere_radius;
+	double dt_div_radius = shackTimestepControl->current_timestepSize / shackSphereDataOps->sphere_radius;
 
 	semiLagrangian.semi_lag_departure_points_settls_specialized(
 			dt_div_radius*U_u_prev, dt_div_radius*U_v_prev,
@@ -495,7 +495,7 @@ void PDEAdvectionSphereTS_na_sl::run_timestep_2(
 	sweet::ScalarDataArray pos_lon_d(sphereDataConfig->physical_array_data_number_of_elements);
 	sweet::ScalarDataArray pos_lat_d(sphereDataConfig->physical_array_data_number_of_elements);
 
-	double dt_div_radius = shackTimestepControl->current_timestep_size / shackSphereDataOps->sphere_radius;
+	double dt_div_radius = shackTimestepControl->current_timestepSize / shackSphereDataOps->sphere_radius;
 
 	semiLagrangian.semi_lag_departure_points_settls_specialized(
 			dt_div_radius*U_u_prev, dt_div_radius*U_v_prev,
@@ -560,7 +560,7 @@ void PDEAdvectionSphereTS_na_sl::run_timestep_3(
 	sweet::ScalarDataArray pos_lon_d(sphereDataConfig->physical_array_data_number_of_elements);
 	sweet::ScalarDataArray pos_lat_d(sphereDataConfig->physical_array_data_number_of_elements);
 
-	double dt_div_radius = shackTimestepControl->current_timestep_size / shackSphereDataOps->sphere_radius;
+	double dt_div_radius = shackTimestepControl->current_timestepSize / shackSphereDataOps->sphere_radius;
 
 	semiLagrangian.semi_lag_departure_points_settls_specialized(
 			dt_div_radius*U_u_prev, dt_div_radius*U_v_prev,

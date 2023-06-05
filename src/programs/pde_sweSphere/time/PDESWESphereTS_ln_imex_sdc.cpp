@@ -17,7 +17,7 @@ bool PDESWESphereTS_ln_imex_sdc::setup_auto(
 	timestepping_method = i_timestepping_method;
 	ops = io_ops;
 
-	dt = shackTimestepControl->current_timestep_size;
+	dt = shackTimestepControl->current_timestepSize;
 
 	// Check if default configuration was used
 	if (shackSDC->fileName == "") {

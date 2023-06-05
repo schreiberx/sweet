@@ -9,7 +9,7 @@
 #include <sweet/core/SWEETError.hpp>
 #include <sweet/core/sphere/SphereData_Config.hpp>
 #include <sweet/core/sphere/SphereOperators.hpp>
-#include "helpers/SWESphBandedMatrixPhysicalReal.hpp"
+#include "../timeHelpers/SWESphBandedMatrixPhysicalReal.hpp"
 
 
 
@@ -49,22 +49,22 @@ bool PDESWESphereTS_lg_irk::setup_auto(
 	return setup_main(
 			io_ops,
 			shackPDESWETimeDisc->timestepping_order,
-			shackTimestepControl->current_timestep_size,
+			shackTimestepControl->current_timestepSize,
 			shackPDESWETimeDisc->timestepping_crank_nicolson_filter
 		);
 }
 
 
 bool PDESWESphereTS_lg_irk::setup(
-		sweet::SphereOperators *io_ops,
+		const sweet::SphereOperators *io_ops,
 		int i_timestep_order,
-		double i_timestep_size
+		double i_timestepSize
 )
 {
 	return setup_main(
 			io_ops,
 			i_timestep_order,
-			i_timestep_size,
+			i_timestepSize,
 			shackPDESWETimeDisc->timestepping_crank_nicolson_filter
 		);
 }
@@ -72,16 +72,16 @@ bool PDESWESphereTS_lg_irk::setup(
 
 
 bool PDESWESphereTS_lg_irk::setup_main(
-		sweet::SphereOperators *io_ops,
+		const sweet::SphereOperators *io_ops,
 		int i_timestep_order,
-		double i_timestep_size,
+		double i_timestepSize,
 		double i_crank_nicolson_damping_factor
 )
 {
 	ops = io_ops;
 
 	timestepping_order = i_timestep_order;
-	timestep_size = i_timestep_size;
+	timestep_size = i_timestepSize;
 
 	if (i_timestep_order == 1)
 	{

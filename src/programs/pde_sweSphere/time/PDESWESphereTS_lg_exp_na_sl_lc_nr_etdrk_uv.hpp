@@ -77,11 +77,11 @@ public:
 		) override;
 
 	bool setup(
-			sweet::SphereOperators *io_ops,
+			const sweet::SphereOperators *io_ops,
 			sweet::ShackExpIntegration *i_shackExpIntegration,
 			int i_timestepping_order,
 			int i_timestepping_order2,
-			double i_timestep_size,
+			double i_timestepSize,
 
 			NLRemainderTreatment_enum i_nonlinear_remainder_treatment
 	);
