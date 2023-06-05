@@ -9,7 +9,9 @@ from mule.postprocessing.PlaneData import *
 
 class PlaneDataNormsPhysicalSpace:
 
-    def __init__(self, filename_a = None, filename_b = None, i_output_file = None):
+    def __init__(self, filename_a = None, filename_b = None, i_output_file = None, relative_difference = False):
+
+        self.relative_difference = relative_difference
 
         if filename_b != None:
             self.compute_diff(filename_a, filename_b)
@@ -32,6 +34,13 @@ class PlaneDataNormsPhysicalSpace:
         self.norm_l2_value = 0.0
         self.norm_linf_value = 0.0
         self.norm_rms_value = 0.0
+
+        if self.relative_difference:
+            self.ref_norm_l1_value = 0.0
+            self.ref_norm_l2_value = 0.0
+            self.ref_norm_linf_value = 0.0
+            self.ref_norm_rms_value = 0.0
+
 
         size_ref_j = file_a.data_physical.shape[0]
         size_ref_i = file_a.data_physical.shape[1]
@@ -69,6 +78,20 @@ class PlaneDataNormsPhysicalSpace:
                 # http://mathworld.wolfram.com/Root-Mean-Square.html
                 self.norm_rms_value += value*value
 
+                if self.relative_difference:
+                    value = file_a.data_physical[j*multiplier_j,i*multiplier_i]
+
+                    # http://mathworld.wolfram.com/L1-Norm.html
+                    self.ref_norm_l1_value += abs(value)
+                    # http://mathworld.wolfram.com/L2-Norm.html
+                    self.ref_norm_l2_value += value*value
+                    # http://mathworld.wolfram.com/L-Infinity-Norm.html
+                    self.ref_norm_linf_value = max(abs(value), self.ref_norm_linf_value)
+
+                    # http://mathworld.wolfram.com/Root-Mean-Square.html
+                    self.ref_norm_rms_value += value*value
+
+
         self.N = size_cmp_i*size_cmp_j
 
         # Compute sqrt() for Euklidian L2 norm
@@ -80,6 +103,22 @@ class PlaneDataNormsPhysicalSpace:
         # resolution normalized L1 value
         self.res_norm_l1_value = self.norm_l1_value/float(self.N)
 
+        if self.relative_difference:
+
+            self.ref_norm_l2_value = math.sqrt(self.ref_norm_l2_value)
+            self.norm_l2_value /= self.ref_norm_l2_value
+
+            # RMS final sqrt(N) computation
+            self.ref_norm_rms_value  = math.sqrt(self.ref_norm_rms_value/self.N)
+            self.norm_rms_value /= self.ref_norm_rms_value
+
+            # resolution normalized L1 value
+            self.ref_res_norm_l1_value = self.ref_norm_l1_value/float(self.N)
+            self.res_norm_l1_value /= self.ref_res_norm_l1_value
+
+            self.norm_l1_value /= self.ref_norm_l1_value
+
+            self.norm_linf_value /= self.ref_norm_linf_value
 
     def print(self, prefix=""):
         print(f"{prefix}norm l1: {self.norm_l1_value}")

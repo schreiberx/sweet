@@ -34,7 +34,6 @@ def _get_job(i_job_id):
 def _process_job(job_id, job_data):
     print(f" + job_id: {job_id}")
 
-    ## Skip reference jobs
     if 'job_benchref' in job_data['runtime.p_job_dirpath']:
         return
 
@@ -73,9 +72,9 @@ def _process_job(job_id, job_data):
     for ref_output_file in ref_output_files:
         print(f"  + diff for: {ref_output_file}")
 
+        ## compute errors between each solution and the reference one
         for MZ_suffix in ["_MZ_SP", "_MZ_SQ", "_MZ_FQ", "_MZ_S", "_MZ_F", "_MZ", "_S", "_F", "_SF"]:
 
-            ##spl = os.path.splitext(ref_output_file)
             spl = ref_output_file.split("_t")
             MZ_file = spl[0] + MZ_suffix + "_t" + spl[1]
 
@@ -84,7 +83,8 @@ def _process_job(job_id, job_data):
             try:
                 s = PlaneDataNormsPhysicalSpace(
                         ref_job_data['jobgeneration.job_dirpath']+'/'+ref_output_file,
-                        job_data['jobgeneration.job_dirpath']+'/'+MZ_file
+                        job_data['jobgeneration.job_dirpath']+'/'+MZ_file,
+                        relative_difference = True
                 )
 
             except Exception as e:
@@ -99,6 +99,67 @@ def _process_job(job_id, job_data):
 
             print(f"  + writing file {pickle_filename}")
             s.write_file(job_data['jobgeneration.job_dirpath']+'/'+pickle_filename, verbosity=1)
+
+        ## compute errors between
+        ## -> S and SF
+        ## -> F and SF
+        ## -> MZ_SP and S
+        ## -> MZ_SP and SF
+        ## -> MZ_SQ and S
+        ## -> MZ_SQ and SF
+        ## -> MZ_S and S
+        ## -> MZ_S and SF
+        ## -> MZ_F and F
+        ## -> MZ_F and SF
+        ## -> MZ and SF
+        cmp_ref = [
+                     ["_S", "_SF"],
+                     ["_F", "_SF"],
+                     ["_MZ_SP", "_S"],
+                     ["_MZ_SP", "_SF"],
+                     ["_MZ_SQ", "_S"],
+                     ["_MZ_SQ", "_SF"],
+                     ["_MZ_S", "_S"],
+                     ["_MZ_S", "_SF"],
+                     ["_MZ_F", "_F"],
+                     ["_MZ_F", "_SF"],
+                     ["_MZ", "_SF"]
+                  ]
+
+        for pair in cmp_ref:
+
+            MZ_suffix_cmp = pair[0]
+            MZ_suffix_ref = pair[1]
+
+            spl = ref_output_file.split("_t")
+            MZ_file_cmp = spl[0] + MZ_suffix_cmp + "_t" + spl[1]
+            MZ_file_ref = spl[0] + MZ_suffix_ref + "_t" + spl[1]
+
+            print(f"     == MZ_file: {MZ_file_cmp}")
+            s = None
+            try:
+                s = PlaneDataNormsPhysicalSpace(
+                        job_data['jobgeneration.job_dirpath']+'/'+MZ_file_ref,
+                        job_data['jobgeneration.job_dirpath']+'/'+MZ_file_cmp,
+                        relative_difference = True
+                )
+
+            except Exception as e:
+                print("Error occured which is ignored (missing files are ignored)")
+                print(str(e))
+                return
+
+            s.print("   + ")
+
+            basename = mule.utils.remove_file_ending(MZ_file_cmp)
+            spl =  basename.split("_t")
+
+            ##pickle_filename = 'plane_data_norms_physical_space_'+basename+'_ref' + MZ_suffix_ref + '.pickle'
+            pickle_filename = 'plane_data_norms_physical_space_'+spl[0]+'_ref' + MZ_suffix_ref + '_t' + spl[1] + '.pickle'
+
+            print(f"  + writing file {pickle_filename}")
+            s.write_file(job_data['jobgeneration.job_dirpath']+'/'+pickle_filename, verbosity=1)
+
 
     print("")
 

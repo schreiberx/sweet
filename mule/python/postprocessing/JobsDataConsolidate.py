@@ -101,7 +101,6 @@ def JobsData_GroupsCleanupPostprocessed(
 
             # Get list of reference files
             ref_output_files = mule.postprocessing.utils.get_job_output_files(job_data)
-            print("AAAAAAAA",ref_output_files)
 
             # Iterate over all reference files
             for ref_output_file in ref_output_files:
@@ -114,7 +113,9 @@ def JobsData_GroupsCleanupPostprocessed(
                     tag_src = ci['tag_src']
                     tag_dst = ci['tag_dst']
 
-                    if ref_output_file.startswith(ref_file_starts_with):
+                    ## conflicts e.g. between *prog_h* and *prog_h_pert* ???
+                    ###if ref_output_file.startswith(ref_file_starts_with):
+                    if ref_output_file.startswith(ref_file_starts_with + "_t"):
 
                         # Determine basename of reference file
                         ref_basename = mule.utils.remove_file_ending(ref_output_file)
