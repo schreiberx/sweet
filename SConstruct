@@ -174,26 +174,41 @@ override_list = [
 for i in override_list:
 
     if jg.sweet_mpi == 'enable':
+        """
+        Special MPI environment variables which set the compiler
+        """
         mi = 'MULE_MPI'+i
         if mi in env['ENV']:
             if 'FLAGS' in i or 'LIBS' in i:
                 print("INFO: Appending to "+i+"+= "+env['ENV'][mi])
-                env.Append(**{i: [env['ENV'][mi]]})
+
+                for m in env['ENV'][mi].split(" "):
+                    if m != "":
+                        env.Append(**{i: m})
+
             else:
                 print("INFO: Using MULE_MPI* environment variable to set "+i+"="+env['ENV'][mi])
+
                 env[i] = env['ENV'][mi]
 
 
     else:
-        if i in env['ENV']:
+        """
+        Use regular compiler environment variables (without MULE_ prefix)
+        """
+        #mi = 'MULE_'+i
+        mi = ''+i
+        if mi in env['ENV']:
             if 'FLAGS' in i or 'LIBS' in i:
-                print("INFO: Appending to "+i+"+= "+env['ENV'][i])
-                env.Append(**{i: [env['ENV'][i]]})
+                print("INFO: Appending to "+i+"+= "+env['ENV'][mi])
+
+                for m in env['ENV'][mi].split(" "):
+                    if m != "":
+                        env.Append(**{i: m})
 
             else:
-                print("INFO: Overriding environment variable "+i+"="+env['ENV'][i])
-                env[i] = env['ENV'][i]
-
+                print("INFO: Overriding environment variable "+i+"="+env['ENV'][mi])
+                env[i] = env['ENV'][mi]
 
 
 #
@@ -300,6 +315,16 @@ elif compiler_type_cxx == 'llvm':
         if (int(version[i]) < int(reqversion[i])):
             print("LLVM version "+(".".join(reqversion))+" or higher required")
             Exit(1)
+
+
+    if jg.sweet_mpi == 'enable':
+        output = exec_command(env['CC']+' -v')
+        if 'MPICH' in output:
+            if jg.fortran_source == 'enable':
+                # Add libraries which are used by gfortran which we need to manually link if using clang++
+                env.Append(LIBS=['mpifort'])
+                env.Append(LIBS=['m'])
+                env.Append(LIBS=['quadmath'])
 
     # eclipse specific flag
     env.Append(CXXFLAGS=['-fmessage-length=0'])
