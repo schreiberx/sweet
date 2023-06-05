@@ -111,7 +111,7 @@ public:
 		for (std::size_t i = 0; i < _tmpDataContainer.size(); i++)
 			_tmpDataContainer[i] = i_deTermConfig.getNewDataContainerInstance();
 		
-		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*this);
+		ERROR_CHECK_COND_RETURN_BOOLEAN(*this);
 
 		return true;
 	}
@@ -135,6 +135,7 @@ private:
 	)	override
 	{
 		o_U.op_setZero();
+		assert(_timeTreeNodes.size() == _evalFuns.size());
 
 		for (std::size_t i = 0; i < _evalFuns.size(); i++)
 		{

@@ -38,14 +38,21 @@ const std::vector<std::string> PDESWESphere_nr_uv::getNodeNames()
 
 
 bool PDESWESphere_nr_uv::setupConfigAndGetTimeStepperEval(
-		const sweet::DESolver_Config_Base &i_deTermConfig,
-		const std::string &i_timeStepperEvalName,
-		DESolver_TimeTreeNode_Base::EvalFun &o_timeStepper
+	const sweet::DESolver_Config_Base &i_deTermConfig,
+	const std::string &i_timeStepperEvalName,
+	DESolver_TimeTreeNode_Base::EvalFun &o_timeStepper
 )
 {
 	const PDESWESphere_DESolver_Config& myConfig = cast(i_deTermConfig);
 
 	ops = myConfig.ops;
+
+	// default setup
+	DESolver_TimeTreeNode_Base::_helperGetTimeStepperEval(
+			i_timeStepperEvalName,
+			o_timeStepper
+		);
+	ERROR_CHECK_COND_RETURN_BOOLEAN(*this);
 
 	return true;
 }
@@ -70,7 +77,7 @@ void PDESWESphere_nr_uv::_eval_tendencies(
 	assert(ops != nullptr);
 	assert(shackPDESWESphere != nullptr);
 
-	o_U.phi_pert = sweet::SphereData_Spectral(i_U.phi_pert.toPhys()*i_U.div.toPhys());
+	o_U.phi_pert = -sweet::SphereData_Spectral(i_U.phi_pert.toPhys()*i_U.div.toPhys());
 	o_U.vrt.spectral_set_zero();
 	o_U.div.spectral_set_zero();
 }

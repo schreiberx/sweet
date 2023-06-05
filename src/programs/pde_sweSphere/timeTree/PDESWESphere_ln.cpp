@@ -50,18 +50,14 @@ bool PDESWESphere_ln::setupConfigAndGetTimeStepperEval(
 	else
 		fg = ops->getFG_rotatingSphere(shackPDESWESphere->sphere_rotating_coriolis_omega);
 
-	ug.setup(ops->sphereDataConfig);
-	vg.setup(ops->sphereDataConfig);
-
 	// default setup
 	DESolver_TimeTreeNode_Base::_helperGetTimeStepperEval(
 			i_timeStepperEvalName,
 			o_timeStepper
 		);
-	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*this);
+	ERROR_CHECK_COND_RETURN_BOOLEAN(*this);
 
 	return true;
-	//return error.set("Time evaluation '"+i_timeStepperEvalName+"' not supported");
 }
 
 

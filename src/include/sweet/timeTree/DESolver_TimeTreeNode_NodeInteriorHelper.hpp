@@ -60,7 +60,7 @@ public:
 				i_timeStepperEvalName,
 				o_timeStepper
 			);
-		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*this);
+		ERROR_CHECK_COND_RETURN_BOOLEAN(*this);
 
 		return true;
 	}

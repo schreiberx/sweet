@@ -285,7 +285,9 @@ class VisSweet	:
 	const std::string vis_getStatusString(bool &o_replace_commas_with_newline)
 	{
 		std::ostringstream ss;
-		ss <<  simCallbacks->vis_getStatusString(o_replace_commas_with_newline) << ", vis min/max: " << vis_min << ", " << vis_max;
+		ss <<  simCallbacks->vis_getStatusString(o_replace_commas_with_newline);
+		ss.precision(12);
+		ss << ", vis min/max: " << vis_min << ", " << vis_max;
 		return ss.str();
 	}
 

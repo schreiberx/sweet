@@ -49,6 +49,19 @@ public:
 
 	void clear() override;
 
+private:
+	void euler_timestep_update_na(
+			const sweet::SphereData_Spectral &i_U_phi,
+			const sweet::SphereData_Spectral &i_U_vrt,
+			const sweet::SphereData_Spectral &i_U_div,
+
+			sweet::SphereData_Spectral &o_phi_t,
+			sweet::SphereData_Spectral &o_vrt_t,
+			sweet::SphereData_Spectral &o_div_t,
+
+			double i_simulation_timestamp
+	);
+
 	/*
 	 * Return the time tendencies of the PDE term
 	 */

@@ -263,7 +263,7 @@ void PDESWESphereTS_lg_exp_lc_n_etdrk::runTimestep(
 
 
 		/*
-		 * A_{n} = \psi_{0}(0.5*\Delta tL)U_{n} + \Delta t\psi_{1}(0.5*\Delta tL) F(U_{n})
+		 * A_{n} = \psi_{0}(0.5*\Delta tL)U_{n} + 0.5*\Delta t\psi_{1}(0.5*\Delta tL) F(U_{n})
 		 */
 		ts_phi1_rexi.runTimestep(
 				FUn_h, FUn_u, FUn_v,
@@ -306,7 +306,7 @@ void PDESWESphereTS_lg_exp_lc_n_etdrk::runTimestep(
 
 
 		/*
-		 * C_{n} = \psi_{0}(0.5*\Delta tL)U_{n} + 0.5*\Delta t\psi_{1}(0.5* \Delta tL) ( 2 F(B_{n},t_{n} + 0.5*\Delta t)-F(U_{n},t_{n})).
+		 * C_{n} = \psi_{0}(0.5*\Delta tL)A_{n} + 0.5*\Delta t\psi_{1}(0.5* \Delta tL) ( 2 F(B_{n},t_{n} + 0.5*\Delta t)-F(U_{n},t_{n})).
 		 */
 
 		sweet::SphereData_Spectral phi0_An_h(sphereDataConfig);

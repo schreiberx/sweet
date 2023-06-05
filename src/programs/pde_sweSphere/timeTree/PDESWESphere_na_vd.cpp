@@ -50,7 +50,7 @@ bool PDESWESphere_na_vd::setupConfigAndGetTimeStepperEval(
 			i_timeStepperEvalName,
 			o_timeStepper
 		);
-	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*this);
+	ERROR_CHECK_COND_RETURN_BOOLEAN(*this);
 
 	return true;
 }
@@ -75,11 +75,22 @@ void PDESWESphere_na_vd::_eval_tendencies(
 	assert(ops != nullptr);
 	assert(shackPDESWESphere != nullptr);
 
+#if 1
 	sweet::SphereData_Physical U_u_phys, U_v_phys;
 	ops->vrtdiv_to_uv(i_U.vrt, i_U.div, U_u_phys, U_v_phys);
 
 	sweet::SphereData_Physical U_div_phys = i_U.div.toPhys();
-	o_U.phi_pert = ops->V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, i_U.phi_pert.toPhys());
-	o_U.vrt = ops->V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, i_U.vrt.toPhys());
-	o_U.div = ops->V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, i_U.div.toPhys());
+	o_U.phi_pert = -ops->V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, i_U.phi_pert.toPhys());
+	o_U.vrt = -ops->V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, i_U.vrt.toPhys());
+	o_U.div = -ops->V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, i_U.div.toPhys());
+#else
+
+	sweet::SphereData_Physical U_u_phys, U_v_phys;
+	ops->vrtdiv_to_uv(i_U.vrt, i_U.div, U_u_phys, U_v_phys);
+
+	sweet::SphereData_Physical U_div_phys = i_U.div.toPhys();
+	o_U.phi_pert -= ops->V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, i_U.phi_pert.toPhys());
+	o_U.vrt -= ops->V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, i_U.vrt.toPhys());
+	o_U.div-= ops->V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, i_U.div.toPhys());
+#endif
 }

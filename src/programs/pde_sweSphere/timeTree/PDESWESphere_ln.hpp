@@ -33,12 +33,6 @@ private:
 	 */
 	sweet::SphereData_Physical fg;
 
-	/*
-	 * Temporary variables
-	 */
-	sweet::SphereData_Physical ug;
-	sweet::SphereData_Physical vg;
-
 public:
 	PDESWESphere_ln();
 	~PDESWESphere_ln();
