@@ -114,7 +114,7 @@ void PDESWESphere_l::setTimeStepSize(double i_dt)
 /*
  * Return the time tendencies of the PDE term
  */
-void PDESWESphere_l::_eval_tendencies(
+bool PDESWESphere_l::_eval_tendencies(
 		const sweet::DESolver_DataContainer_Base &i_U_,
 		sweet::DESolver_DataContainer_Base &o_U_,
 		double i_timeStamp
@@ -178,13 +178,15 @@ void PDESWESphere_l::_eval_tendencies(
 
 		o_U.phi_pert = -gh*i_U.div;
 	}
+
+	return true;
 }
 
 
 /*
  * Evaluate backward Euler timestep
  */
-void PDESWESphere_l::_eval_eulerBackward(
+bool PDESWESphere_l::_eval_eulerBackward(
 		const sweet::DESolver_DataContainer_Base &i_U_,
 		sweet::DESolver_DataContainer_Base &o_U_,
 		double i_timeStamp
@@ -205,6 +207,8 @@ void PDESWESphere_l::_eval_eulerBackward(
 
 	o_U.phi_pert = i_U.phi_pert - _dt*gh0*o_U.div;
 	o_U.vrt = ops->implicit_Jinv(i_U.vrt - ops->implicit_F(o_U.div, dt_two_omega), dt_two_omega);
+
+	return true;
 }
 
 

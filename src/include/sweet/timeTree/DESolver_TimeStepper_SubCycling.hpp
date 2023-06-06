@@ -150,45 +150,48 @@ public:
 		}
 	}
 
-	void _eval_integration(
+	bool _eval_integration(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulationTime
 	)	override
 	{
+		bool retval = true;
 		if (_subCyclingIntervals == 1)
 		{
-			evalTimeStepper(i_U, o_U, i_simulationTime);
-			return;
+			retval &= evalTimeStepper(i_U, o_U, i_simulationTime);
+			return retval;
 		}
 
 		int stepsTodo = _subCyclingIntervals;
 
 		// 1st step to use temporary buffer
-		evalTimeStepper(i_U, *_tmpDataContainer[0], i_simulationTime);
+		retval &= evalTimeStepper(i_U, *_tmpDataContainer[0], i_simulationTime);
 		stepsTodo--;
 
 		// perform always 2 steps
 		for (int i = 1; i < _subCyclingIntervals-1; i+=2)
 		{
-			evalTimeStepper(*_tmpDataContainer[0], o_U, i_simulationTime);
-			evalTimeStepper(o_U, *_tmpDataContainer[0], i_simulationTime);
+			retval &= evalTimeStepper(*_tmpDataContainer[0], o_U, i_simulationTime);
+			retval &= evalTimeStepper(o_U, *_tmpDataContainer[0], i_simulationTime);
 			stepsTodo -= 2;
 		}
 
 		assert(stepsTodo > 0 && stepsTodo <= 2);
 
-		evalTimeStepper(*_tmpDataContainer[0], o_U, i_simulationTime);
+		retval &= evalTimeStepper(*_tmpDataContainer[0], o_U, i_simulationTime);
 		stepsTodo--;
 
 		if (stepsTodo == 0)
-			return;
+			return retval;
 
 		_tmpDataContainer[0]->swap(o_U);
-		evalTimeStepper(*_tmpDataContainer[0], o_U, i_simulationTime);
+		retval &= evalTimeStepper(*_tmpDataContainer[0], o_U, i_simulationTime);
 		stepsTodo--;
 
 		assert(stepsTodo == 0);
+
+		return retval;
 	}
 
 	void print(const std::string &i_prefix = "")

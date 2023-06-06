@@ -67,7 +67,7 @@ public:
 	 * Return the time tendencies of the PDE term
 	 */
 public:
-	void _eval_tendencies(
+	bool _eval_tendencies(
 			const sweet::DESolver_DataContainer_Base &i_u,
 			sweet::DESolver_DataContainer_Base &o_u,
 			double i_timeStamp
@@ -77,7 +77,7 @@ public:
 	 * Return the backward Euler time step
 	 */
 public:
-	void _eval_eulerBackward(
+	bool _eval_eulerBackward(
 			const sweet::DESolver_DataContainer_Base &i_u,
 			sweet::DESolver_DataContainer_Base &o_u,
 			double i_timeStamp
@@ -87,7 +87,7 @@ public:
 	 * Compute an exponential integration for a given exp term
 	 */
 private:
-	void _eval_exponential(
+	bool _eval_exponential(
 			const sweet::DESolver_DataContainer_Base &i_u,
 			sweet::DESolver_DataContainer_Base &o_u,
 			double i_timeStamp

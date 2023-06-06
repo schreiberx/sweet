@@ -122,7 +122,7 @@ public:
 	}
 
 private:
-	void _eval_tendencies(
+	bool _eval_tendencies(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulationTime
@@ -142,6 +142,12 @@ private:
 		}
 
 		o_U.op_mulScalar(-1.0);
+
+#if SWEET_DEBUG
+		ERROR_CHECK_COND_RETURN_BOOLEAN(*this);
+#endif
+
+		return true;
 	}
 
 	void print(const std::string &i_prefix = "")

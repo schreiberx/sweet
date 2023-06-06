@@ -40,7 +40,7 @@ public:
 	/*
 	 * Type define 'EvalFun' which is required to time step
 	 */
-	typedef void (DESolver_TimeTreeNode_Base::*EvalFun)(
+	typedef bool (DESolver_TimeTreeNode_Base::*EvalFun)(
 					const DESolver_DataContainer_Base &i_U,
 					DESolver_DataContainer_Base &o_U,
 					double i_simulationTime
@@ -49,8 +49,8 @@ public:
 	/*
 	 * Keep track of a list of implemented evaluation functions
 	 */
-private:
-	std::vector<std::string> existingEvalFunctions;
+protected:
+	std::vector<std::string> _registeredEvalFunctions;
 
 public:
 	DESolver_TimeTreeNode_Base()
@@ -139,7 +139,7 @@ public:
 			const std::string &i_key,
 			const std::string &i_value
 	){
-		return error.set("ERROR: setupByKeyValue() not available.");
+		return error.set("setupByKeyValue() not available.");
 	};
 
 public:
@@ -207,7 +207,7 @@ public:
 private:
 	bool isEvalAvailable(const std::string &i_evalFunction)
 	{
-		for (auto &e: existingEvalFunctions)
+		for (auto &e: _registeredEvalFunctions)
 		{
 			if (e == i_evalFunction)
 				return true;
@@ -232,7 +232,7 @@ public:
 		)
 			SWEETError("Evaluation function '"+i_evalFunction+"' doesn't exist");
 
-		existingEvalFunctions.push_back(i_evalFunction);
+		_registeredEvalFunctions.push_back(i_evalFunction);
 	}
 
 
@@ -240,12 +240,12 @@ public:
 	 * Return the time integration
 	 */
 	virtual
-	void _eval_integration(
+	bool _eval_integration(
 			const DESolver_DataContainer_Base &i_U,
 			DESolver_DataContainer_Base &o_U,
 			double i_simulationTime
 	) {
-		error.set("ERROR: _eval_integration() not available");
+		return error.set("_eval_integration() not available");
 	};
 
 
@@ -254,12 +254,12 @@ public:
 	 */
 public:
 	virtual
-	void _eval_tendencies(
+	bool _eval_tendencies(
 			const DESolver_DataContainer_Base &i_U,
 			DESolver_DataContainer_Base &o_U,
 			double i_time_stamp
 	){
-		error.set("ERROR: _eval_tendencies() not available");
+		return error.set("_eval_tendencies() not available");
 	};
 
 	/*
@@ -270,12 +270,12 @@ public:
 	 */
 public:
 	virtual
-	void _eval_eulerForward(
+	bool _eval_eulerForward(
 			const DESolver_DataContainer_Base &i_U,
 			DESolver_DataContainer_Base &o_U,
 			double i_time_stamp
 	){
-		error.set("ERROR: _eval_eulerForward() not available");
+		return error.set("_eval_eulerForward() not available");
 	};
 
 	/*
@@ -289,12 +289,12 @@ public:
 	 * <=> (I - Dt * L) U^{n+1} = U^{n}
 	 */
 	virtual
-	void _eval_eulerBackward(
+	bool _eval_eulerBackward(
 			const DESolver_DataContainer_Base &i_U,
 			DESolver_DataContainer_Base &o_U,
 			double i_time_stamp
 	){
-		error.set("ERROR: _eval_eulerBackward() not available");
+		return error.set("_eval_eulerBackward() not available");
 	};
 
 	/*
@@ -303,135 +303,36 @@ public:
 	 * U^{n+1} = exp(Dt*L) U^n
 	 */
 	virtual
-	void _eval_exponential(
+	bool _eval_exponential(
 			const DESolver_DataContainer_Base &i_U,
 			DESolver_DataContainer_Base &o_U,
 			double i_time_stamp
 	){
-		error.set("ERROR: _eval_exponential() not available");
+		return error.set("_eval_exponential() not available");
 	};
 
-#if 0
-	/**
-	 * Check whether some evaluation is available.
-	 *
-	 * This only works with a hack in the GCC compiler.
-	 *
-	 * For other compilers it will always return that the function is available.
+	/*!
+	 * Message to help debugging errors in the time tree (e.g. about the parsing of the time tree string)
 	 */
-	bool isEvalAvailable(
-			const std::string &i_functionName
-	)
-	{
-#ifndef __GNUC__
-		return true;
-#else
-	#ifdef __clang__
-		return true;
-	#else
-
-		#pragma GCC diagnostic push
-		#pragma GCC diagnostic ignored "-Wpmf-conversions"
-
-
-		if (i_functionName == "tendencies")
-		{
-			void *a = (void*)(this->*(&DESolver_TimeTreeNode_Base::_eval_tendencies));
-			void *b = (void*)&DESolver_TimeTreeNode_Base::_eval_tendencies;
-			return a != b;
-		}
-		if (i_functionName == "eulerForward")
-		{
-			void *a = (void*)(this->*(&DESolver_TimeTreeNode_Base::_eval_eulerForward));
-			void *b = (void*)&DESolver_TimeTreeNode_Base::_eval_eulerForward;
-			return a != b;
-		}
-		if (i_functionName == "eulerBackward")
-		{
-			void *a = (void*)(this->*(&DESolver_TimeTreeNode_Base::_eval_eulerBackward));
-			void *b = (void*)&DESolver_TimeTreeNode_Base::_eval_eulerBackward;
-			return a != b;
-		}
-		if (i_functionName == "exponential")
-		{
-			void *a = (void*)(this->*(&DESolver_TimeTreeNode_Base::_eval_exponential));
-			void *b = (void*)&DESolver_TimeTreeNode_Base::_eval_exponential;
-			return a != b;
-		}
-		if (i_functionName == "timeIntegration")
-		{
-			void *a = (void*)(this->*(&DESolver_TimeTreeNode_Base::_eval_integration));
-			void *b = (void*)&DESolver_TimeTreeNode_Base::_eval_integration;
-			return a != b;
-		}
-
-		return error.set("Invalid function '"+i_functionName+"'");
-
-		#pragma GCC diagnostic pop
-
-		return true;
-	#endif
-#endif
-	}
-
-	bool isEvalAvailable(
-			const DESolver_TimeTreeNode_Base &i_deTermBase,
-			const std::string &i_functionName
-	)
-	{
-#ifndef __GNUC__
-		return true;
-#else
-	#ifdef __clang__
-		return true;
-	#else
-
-		#pragma GCC diagnostic push
-		#pragma GCC diagnostic ignored "-Wpmf-conversions"
-
-
-		if (i_functionName == "tendencies")
-		{
-			void *a = (void*)(i_deTermBase.*(&DESolver_TimeTreeNode_Base::_eval_tendencies));
-			void *b = (void*)&DESolver_TimeTreeNode_Base::_eval_tendencies;
-			return a != b;
-		}
-		if (i_functionName == "eulerForward")
-		{
-			void *a = (void*)(i_deTermBase.*(&DESolver_TimeTreeNode_Base::_eval_eulerForward));
-			void *b = (void*)&DESolver_TimeTreeNode_Base::_eval_eulerForward;
-			return a != b;
-		}
-		if (i_functionName == "eulerBackward")
-		{
-			void *a = (void*)(i_deTermBase.*(&DESolver_TimeTreeNode_Base::_eval_eulerBackward));
-			void *b = (void*)&DESolver_TimeTreeNode_Base::_eval_eulerBackward;
-			return a != b;
-		}
-		if (i_functionName == "exponential")
-		{
-			void *a = (void*)(i_deTermBase.*(&DESolver_TimeTreeNode_Base::_eval_exponential));
-			void *b = (void*)&DESolver_TimeTreeNode_Base::_eval_exponential;
-			return a != b;
-		}
-
-		return error.set("Invalid function '"+i_functionName+"'");
-
-		#pragma GCC diagnostic pop
-
-		return true;
-	#endif
-#endif
-	}
-#endif
-
 	std::string _debugMessage;
 
-	std::string setDebugMessage(const std::string &i_debugMessage)
+	/*!
+	 * Set the debug message
+	 */
+	std::string setDebugMessage(
+			const std::string &i_debugMessage	//!< Message for debugging
+	)
 	{
 		_debugMessage = i_debugMessage;
 		return _debugMessage;
 	}
+
+	/*!
+	 * Return the debug message including a newline.
+	 * This is handy for figuring out wrong parameters in the time tree.
+	 *
+	 * \return String with hopefully helpful debug information
+	 */
 	std::string getNewLineDebugMessage()
 	{
 		if (_debugMessage != "")

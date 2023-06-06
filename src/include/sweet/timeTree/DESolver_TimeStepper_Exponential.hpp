@@ -15,8 +15,7 @@ class DESolver_TimeStepper_Exponential	:
 	public DESolver_TimeTreeNode_NodeInteriorHelper<DESolver_TimeStepper_Exponential>
 {
 private:
-	// Order of Strang splitting
-	int _order;
+	std::string _expFunctionString;
 
 public:
 	DESolver_TimeStepper_Exponential()
@@ -29,6 +28,14 @@ public:
 	~DESolver_TimeStepper_Exponential()
 	{
 		clear();
+	}
+
+
+	DESolver_TimeStepper_Exponential(
+			const DESolver_TimeStepper_Exponential &i_value
+	)	:
+		DESolver_TimeTreeNode_NodeInteriorHelper(i_value)
+	{
 	}
 
 
@@ -106,6 +113,23 @@ public:
 		return _setupArgumentInternals();
 	}
 
+	bool setupByKeyValue(
+			const std::string &i_key,
+			const std::string &i_value
+	)
+	{
+		if (i_key == "expIntegrationFunction")
+		{
+			assert(_timeTreeNodes[0] != nullptr);
+			_timeTreeNodes[0]->setupByKeyValue(i_key, i_value);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*_timeTreeNodes[0]);
+
+			_expFunctionString = i_value;
+			return true;
+		}
+
+		return false;
+	}
 
 	bool setupConfigAndGetTimeStepperEval(
 		const sweet::DESolver_Config_Base &i_deTermConfig,
@@ -137,16 +161,15 @@ public:
 	}
 
 
-
 private:
-	void _eval_integration(
+	bool _eval_integration(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulationTime
 	)	override
 	{
 		assert(_timeTreeNodes[0] != nullptr);
-		evalTimeStepper(i_U, o_U, i_simulationTime);
+		return evalTimeStepper(i_U, o_U, i_simulationTime);
 	}
 
 
@@ -157,14 +180,14 @@ private:
 	 * either DE terms themselves, EXP and also REXI evaluations.
 	 */
 private:
-	void _eval_exponential(
+	bool _eval_exponential(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulationTime
 	)	override
 	{
 		assert(_timeTreeNodes[0] != nullptr);
-		evalTimeStepper(i_U, o_U, i_simulationTime);
+		return evalTimeStepper(i_U, o_U, i_simulationTime);
 	}
 
 
@@ -172,7 +195,7 @@ private:
 	{
 		std::string newPrefix = i_prefix + "  ";
 		std::cout << i_prefix << "EXP(" << std::endl;
-		std::cout << newPrefix << "  order: " << _order << std::endl;
+		std::cout << newPrefix << "  expFunctionString: '" << _expFunctionString << "'" << std::endl;
 		std::cout << i_prefix << ")" << std::endl;
 	}
 };

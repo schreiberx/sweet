@@ -70,7 +70,7 @@ void PDESWESphere_lc::clear()
 /*
  * Return the time tendencies of the PDE term
  */
-void PDESWESphere_lc::_eval_tendencies(
+bool PDESWESphere_lc::_eval_tendencies(
 		const sweet::DESolver_DataContainer_Base &i_U_,
 		sweet::DESolver_DataContainer_Base &o_U_,
 		double i_timeStamp
@@ -111,4 +111,6 @@ void PDESWESphere_lc::_eval_tendencies(
 	 * Zero tendencies
 	 */
 	o_U.phi_pert.spectral_set_zero();
+
+	return true;
 }

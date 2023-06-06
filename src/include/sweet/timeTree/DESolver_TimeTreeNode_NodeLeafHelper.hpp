@@ -38,16 +38,15 @@ public:
 	 */
 	DESolver_TimeTreeNode_NodeLeafHelper(
 		const DESolver_TimeTreeNode_NodeLeafHelper &i_src
-	)	:
-		_timestepSize(-1)
+	)
 	{
 		_timestepSize = i_src._timestepSize;
 
 		_tmpDataContainer.resize(_tmpDataContainer.size());
 		for (std::size_t i = 0; i < i_src._tmpDataContainer.size(); i++)
-		{
 			_tmpDataContainer[i] = i_src._tmpDataContainer[i]->getInstanceNew();
-		}
+
+		_registeredEvalFunctions = i_src._registeredEvalFunctions;
 	}
 
 	virtual

@@ -296,7 +296,7 @@ public:
 
 	}
 
-	void _eval_integration(
+	bool _eval_integration(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulationTime
@@ -304,20 +304,20 @@ public:
 	{
 		switch(_rkMethodID)
 		{
-		case IRK1:	_eval_timeIntegration_IRK1(i_U, o_U, i_simulationTime);	return;
-		case IRK2:	_eval_timeIntegration_IRK2(i_U, o_U, i_simulationTime);	return;
-		default: ;
+		case IRK1:	return _eval_timeIntegration_IRK1(i_U, o_U, i_simulationTime);
+		case IRK2:	return _eval_timeIntegration_IRK2(i_U, o_U, i_simulationTime);
+		default: return error.set("Internal error: Wrong IRK Method");
 		}
 	}
 
 private:
-	void _eval_timeIntegration_IRK1(
+	bool _eval_timeIntegration_IRK1(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulationTime
 	)
 	{
-		evalTimeStepper(0, i_U, o_U, i_simulationTime);
+		return evalTimeStepper(0, i_U, o_U, i_simulationTime);
 	}
 
 private:
@@ -328,7 +328,7 @@ private:
 	 *
 	 * With q the CN damping facor with no damping for q=0.5
 	 */
-	void _eval_timeIntegration_IRK2(
+	bool _eval_timeIntegration_IRK2(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulationTime
@@ -336,6 +336,7 @@ private:
 	{
 		// Forward Euler time step
 		evalTimeStepper(1, i_U, *_tmpDataContainer[0], i_simulationTime);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*this);
 
 		_tmpDataContainer[1]->op_setVectorPlusScalarMulVector(
 				i_U,
@@ -345,6 +346,9 @@ private:
 
 		// Backward Euler step
 		evalTimeStepper(0, *_tmpDataContainer[1], o_U, i_simulationTime+dt*_crank_nicolson_damping_factor);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*this);
+
+		return true;
 	}
 
 	void print(const std::string &i_prefix = "")

@@ -86,7 +86,7 @@ void PDESWESphere_nr_vd::euler_timestep_update_na(
 /*
  * Return the time tendencies of the PDE term
  */
-void PDESWESphere_nr_vd::_eval_tendencies(
+bool PDESWESphere_nr_vd::_eval_tendencies(
 		const sweet::DESolver_DataContainer_Base &i_U_,
 		sweet::DESolver_DataContainer_Base &o_U_,
 		double i_timeStamp
@@ -175,4 +175,6 @@ void PDESWESphere_nr_vd::_eval_tendencies(
 	o_U.div += ops->uv_to_div(U_div_phys*U_u_phys, U_div_phys*U_v_phys);
 	o_U.div -= 0.5*ops->laplace(U_u_phys*U_u_phys + U_v_phys*U_v_phys);
 	o_U.div -= U_div_phys*U_div_phys;
+
+	return true;
 }

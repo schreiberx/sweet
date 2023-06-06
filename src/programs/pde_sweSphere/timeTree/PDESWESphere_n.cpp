@@ -63,7 +63,7 @@ void PDESWESphere_n::clear()
 /*
  * Return the time tendencies of the PDE term
  */
-void PDESWESphere_n::_eval_tendencies(
+bool PDESWESphere_n::_eval_tendencies(
 		const sweet::DESolver_DataContainer_Base &i_U_,
 		sweet::DESolver_DataContainer_Base &o_U_,
 		double i_timeStamp
@@ -111,4 +111,6 @@ void PDESWESphere_n::_eval_tendencies(
 	tmpspec = /*phig+*/tmpg;
 
 	o_U.div += -ops->laplace(tmpspec);
+
+	return true;
 }

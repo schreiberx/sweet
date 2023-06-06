@@ -175,7 +175,7 @@ public:
 
 
 
-	void _eval_integration(
+	bool _eval_integration(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulationTime
@@ -184,17 +184,34 @@ public:
 		if (_order == 1)
 		{
 			_timeTreeNodes[0]->_eval_integration(i_U, *_tmpDataContainer[0], i_simulationTime);
+#if SWEET_DEBUG
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*_timeTreeNodes[0]);
+#endif
 			_timeTreeNodes[1]->_eval_integration(*_tmpDataContainer[0], o_U, i_simulationTime);
-			return;
+#if SWEET_DEBUG
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*_timeTreeNodes[1]);
+#endif
+			return true;
 		}
 		
 		if (_order == 2)
 		{
 			_timeTreeNodes[0]->_eval_integration(i_U, *_tmpDataContainer[0], i_simulationTime);
+#if SWEET_DEBUG
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*_timeTreeNodes[0]);
+#endif
 			_timeTreeNodes[1]->_eval_integration(*_tmpDataContainer[0], *_tmpDataContainer[1], i_simulationTime);
+#if SWEET_DEBUG
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*_timeTreeNodes[1]);
+#endif
 			_timeTreeNodes[0]->_eval_integration(*_tmpDataContainer[1], o_U, i_simulationTime+0.5*dt);
-			return;
+#if SWEET_DEBUG
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*_timeTreeNodes[0]);
+#endif
+			return true;
 		}
+
+		return error.set("Internal error: Wrong order");
 	}
 
 	void print(const std::string &i_prefix = "")

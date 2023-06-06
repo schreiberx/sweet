@@ -69,7 +69,7 @@ void PDESWESphere_ln::clear()
 /*
  * Return the time tendencies of the PDE term
  */
-void PDESWESphere_ln::_eval_tendencies(
+bool PDESWESphere_ln::_eval_tendencies(
 		const sweet::DESolver_DataContainer_Base &i_U_,
 		sweet::DESolver_DataContainer_Base &o_U_,
 		double i_timeStamp
@@ -161,4 +161,6 @@ void PDESWESphere_ln::_eval_tendencies(
 	ops->uv_to_vrtdiv(u_nl,v_nl, e, o_U.phi_pert);
 
 	o_U.phi_pert *= -1.0;
+
+	return true;
 }

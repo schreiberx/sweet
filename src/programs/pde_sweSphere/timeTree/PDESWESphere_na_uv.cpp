@@ -63,7 +63,7 @@ void PDESWESphere_na_uv::clear()
 /*
  * Return the time tendencies of the PDE term
  */
-void PDESWESphere_na_uv::_eval_tendencies(
+bool PDESWESphere_na_uv::_eval_tendencies(
 		const sweet::DESolver_DataContainer_Base &i_U_,
 		sweet::DESolver_DataContainer_Base &o_U_,
 		double i_timeStamp
@@ -72,7 +72,6 @@ void PDESWESphere_na_uv::_eval_tendencies(
 	const PDESWESphere_DataContainer &i_U = cast(i_U_);
 	PDESWESphere_DataContainer &o_U = cast(o_U_);
 
-#if 1
 	sweet::SphereData_Physical U_u_phys, U_v_phys;
 	ops->vrtdiv_to_uv(i_U.vrt, i_U.div, U_u_phys, U_v_phys);
 
@@ -95,38 +94,5 @@ void PDESWESphere_na_uv::_eval_tendencies(
 	o_U.div = vrt;
 	o_U.div -= ops->laplace(0.5*(U_u_phys*U_u_phys+U_v_phys*U_v_phys));
 
-#else
-
-	o_U.phi_pert.spectral_set_zero();
-	o_U.vrt.spectral_set_zero();
-	o_U.div.spectral_set_zero();
-
-	const sweet::SphereData_Spectral &U_phi_pert = i_U.phi_pert;
-	//const sweet::SphereData_Spectral &U_vrt = i_U_vrt;
-	const sweet::SphereData_Spectral &U_div = i_U.div;
-
-
-	sweet::SphereData_Physical U_u_phys, U_v_phys;
-	ops->vrtdiv_to_uv(i_U.vrt, i_U.div, U_u_phys, U_v_phys);
-
-
-
-	sweet::SphereData_Physical U_div_phys = U_div.toPhys();
-	o_U.phi_pert -= ops->V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, U_phi_pert.toPhys());
-
-	/*
-	 * Velocity
-	 */
-	sweet::SphereData_Physical vrtg = i_U.vrt.toPhys();
-
-	sweet::SphereData_Physical u_nl = U_u_phys*vrtg;
-	sweet::SphereData_Physical v_nl = U_v_phys*vrtg;
-
-	sweet::SphereData_Spectral vrt, div;
-	ops->uv_to_vrtdiv(u_nl, v_nl, vrt, div);
-	o_U.vrt -= div;
-	o_U.div += vrt;
-
-	o_U.div -= ops->laplace(0.5*(U_u_phys*U_u_phys+U_v_phys*U_v_phys));
-#endif
+	return true;
 }

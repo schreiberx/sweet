@@ -81,21 +81,27 @@ public:
 		 */
 
 		for (int i = 2; i < 1+_numPhiVariants; i++)
+		{
 			_timeTreeNodes[i] = _timeTreeNodes[1]->getInstanceCopy();
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*_timeTreeNodes[i]);
+		}
 
 		if (_order == 1)
 		{
+			assert(_timeTreeNodes.size() == 3);
 			_timeTreeNodes[1]->setupByKeyValue("expIntegrationFunction", "phi0");
 			_timeTreeNodes[2]->setupByKeyValue("expIntegrationFunction", "phi1");
 		}
 		else if (_order == 2)
 		{
+			assert(_timeTreeNodes.size() == 4);
 			_timeTreeNodes[1]->setupByKeyValue("expIntegrationFunction", "phi0");
 			_timeTreeNodes[2]->setupByKeyValue("expIntegrationFunction", "phi1");
 			_timeTreeNodes[3]->setupByKeyValue("expIntegrationFunction", "phi2");
 		}
 		else if (_order == 4)
 		{
+			assert(_timeTreeNodes.size() == 8);
 			_timeTreeNodes[1]->setupByKeyValue("expIntegrationFunction", "phi0");
 			_timeTreeNodes[2]->setupByKeyValue("expIntegrationFunction", "phi1");
 			_timeTreeNodes[3]->setupByKeyValue("expIntegrationFunction", "phi2");
@@ -104,6 +110,11 @@ public:
 			_timeTreeNodes[5]->setupByKeyValue("expIntegrationFunction", "ups1");
 			_timeTreeNodes[6]->setupByKeyValue("expIntegrationFunction", "ups2");
 			_timeTreeNodes[7]->setupByKeyValue("expIntegrationFunction", "ups3");
+		}
+
+		for (auto &i : _timeTreeNodes)
+		{
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*i);
 		}
 
 		return true;
@@ -161,7 +172,7 @@ public:
 			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_KEY_FUNCTION:
 			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_FUNCTION:
 				if (_timeTreeNodes.size() >= 2)
-					return error.set("A 3rd timestepper was provided, but only 2 required!"+a->getNewLineDebugMessage());
+					return error.set("A 3rd timestepper was provided, but only 2 allowed!"+a->getNewLineDebugMessage());
 
 				_timeTreeNodes.push_back(std::shared_ptr<sweet::DESolver_TimeTreeNode_Base>());
 
@@ -173,8 +184,8 @@ public:
 				break;
 
 			case sweet::DESolver_TimeStepping_Tree::Argument::ARG_TYPE_VALUE:
-				if (_timeTreeNodes.size() > 0)
-					return error.set("Only one DETerm is supported"+a->getNewLineDebugMessage());
+				if (_timeTreeNodes.size() >= 2)
+					return error.set("A 3rd timestepper was provided, but only 2 allowed!"+a->getNewLineDebugMessage());
 
 				_timeTreeNodes.push_back(std::shared_ptr<sweet::DESolver_TimeTreeNode_Base>());
 
@@ -266,19 +277,21 @@ public:
 	}
 
 
-	void _eval_integration(
+	bool _eval_integration(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulationTime
 	)	override
 	{
+		bool retval;
 		switch(_order)
 		{
-		case 1:	_eval_timeIntegration_ETDRK1(i_U, o_U, i_simulationTime);	return;
-		case 2:	_eval_timeIntegration_ETDRK2(i_U, o_U, i_simulationTime);	return;
-		case 4:	_eval_timeIntegration_ETDRK4(i_U, o_U, i_simulationTime);	return;
-		default: ;
+		case 1:	retval = _eval_timeIntegration_ETDRK1(i_U, o_U, i_simulationTime);	break;
+		case 2:	retval = _eval_timeIntegration_ETDRK2(i_U, o_U, i_simulationTime);	break;
+		case 4:	retval = _eval_timeIntegration_ETDRK4(i_U, o_U, i_simulationTime);	break;
+		default: SWEETError("Internal error");
 		}
+		return retval;
 	}
 
 private:
@@ -357,7 +370,7 @@ private:
 
 
 private:
-	void _eval_timeIntegration_ETDRK1(
+	bool _eval_timeIntegration_ETDRK1(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulationTime
@@ -390,11 +403,13 @@ private:
 		 * NNNNN   ============================           =================== =========
 		 */
 		o_U.op_setVectorPlusScalarMulVector(phi0_U, _timestepSize, phi1_FU);
+
+		return true;
 	}
 
 
 private:
-	void _eval_timeIntegration_ETDRK2(
+	bool _eval_timeIntegration_ETDRK2(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulationTime
@@ -448,11 +463,13 @@ private:
 		 * =======   =====            =================== =====================================
 		 */
 		o_U.op_setVectorPlusScalarMulVector(A, dt, phi2_X);
+
+		return true;
 	}
 
 
 private:
-	void _eval_timeIntegration_ETDRK4(
+	bool _eval_timeIntegration_ETDRK4(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulationTime
@@ -597,6 +614,8 @@ private:
 		o_U.op_setVectorPlusScalarMulVector(R0_, dt, R1_);
 		o_U.op_addScalarMulVector(2.0*dt, R2_);
 		o_U.op_addScalarMulVector(dt, R3_);
+
+		return true;
 	}
 
 	void print(const std::string &i_prefix = "")

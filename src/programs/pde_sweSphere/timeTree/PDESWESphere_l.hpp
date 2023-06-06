@@ -74,7 +74,7 @@ public:
 	 * Return the time tendencies of the PDE term
 	 */
 private:
-	void _eval_tendencies(
+	bool _eval_tendencies(
 			const sweet::DESolver_DataContainer_Base &i_u,
 			sweet::DESolver_DataContainer_Base &o_u,
 			double i_timeStamp
@@ -84,7 +84,7 @@ private:
 	 * Return the time tendencies of the PDE term
 	 */
 private:
-	void _eval_eulerBackward(
+	bool _eval_eulerBackward(
 			const sweet::DESolver_DataContainer_Base &i_u,
 			sweet::DESolver_DataContainer_Base &o_u,
 			double i_timeStamp

@@ -131,8 +131,8 @@ public:
 		{
 			return error.set("Unknown method '"+_method+"'");
 		}
-
 		assert(_rkNumStages >= 1);
+
 
 		if (_rkMethodID == INVALID)
 			return error.set("Invalid time stepping method");
@@ -264,7 +264,7 @@ public:
 	}
 
 
-	void _eval_integration(
+	bool _eval_integration(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulationTime
@@ -272,19 +272,19 @@ public:
 	{
 		switch(_rkMethodID)
 		{
-		case ERK1:	_eval_timeIntegration_ERK1(i_U, o_U, i_simulationTime);	return;
-		case ERK2_MIDPOINT:	_eval_timeIntegration_ERK2_Midpoint(i_U, o_U, i_simulationTime);	return;
-		case ERK2_HEUN:	_eval_timeIntegration_ERK2_Heun(i_U, o_U, i_simulationTime);	return;
-		case ERK2_RALSTON:	_eval_timeIntegration_ERK2_Ralston(i_U, o_U, i_simulationTime);	return;
-		case ERK2_RALSTON_CC:	_eval_timeIntegration_ERK2_RalstonCC(i_U, o_U, i_simulationTime);	return;
-		case ERK3:	_eval_timeIntegration_ERK3(i_U, o_U, i_simulationTime);	return;
-		case ERK4:	_eval_timeIntegration_ERK4(i_U, o_U, i_simulationTime);	return;
-		default: ;
+		case ERK1:	return _eval_timeIntegration_ERK1(i_U, o_U, i_simulationTime);
+		case ERK2_MIDPOINT:	return _eval_timeIntegration_ERK2_Midpoint(i_U, o_U, i_simulationTime);
+		case ERK2_HEUN:	return _eval_timeIntegration_ERK2_Heun(i_U, o_U, i_simulationTime);
+		case ERK2_RALSTON:	return _eval_timeIntegration_ERK2_Ralston(i_U, o_U, i_simulationTime);
+		case ERK2_RALSTON_CC:	return _eval_timeIntegration_ERK2_RalstonCC(i_U, o_U, i_simulationTime);
+		case ERK3:	return _eval_timeIntegration_ERK3(i_U, o_U, i_simulationTime);
+		case ERK4:	return _eval_timeIntegration_ERK4(i_U, o_U, i_simulationTime);
+		default: return error.set("Wrong RK evaluation");
 		}
 	}
 
 private:
-	void _eval_timeIntegration_ERK1(
+	bool _eval_timeIntegration_ERK1(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulationTime
@@ -298,10 +298,16 @@ private:
 			);
 
 		o_U.op_setVectorPlusScalarMulVector(i_U, _timestepSize, *_rkStageDataContainer[0]);
+
+#if SWEET_DEBUG
+		ERROR_CHECK_COND_RETURN_BOOLEAN(*this);
+#endif
+
+		return true;
 	}
 
 private:
-	void _eval_timeIntegration_ERK2_Midpoint(
+	bool _eval_timeIntegration_ERK2_Midpoint(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulationTime
@@ -341,10 +347,16 @@ private:
 			);
 
 		o_U.op_setVectorPlusScalarMulVector(i_U, dt*b[1], *_rkStageDataContainer[1]);
+
+#if SWEET_DEBUG
+		ERROR_CHECK_COND_RETURN_BOOLEAN(*this);
+#endif
+
+		return true;
 	}
 
 private:
-	void _eval_timeIntegration_ERK2_Heun(
+	bool _eval_timeIntegration_ERK2_Heun(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulationTime
@@ -382,11 +394,17 @@ private:
 
 		o_U.op_setVectorPlusScalarMulVector(i_U, dt*b[0], *_rkStageDataContainer[0]);
 		o_U.op_addScalarMulVector(dt*b[1], *_rkStageDataContainer[1]);
+
+#if SWEET_DEBUG
+		ERROR_CHECK_COND_RETURN_BOOLEAN(*this);
+#endif
+
+		return true;
 	}
 
 
 private:
-	void _eval_timeIntegration_ERK2_Ralston(
+	bool _eval_timeIntegration_ERK2_Ralston(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulationTime
@@ -428,11 +446,17 @@ private:
 
 		o_U.op_setVectorPlusScalarMulVector(i_U, dt*b[0], *_rkStageDataContainer[0]);
 		o_U.op_addScalarMulVector(dt*b[1], *_rkStageDataContainer[1]);
+
+#if SWEET_DEBUG
+		ERROR_CHECK_COND_RETURN_BOOLEAN(*this);
+#endif
+
+		return true;
 	}
 
 
 private:
-	void _eval_timeIntegration_ERK2_RalstonCC(
+	bool _eval_timeIntegration_ERK2_RalstonCC(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulationTime
@@ -476,10 +500,16 @@ private:
 
 		o_U.op_setVectorPlusScalarMulVector(i_U, dt*b[0], *_rkStageDataContainer[0]);
 		o_U.op_addScalarMulVector(dt*b[1], *_rkStageDataContainer[1]);
+
+#if SWEET_DEBUG
+		ERROR_CHECK_COND_RETURN_BOOLEAN(*this);
+#endif
+
+		return true;
 	}
 
 private:
-	void _eval_timeIntegration_ERK3(
+	bool _eval_timeIntegration_ERK3(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulationTime
@@ -533,10 +563,16 @@ private:
 		o_U.op_setVectorPlusScalarMulVector(i_U, _timestepSize*b[0], *_rkStageDataContainer[0]);
 		o_U.op_addScalarMulVector(_timestepSize*b[1], *_rkStageDataContainer[1]);
 		o_U.op_addScalarMulVector(_timestepSize*b[2], *_rkStageDataContainer[2]);
+
+#if SWEET_DEBUG
+		ERROR_CHECK_COND_RETURN_BOOLEAN(*this);
+#endif
+
+		return true;
 	}
 
 private:
-	void _eval_timeIntegration_ERK4(
+	bool _eval_timeIntegration_ERK4(
 			const sweet::DESolver_DataContainer_Base &i_U,
 			sweet::DESolver_DataContainer_Base &o_U,
 			double i_simulationTime
@@ -605,6 +641,12 @@ private:
 		o_U.op_addScalarMulVector(_timestepSize*b[1], *_rkStageDataContainer[1]);
 		o_U.op_addScalarMulVector(_timestepSize*b[2], *_rkStageDataContainer[2]);
 		o_U.op_addScalarMulVector(_timestepSize*b[3], *_rkStageDataContainer[3]);
+
+#if SWEET_DEBUG
+		ERROR_CHECK_COND_RETURN_BOOLEAN(*this);
+#endif
+
+		return true;
 	}
 
 	void print(const std::string &i_prefix = "")

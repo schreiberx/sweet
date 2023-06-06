@@ -65,7 +65,7 @@ void PDESWESphere_nr_uv::clear()
 /*
  * Return the time tendencies of the PDE term
  */
-void PDESWESphere_nr_uv::_eval_tendencies(
+bool PDESWESphere_nr_uv::_eval_tendencies(
 		const sweet::DESolver_DataContainer_Base &i_U_,
 		sweet::DESolver_DataContainer_Base &o_U_,
 		double i_timeStamp
@@ -80,4 +80,6 @@ void PDESWESphere_nr_uv::_eval_tendencies(
 	o_U.phi_pert = -sweet::SphereData_Spectral(i_U.phi_pert.toPhys()*i_U.div.toPhys());
 	o_U.vrt.spectral_set_zero();
 	o_U.div.spectral_set_zero();
+
+	return true;
 }

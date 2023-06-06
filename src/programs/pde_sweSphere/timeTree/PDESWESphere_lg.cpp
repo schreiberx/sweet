@@ -20,17 +20,13 @@ PDESWESphere_lg::~PDESWESphere_lg()
 
 
 PDESWESphere_lg::PDESWESphere_lg(
-		const PDESWESphere_lg &i_val
+		const PDESWESphere_lg &i_value
 )	:
-	DESolver_TimeTreeNode_NodeLeafHelper(*this)
+	DESolver_TimeTreeNode_NodeLeafHelper(i_value)
 {
-	shackSphereDataOps = i_val.shackSphereDataOps;
-	shackPDESWESphere = i_val.shackPDESWESphere;
-	ops = i_val.ops;
-
-	setEvalAvailable("tendencies");
-	setEvalAvailable("eulerBackward");
-	setEvalAvailable("exponential");
+	shackSphereDataOps = i_value.shackSphereDataOps;
+	shackPDESWESphere = i_value.shackPDESWESphere;
+	ops = i_value.ops;
 }
 
 
@@ -116,7 +112,7 @@ void PDESWESphere_lg::clear()
 /*
  * Return the time tendencies of the PDE term
  */
-void PDESWESphere_lg::_eval_tendencies(
+bool PDESWESphere_lg::_eval_tendencies(
 		const sweet::DESolver_DataContainer_Base &i_U_,
 		sweet::DESolver_DataContainer_Base &o_U_,
 		double i_timeStamp
@@ -134,6 +130,8 @@ void PDESWESphere_lg::_eval_tendencies(
 	o_U.phi_pert = -gh*i_U.div;
 	o_U.div = -ops->laplace(i_U.phi_pert);
 	o_U.vrt.spectral_set_zero();
+
+	return true;
 }
 
 
@@ -141,7 +139,7 @@ void PDESWESphere_lg::_eval_tendencies(
 /*
  * Evaluate exponential of linear term
  */
-void PDESWESphere_lg::_eval_eulerBackward(
+bool PDESWESphere_lg::_eval_eulerBackward(
 		const sweet::DESolver_DataContainer_Base &i_U_,
 		sweet::DESolver_DataContainer_Base &o_U_,
 		double i_timeStamp
@@ -160,6 +158,8 @@ void PDESWESphere_lg::_eval_eulerBackward(
 	o_U.div = ops->implicit_helmholtz(rhs, -GH*_dt*_dt, shackSphereDataOps->sphere_radius);
 	o_U.phi_pert = i_U.phi_pert - _dt*GH*o_U.div;
 	o_U.vrt = i_U.vrt;
+
+	return true;
 }
 
 
@@ -167,7 +167,7 @@ void PDESWESphere_lg::_eval_eulerBackward(
 /*
  * Evaluate exponential of linear term
  */
-void PDESWESphere_lg::_eval_exponential(
+bool PDESWESphere_lg::_eval_exponential(
 		const sweet::DESolver_DataContainer_Base &i_U_,
 		sweet::DESolver_DataContainer_Base &o_U_,
 		double i_timeStamp
@@ -239,4 +239,6 @@ void PDESWESphere_lg::_eval_exponential(
 			idx++;
 		}
 	}
+
+	return true;
 }

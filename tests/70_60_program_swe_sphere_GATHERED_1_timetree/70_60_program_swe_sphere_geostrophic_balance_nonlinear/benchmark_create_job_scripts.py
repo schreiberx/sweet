@@ -129,10 +129,13 @@ ts_methods = [
     [f"SS(EXP(lg),ERK(ADD(lc,n),{o}),{o})",        2,    2,    0],
     [f"SS(ERK(ADD(lc,n),{o}),EXP(lg),{o})",        2,    2,    0],
 
-    #[f"ETDRK(l,n,{o})",        2,    2,    0],
+    #[f"ETDRK(REXI(l),n,{o})",        2,    2,    0],
     #['l_exp_n_etdrk',    2,    2,    0],
-    #[f"ETDRK(lg,ADD(lc,n),{o})",        2,    2,    0],
+    [f"ETDRK(lg,ADD(lc,n),{o})",        2,    2,    0],
     #['lg_exp_lc_n_etdrk',    2,    2,    0],
+
+    # Same as before, but with explicit EXP around it
+    [f"ETDRK(EXP(lg),ADD(lc,n),{o})",        2,    2,    0],
 ]
 
 

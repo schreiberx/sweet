@@ -136,22 +136,27 @@ public:
 		return false;
 	}
 
+	/*!
+	 * Forward errors
+	 *
+	 * \return **false** if there's no error
+	 */
 	bool forward(ErrorBase &i_error)
 	{
 		if (!i_error._hasError)
 			return false;
 
+		if (this == &i_error)
+			return true;
+
 		_hasError = i_error._hasError;
 		_errorMessage = i_error._errorMessage;
-
-		if (&i_error != this)
-			i_error.reset();
 
 		return true;
 	}
 
-	/*
-	 * Forward errors
+	/*!
+	 * Forward errors with positive return
 	 *
 	 * \return **true** if there's no error
 	 */
@@ -159,6 +164,9 @@ public:
 	{
 		if (!i_error._hasError)
 			return true;
+
+		if (this == &i_error)
+			return false;
 
 		_hasError = i_error._hasError;
 		_errorMessage = i_error._errorMessage;
