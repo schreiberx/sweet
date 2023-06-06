@@ -37,6 +37,7 @@ jg.runtime.verbosity = 2
 # Mode and Physical resolution
 #
 jg.runtime.space_res_spectral = 64
+#jg.runtime.space_res_spectral = 128
 jg.runtime.space_res_physical = None
 
 #jg.runtime.benchmark_name = "gaussian_bumps_test_cases"
@@ -66,6 +67,7 @@ rexi_thread_par = True
 
 
 jg.runtime.f_sphere = 0
+jg.compile.mode = "release"
 
 #jg.runtime.gravitation= 1
 #jg.runtime.sphere_rotating_coriolis_omega = 1
@@ -75,43 +77,46 @@ jg.runtime.f_sphere = 0
 jg.runtime.viscosity = 0.0
 
 
-jg.unique_id_filter = ['compile', 'parallelization']
+jg.unique_id_filter = [
+        'compile',
+        'parallelization',
+        'runtime.benchmark',
+    ]
 
 
 #####################################################
 #####################################################
 #####################################################
-
 
 
 ref_ts_order = 4
-ref_ts_method = f"ERK(ln,order={ref_ts_order})"
-
-#
-# A 2nd order accurate method already considerably reduces the errors
-# Therefore, we use larger time step sizes to increase the errors
-# to get errors larger than numerical precision
-#
-# We still want to have a very small time step size for the reference solution
-# This is in particular important for REXI comparisons with ln2-type tests
-#
-
+o=f"order={ref_ts_order}"
+ref_ts_method = f"ERK(ln,{o})"
+#ref_ts_method = "ln_erk"
 
 ts_order = 2
 o=f"order={ts_order}"
 ts_methods = [
-        f"ERK(ADD(l,n),{o})",
-        f"ERK(ADD(lg,lc,n),{o})",
+            #'ln_erk',
+            f"ERK(ln,{o})",
 
-        #f"ln_erk_split_uv",
-        f"ERK(ADD(lg,lc,na_uv,nr_uv),{o})",
-        #f"ln_erk_split_aa_uv",
+            #"l_exp_n_erk_ver0",
+            f"SS(EXP(l,{o}),ERK(n,{o}),{o})",
+            #"l_exp_n_erk_ver1",
+            f"SS(ERK(n,{o}),EXP(l,{o}),{o})",
 
-        #f"ln_erk_split_vd",
-        f"ERK(ADD(lg,lc,na_vd,nr_vd),{o})",
+            #"lg_exp_lc_n_erk_ver0",
+            f"SS(EXP(lg,{o}),ERK(ADD(lc,n),{o}),{o})",
+            #"lg_exp_lc_n_erk_ver1",
+            f"SS(ERK(ADD(lc,n),{o}),EXP(lg,{o}),{o})",
 
-        #f"ln_erk_split_aa_vd",
+            #"l_exp_n_etdrk",
+            f"ETDRK(REXI(l),n,{o})",
+
+            f"ETDRK(REXI(lg),ADD(lc,n),{o})",
     ]
+
+
 
 
 ref_ts_size = 2

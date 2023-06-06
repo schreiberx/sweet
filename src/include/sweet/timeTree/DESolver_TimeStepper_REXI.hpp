@@ -1,5 +1,5 @@
-#ifndef SRC_PROGRAMS_SIMDATA_MYTIMESTEPPER_EXPONENTIAL_HPP_
-#define SRC_PROGRAMS_SIMDATA_MYTIMESTEPPER_EXPONENTIAL_HPP_
+#ifndef SRC_PROGRAMS_SIMDATA_MYTIMESTEPPER_REXI_HPP_
+#define SRC_PROGRAMS_SIMDATA_MYTIMESTEPPER_REXI_HPP_
 
 #include <vector>
 #include <string>
@@ -11,28 +11,28 @@
 namespace sweet
 {
 
-class DESolver_TimeStepper_Exponential	:
-	public DESolver_TimeTreeNode_NodeInteriorHelper<DESolver_TimeStepper_Exponential>
+class DESolver_TimeStepper_REXI	:
+	public DESolver_TimeTreeNode_NodeInteriorHelper<DESolver_TimeStepper_REXI>
 {
 private:
 	std::string _expFunctionString;
 
 public:
-	DESolver_TimeStepper_Exponential()
+	DESolver_TimeStepper_REXI()
 	{
 		setEvalAvailable("exponential");
 		setEvalAvailable("integration");
 	}
 
 
-	~DESolver_TimeStepper_Exponential()
+	~DESolver_TimeStepper_REXI()
 	{
 		clear();
 	}
 
 
-	DESolver_TimeStepper_Exponential(
-			const DESolver_TimeStepper_Exponential &i_value
+	DESolver_TimeStepper_REXI(
+			const DESolver_TimeStepper_REXI &i_value
 	)	:
 		DESolver_TimeTreeNode_NodeInteriorHelper(i_value)
 	{
@@ -120,10 +120,11 @@ public:
 	{
 		if (i_key == "expIntegrationFunction")
 		{
+#if 0
 			assert(_timeTreeNodes[0] != nullptr);
 			_timeTreeNodes[0]->setupByKeyValue(i_key, i_value);
 			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*_timeTreeNodes[0]);
-
+#endif
 			_expFunctionString = i_value;
 			return true;
 		}
@@ -141,7 +142,7 @@ public:
 				i_deTermConfig,
 				i_timeStepperEvalName,
 				o_timeStepper,
-				"exponential"
+				"eulerBackwardComplex"
 			);
 
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*this);
@@ -152,12 +153,12 @@ public:
 
 	std::shared_ptr<DESolver_TimeTreeNode_Base> getInstanceNew()	override
 	{
-		return std::shared_ptr<DESolver_TimeTreeNode_Base>(new DESolver_TimeStepper_Exponential);
+		return std::shared_ptr<DESolver_TimeTreeNode_Base>(new DESolver_TimeStepper_REXI);
 	}
 
 	std::shared_ptr<DESolver_TimeTreeNode_Base> getInstanceCopy()	override
 	{
-		return std::shared_ptr<DESolver_TimeTreeNode_Base>(new DESolver_TimeStepper_Exponential(*this));
+		return std::shared_ptr<DESolver_TimeTreeNode_Base>(new DESolver_TimeStepper_REXI(*this));
 	}
 
 

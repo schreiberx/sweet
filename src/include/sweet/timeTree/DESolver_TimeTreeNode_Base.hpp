@@ -139,7 +139,7 @@ public:
 			const std::string &i_key,
 			const std::string &i_value
 	){
-		return error.set("setupByKeyValue() not available.");
+		return error.set("setupByKeyValue() not available in tree node '"+getNodeNames()[0]+"'");
 	};
 
 public:
