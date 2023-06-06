@@ -55,7 +55,6 @@ public:
 
 		// create triangle indices
 		GLuint *t = triangle_strip_indices;
-		int count = 0;
 		for (GLuint dbeta = 0; dbeta < vsegments; dbeta++)
 		{
 			for (GLuint dalpha = 0; dalpha < hsegments; dalpha++)
@@ -64,21 +63,17 @@ public:
 				t++;
 				*t = dalpha+(dbeta+1)*hsegments;
 				t++;
-
-				count += 2;
 			}
 
 			*t = dbeta*hsegments;
 			t++;
 			*t = (dbeta+1)*hsegments;
 			t++;
-			count += 2;
 		}
 
 		// create vertex data
 		GLfloat *v = vertices;
 		GLfloat *tc = texture_coords;
-		int vcount = 0;
 		for (GLuint dbeta = 0; dbeta <= vsegments; dbeta++)
 		{
 			float y = ((float)dbeta/(float)vsegments) * M_PI;
@@ -97,8 +92,6 @@ public:
 				tc[1] = (float)dbeta/(float)vsegments;
 
 				tc += 2;
-
-				vcount++;
 			}
 		}
 

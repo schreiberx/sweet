@@ -3,7 +3,6 @@ all:
 
 
 clean:
-	#scons -c
 	rm -rf build
 	rm -rf /tmp/$(USER)/scons_build_*
 	rm -rf /tmp/scons_build_*

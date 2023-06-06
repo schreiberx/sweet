@@ -283,15 +283,14 @@ public:
 			double i_simulationTime
 	)	override
 	{
-		bool retval;
 		switch(_order)
 		{
-		case 1:	retval = _eval_timeIntegration_ETDRK1(i_U, o_U, i_simulationTime);	break;
-		case 2:	retval = _eval_timeIntegration_ETDRK2(i_U, o_U, i_simulationTime);	break;
-		case 4:	retval = _eval_timeIntegration_ETDRK4(i_U, o_U, i_simulationTime);	break;
-		default: SWEETError("Internal error");
+		case 1:	return _eval_timeIntegration_ETDRK1(i_U, o_U, i_simulationTime);
+		case 2:	return _eval_timeIntegration_ETDRK2(i_U, o_U, i_simulationTime);
+		case 4:	return _eval_timeIntegration_ETDRK4(i_U, o_U, i_simulationTime);
+		default: return error.set("Invalid order provided");
 		}
-		return retval;
+		return false;
 	}
 
 private:

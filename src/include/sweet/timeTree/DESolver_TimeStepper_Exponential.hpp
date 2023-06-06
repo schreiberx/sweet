@@ -116,7 +116,7 @@ public:
 	bool setupByKeyValue(
 			const std::string &i_key,
 			const std::string &i_value
-	)
+	) override
 	{
 		if (i_key == "expIntegrationFunction")
 		{

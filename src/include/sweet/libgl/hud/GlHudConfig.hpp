@@ -1161,7 +1161,6 @@ public:
 		 */
 		if (area_left <= x && area_right >= x && area_top >= y && area_bottom <= y)
 		{
-			int c = 0;
 			for (std::list<COption>::iterator i = option_list.begin(); i != option_list.end(); i++)
 			{
 				COption &o = *i;
@@ -1190,7 +1189,6 @@ public:
 					active_option = &o;
 					return true;
 				}
-				c++;
 			}
 		}
 
