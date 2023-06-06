@@ -152,6 +152,37 @@ public:
 			_argumentParsedAndAccessed = false;
 		}
 
+		bool getValue(bool &o_value)
+		{
+			if (value == "true")
+			{
+				o_value = true;
+				return true;
+			}
+
+			if (value == "false")
+			{
+				o_value = false;
+				return true;
+			}
+
+			/*
+			 * Interpret 0 as false and everything else as true
+			 */
+			int value_int;
+			try
+			{
+				value_int = std::stoi(value);
+			}
+			catch (const std::exception &e)
+			{
+				return error.set("Exception caught during conversion of value '"+value+"' to integer: "+e.what());
+			}
+
+			o_value = (value_int != 0);
+			return true;
+		}
+
 		bool getValue(int &o_value)
 		{
 			try

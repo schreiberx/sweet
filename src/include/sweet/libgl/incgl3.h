@@ -1,10 +1,3 @@
-/*
- * incgl3.h
- *
- *  Created on: Jun 25, 2011
- * Author: schreibm
- */
-
 #ifndef INCGL3_H_
 #define INCGL3_H_
 

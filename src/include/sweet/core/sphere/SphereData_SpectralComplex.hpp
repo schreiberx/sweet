@@ -47,6 +47,17 @@ public:
 		return spectral_space_data[i];
 	}
 
+public:
+	void swap(
+		SphereData_SpectralComplex &i_sphereData
+	)
+	{
+		assert(sphereDataConfig == i_sphereData.sphereDataConfig);
+
+		std::swap(spectral_space_data, i_sphereData.spectral_space_data);
+	}
+
+
 
 public:
 	SphereData_SpectralComplex()	:
@@ -556,14 +567,22 @@ public:
 		spectral_space_data = MemBlockAlloc::alloc<Tcomplex>(sphereDataConfig->spectral_complex_array_data_number_of_elements * sizeof(Tcomplex));
 	}
 
+public:
+	void clear()
+	{
+		if (spectral_space_data != nullptr)
+		{
+			MemBlockAlloc::free(spectral_space_data, sphereDataConfig->spectral_array_data_number_of_elements * sizeof(Tcomplex));
+			spectral_space_data = nullptr;
+
+			sphereDataConfig = nullptr;
+		}
+	}
 
 public:
 	~SphereData_SpectralComplex()
 	{
-		if (spectral_space_data != nullptr)
-		{
-			MemBlockAlloc::free(spectral_space_data, sphereDataConfig->spectral_complex_array_data_number_of_elements * sizeof(Tcomplex));
-		}
+		clear();
 	}
 
 

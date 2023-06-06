@@ -76,6 +76,7 @@ public:
 
 		sweet::SphereData_Config sphereDataConfig;
 		sweet::SphereOperators ops;
+		sweet::SphereOperatorsComplex opsComplex;
 
 		PDESWESphere_DataContainer prog;
 		PDESWESphere_DataContainer progTmp;
@@ -114,6 +115,9 @@ public:
 
 			ops.setup(&sphereDataConfig, i_shackSphereDataOps);
 			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(ops);
+
+			opsComplex.setup(&sphereDataConfig, i_shackSphereDataOps);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(opsComplex);
 
 			prog.setup(&sphereDataConfig);
 			progTmp.setup(&sphereDataConfig);
@@ -351,6 +355,7 @@ public:
 				shackTimeDisc->timestepping_method,
 				&shackProgArgDict,
 				&dataConfigOps.ops,
+				&dataConfigOps.opsComplex,
 				dataConfigOps.prog
 			);
 			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(timeSteppersNewTS);

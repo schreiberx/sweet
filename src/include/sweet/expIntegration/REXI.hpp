@@ -6,6 +6,7 @@
 #define SRC_INCLUDE_REXI_HPP_
 
 
+#include <sweet/core/ErrorBase.hpp>
 #include "REXICoefficients.hpp"
 #include "ShackExpIntegration.hpp"
 #include "REXI_Terry.hpp"
@@ -23,6 +24,8 @@ namespace sweet
 template <typename T=double>
 class REXI
 {
+public:
+	ErrorBase error;
 
 public:
 	REXI()
@@ -32,7 +35,6 @@ public:
 
 
 public:
-	static
 	bool load(
 		ShackExpIntegration *i_shackExp,
 		const std::string &i_function_name,
@@ -90,9 +92,9 @@ public:
 		else
 		{
 			if (i_shackExp->exp_method == "")
-				SWEETError("Please specify rexi method via --rexi-method=[str]");
+				return error.set("Please specify rexi method via --rexi-method=[str]");
 			else
-				SWEETError(std::string("REXI method '")+ i_shackExp->exp_method+"' is not supported!");
+				return error.set(std::string("REXI method '")+ i_shackExp->exp_method+"' is not supported!");
 		}
 
 
@@ -112,7 +114,6 @@ public:
 	}
 
 public:
-	static
 	bool is_rexi_method_supported(
 			std::string &i_rexi_method
 	)
@@ -127,7 +128,6 @@ public:
 
 
 public:
-	static
 	void get_available_rexi_methods(
 			std::stringstream &i_ss
 	)
@@ -139,7 +139,6 @@ public:
 
 
 public:
-	static
 	bool load(
 			ShackExpIntegration *i_shackExpIntegration,
 			const std::string &i_function_name,

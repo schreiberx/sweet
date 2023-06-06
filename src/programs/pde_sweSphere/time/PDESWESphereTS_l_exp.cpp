@@ -164,6 +164,8 @@ bool PDESWESphereTS_l_exp::setup_variant_100(
 	use_rexi_sphere_solver_preallocation = i_use_rexi_sphere_solver_preallocation;
 
 
+	sweet::REXI<> rexi;
+
 	/*
 	 * Print some useful information
 	 */
@@ -171,7 +173,7 @@ bool PDESWESphereTS_l_exp::setup_variant_100(
 			exp_method != "ss_taylor"
 	)
 	{
-		if (!sweet::REXI<>::is_rexi_method_supported(exp_method))
+		if (!rexi.is_rexi_method_supported(exp_method))
 		{
 			std::cerr << std::endl;
 			std::cerr << "Available EXP methods (--exp-method=...):" << std::endl;
@@ -179,7 +181,7 @@ bool PDESWESphereTS_l_exp::setup_variant_100(
 			std::cerr << "        'ss_taylor': Strang-Split Taylor of exp(L) \approx exp(L_g) taylor(L_c)" << std::endl;
 
 			std::stringstream ss;
-			sweet::REXI<>::get_available_rexi_methods(ss);
+			rexi.get_available_rexi_methods(ss);
 			std::cerr << ss.str() << std::endl;
 
 			if (exp_method == "help")
@@ -213,7 +215,7 @@ bool PDESWESphereTS_l_exp::setup_variant_100(
 	/*
 	 * Setup REXI function evaluations
 	 */
-	expFunctions.setup(i_function_name);
+	_expFunction.setup(i_function_name);
 
 
 	use_exp_method_direct_solution = false;
@@ -242,10 +244,9 @@ bool PDESWESphereTS_l_exp::setup_variant_100(
 	{
 		use_exp_method_rexi = true;
 
-		SWEETAssert(use_exp_method_rexi, "should be true");
 
 		sweet::REXICoefficients<double> rexiCoefficients;
-		bool retval = sweet::REXI<>::load(
+		bool retval = rexi.load(
 				i_shackExpIntegration,
 				function_name,
 				rexiCoefficients,
@@ -255,14 +256,14 @@ bool PDESWESphereTS_l_exp::setup_variant_100(
 		if (!retval)
 			SWEETError(std::string("Phi function '")+function_name+std::string("' not provided or not supported"));
 
-		rexi_alphas = rexiCoefficients.alphas;
-		for (std::size_t n = 0; n < rexi_alphas.size(); n++)
-			rexi_alphas[n] = -rexi_alphas[n];
+		_rexi_alphas = rexiCoefficients.alphas;
+		for (std::size_t n = 0; n < _rexi_alphas.size(); n++)
+			_rexi_alphas[n] = -_rexi_alphas[n];
 
-		rexi_betas = rexiCoefficients.betas;
-		rexi_gamma = rexiCoefficients.gamma;
+		_rexi_betas = rexiCoefficients.betas;
+		_rexi_gamma = rexiCoefficients.gamma;
 
-		std::size_t N = rexi_alphas.size();
+		std::size_t N = _rexi_alphas.size();
 		block_size = N/num_global_threads;
 		if (block_size*num_global_threads != N)
 			block_size++;
@@ -284,13 +285,13 @@ bool PDESWESphereTS_l_exp::setup_variant_100(
 
 #if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
 		if (omp_in_parallel())
-		{
-			std::cerr << "FATAL ERROR X: in parallel region" << std::endl;
-			exit(-1);
-		}
+			SWEETError("FATAL ERROR X: in parallel region");
 #endif
 
-		// use a kind of serialization of the input to avoid threading conflicts in the ComplexFFT generation
+		/*
+		 * Use a kind of serialization of the input to avoid threading
+		 * conflicts in the ComplexFFT generation
+		 */
 		for (int j = 0; j < num_local_rexi_par_threads; j++)
 		{
 			#if SWEET_THREADING_TIME_REXI
@@ -335,13 +336,12 @@ bool PDESWESphereTS_l_exp::setup_variant_100(
 				{
 					int thread_local_idx = n-start;
 
-					perThreadVars[local_thread_id]->alpha[thread_local_idx] = rexi_alphas[n];
-					perThreadVars[local_thread_id]->beta[thread_local_idx] = rexi_betas[n];
+					perThreadVars[local_thread_id]->alpha[thread_local_idx] = _rexi_alphas[n];
+					perThreadVars[local_thread_id]->beta[thread_local_idx] = _rexi_betas[n];
 				}
 			}
 		}
 
-		//p_update_coefficients(false);
 		p_update_coefficients();
 
 		if (num_local_rexi_par_threads == 0)
@@ -368,11 +368,11 @@ bool PDESWESphereTS_l_exp::setup_variant_100(
 				std::cout << rexi_alphas[n] << std::endl;
 
 			std::cout << "BETA:" << std::endl;
-			for (std::size_t n = 0; n < rexi_betas.size(); n++)
-				std::cout << rexi_betas[n] << std::endl;
+			for (std::size_t n = 0; n < _rexi_betas.size(); n++)
+				std::cout << _rexi_betas[n] << std::endl;
 
 			std::cout << "GAMMA:" << std::endl;
-			std::cout << rexi_gamma << std::endl;
+			std::cout << _rexi_gamma << std::endl;
 		}
 	}
 #endif
@@ -533,7 +533,7 @@ void PDESWESphereTS_l_exp::p_get_workload_start_end(
 		int i_local_thread_id
 )
 {
-	std::size_t max_N = rexi_alphas.size();
+	std::size_t max_N = _rexi_alphas.size();
 
 	#if SWEET_THREADING_TIME_REXI || SWEET_MPI
 
@@ -669,8 +669,8 @@ void PDESWESphereTS_l_exp::runTimestep(
 				std::complex<double> l0 = -sqrt_DG/(2*G) * phi0 + 0.5*div0;
 				std::complex<double> l1 = +sqrt_DG/(2*G) * phi0 + 0.5*div0;
 
-				l0 = expFunctions.eval(timestep_size*(-sqrt_DG))*l0;
-				l1 = expFunctions.eval(timestep_size*sqrt_DG)*l1;
+				l0 = _expFunction.eval(timestep_size*(-sqrt_DG))*l0;
+				l1 = _expFunction.eval(timestep_size*sqrt_DG)*l1;
 
 				phi0 = -G/sqrt_DG * l0 + G/sqrt_DG* l1;
 				div0 = l0 + l1;
@@ -757,8 +757,8 @@ void PDESWESphereTS_l_exp::runTimestep(
 				std::complex<double> l0 = -sqrt_DG/(2*G) * phi0 + 0.5*div0;
 				std::complex<double> l1 = +sqrt_DG/(2*G) * phi0 + 0.5*div0;
 
-				l0 = expFunctions.eval(timestep_size*(-sqrt_DG))*l0;
-				l1 = expFunctions.eval(timestep_size*sqrt_DG)*l1;
+				l0 = _expFunction.eval(timestep_size*(-sqrt_DG))*l0;
+				l1 = _expFunction.eval(timestep_size*sqrt_DG)*l1;
 
 				phi0 = -G/sqrt_DG * l0 + G/sqrt_DG* l1;
 				div0 = l0 + l1;
@@ -789,7 +789,7 @@ void PDESWESphereTS_l_exp::runTimestep(
 	if (mpi_rank == 0)
 #endif
 	{
-		if (rexi_gamma.real() != 0)
+		if (_rexi_gamma.real() != 0)
 		{
 			use_rexi_gamma = true;
 		}
@@ -932,9 +932,9 @@ void PDESWESphereTS_l_exp::runTimestep(
 
 				if (use_rexi_gamma)
 				{
-					io_prog_phi = perThreadVars[0]->accum_phi + io_prog_phi*rexi_gamma.real();
-					io_prog_vrt = perThreadVars[0]->accum_vrt + io_prog_vrt*rexi_gamma.real();
-					io_prog_div = perThreadVars[0]->accum_div + io_prog_div*rexi_gamma.real();
+					io_prog_phi = perThreadVars[0]->accum_phi + io_prog_phi*_rexi_gamma.real();
+					io_prog_vrt = perThreadVars[0]->accum_vrt + io_prog_vrt*_rexi_gamma.real();
+					io_prog_div = perThreadVars[0]->accum_div + io_prog_div*_rexi_gamma.real();
 				}
 				else
 				{
@@ -1033,9 +1033,9 @@ void PDESWESphereTS_l_exp::runTimestep(
 
 				if (use_rexi_gamma)
 				{
-					io_prog_phi *= rexi_gamma.real();
-					io_prog_vrt *= rexi_gamma.real();
-					io_prog_div *= rexi_gamma.real();
+					io_prog_phi *= _rexi_gamma.real();
+					io_prog_vrt *= _rexi_gamma.real();
+					io_prog_div *= _rexi_gamma.real();
 				}
 				else
 				{

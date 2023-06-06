@@ -5,6 +5,7 @@
 #ifndef SRC_INCLUDE_REXI_REXI_COEFFICIENTS_HPP__
 #define SRC_INCLUDE_REXI_REXI_COEFFICIENTS_HPP__
 
+#include <sweet/core/ErrorBase.hpp>
 #include <vector>
 #include <complex>
 #include <sweet/libmath/DQStuff.hpp>
@@ -18,6 +19,9 @@ class REXICoefficients
 {
 public:
 	typedef std::complex<T> TComplex;
+
+public:
+	ErrorBase error;
 
 	std::vector<TComplex> alphas;
 	std::vector<TComplex> betas;
@@ -99,7 +103,7 @@ public:
 		std::ifstream infile(i_filename, std::ios::in | std::ios::binary);
 
 		if (!infile.is_open())
-			SWEETError(std::string("Unable to open file ")+i_filename);
+			return error.set(std::string("Unable to open file ")+i_filename);
 
 		bool binary = false;
 
@@ -229,7 +233,7 @@ public:
 			if (abg_mode == 2)
 			{
 				if (val_imag != 0)
-					SWEETError("Gamma must be real-only!");
+					return error.set("Gamma must be real-only!");
 
 				gamma = val_real;
 				//std::cout << "gamma: " << val << std::endl;
@@ -238,7 +242,7 @@ public:
 
 			std::cout << "Error in line " << line_nr << std::endl;
 			std::cout << "Line content: " << line << std::endl;
-			SWEETError("Line contains bogus data");
+			return error.set("Line contains bogus data");
 		}
 
 		if ((int)alphas.size() != N || (int)betas.size() != N)
@@ -246,7 +250,7 @@ public:
 			std::cout << "alphas.size: " << alphas.size() << std::endl;
 			std::cout << "betas.size: " << betas.size() << std::endl;
 			std::cout << "N: " << N << std::endl;
-			SWEETError("Size doesn't match!");
+			return error.set("Size doesn't match!");
 		}
 
 		return true;

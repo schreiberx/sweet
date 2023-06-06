@@ -54,6 +54,7 @@ public:
 			const std::string &i_timestepping_method,
 			sweet::ShackDictionary *i_shackDict,
 			sweet::SphereOperators *io_ops,
+			sweet::SphereOperatorsComplex *io_opsComplex,
 			const PDESWESphere_DataContainer &i_U
 	);
 

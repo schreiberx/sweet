@@ -13,6 +13,7 @@
 
 #include <vector>
 #include <string>
+#include <complex>
 #include <sweet/core/ErrorBase.hpp>
 #include <sweet/core/shacks/ShackDictionary.hpp>
 #include "DESolver_DataContainer_Base.hpp"
@@ -139,7 +140,16 @@ public:
 			const std::string &i_key,
 			const std::string &i_value
 	){
-		return error.set("setupByKeyValue() not available in tree node '"+getNodeNames()[0]+"'");
+		return error.set("setupByKeyValue(std::string,std::string) not available in tree node '"+getNodeNames()[0]+"'");
+	};
+
+
+	virtual
+	bool setupByKeyValue(
+			const std::string &i_key,
+			const std::complex<double> &i_value
+	){
+		return error.set("setupByKeyValue(std::string,std::complex<double>) not available in tree node '"+getNodeNames()[0]+"'");
 	};
 
 public:
@@ -166,6 +176,12 @@ public:
 		if (i_timeStepperEvalName == "eulerBackward")
 		{
 			o_timeStepper = &DESolver_TimeTreeNode_Base::_eval_eulerBackward;
+			return true;
+		}
+
+		if (i_timeStepperEvalName == "eulerBackwardComplex")
+		{
+			o_timeStepper = &DESolver_TimeTreeNode_Base::_eval_eulerBackwardComplex;
 			return true;
 		}
 
@@ -295,6 +311,18 @@ public:
 			double i_time_stamp
 	){
 		return error.set("_eval_eulerBackward() not available");
+	};
+
+	/*
+	 * Optional: Return the backward Euler evaluation with complex fields
+	 */
+	virtual
+	bool _eval_eulerBackwardComplex(
+			const DESolver_DataContainer_Base &i_U,
+			DESolver_DataContainer_Base &o_U,
+			double i_time_stamp
+	){
+		return error.set("_eval_eulerBackwardComplex() not available");
 	};
 
 	/*

@@ -14,6 +14,7 @@
 #include <sweet/core/sphere/SphereData_SpectralComplex.hpp>
 #include <sweet/core/sphere/SphereHelpers_SPHIdentities.hpp>
 #include <sweet/core/shacksShared/ShackSphereDataOps.hpp>
+#include <sweet/core/ErrorBase.hpp>
 
 
 
@@ -26,6 +27,8 @@ class SphereOperatorsComplex	:
 	friend SphereData_Config;
 
 public:
+	ErrorBase error;
+
 	const SphereData_Config *sphereDataConfig;
 
 private:

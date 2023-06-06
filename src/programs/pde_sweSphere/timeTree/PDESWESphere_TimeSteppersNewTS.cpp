@@ -54,6 +54,7 @@ bool PDESWESphere_TimeSteppersNewTS::setup_2_timestepper(
 		const std::string &i_timestepping_method,	///< String with time stepping method such as SS(ERK(lg,order=4),ERK(lc,order=2),order=2)
 		sweet::ShackDictionary *i_shackDict,
 		sweet::SphereOperators *io_ops,
+		sweet::SphereOperatorsComplex *io_opsComplex,
 		const PDESWESphere_DataContainer &i_U
 )
 {
@@ -84,6 +85,7 @@ bool PDESWESphere_TimeSteppersNewTS::setup_2_timestepper(
 
 	deSolver_Config.myDataContainer = &i_U;
 	deSolver_Config.ops = io_ops;
+	deSolver_Config.opsComplex = io_opsComplex;
 	timeIntegrator->setupConfigAndGetTimeStepperEval(deSolver_Config, "integration", evalFun);
 	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*timeIntegrator);
 

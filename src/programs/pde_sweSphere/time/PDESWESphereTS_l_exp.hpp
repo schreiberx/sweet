@@ -102,57 +102,55 @@ private:
 
 
 public:
-	std::vector<std::complex<double>> rexi_alphas;
-	std::vector<std::complex<double>> rexi_betas;
-	std::complex<double> rexi_gamma;
+	std::vector<std::complex<double>> _rexi_alphas;
+	std::vector<std::complex<double>> _rexi_betas;
+	std::complex<double> _rexi_gamma;
 
-
-	sweet::ExpFunction<double> expFunctions;
+	sweet::ExpFunction<double> _expFunction;
 
 
 private:
-
-	/*
+	/*!
 	 * Time step size of REXI
 	 */
 	double timestep_size;
 
-	/*
+	/*!
 	 * Function name to be used by REXI
 	 */
 	std::string function_name;
 
-	/*
+	/*!
 	 * Exponential integration method to use
 	 */
 	std::string exp_method;
 
-	/*
+	/*!
 	 * Don't use any Coriolis effect (reduction to very simple Helmholtz problem)
 	 */
 	bool no_coriolis;
 
-	/*
+	/*!
 	 * Assume f-sphere (reduction to Helmholtz problem)
 	 */
 	bool use_f_sphere;
 
-	/*
+	/*!
 	 * Preallocate the REXI matrices
 	 */
 	bool use_rexi_sphere_solver_preallocation;
 
-	/*
+	/*!
 	 * True, if EXP method is "direct"
 	 */
 	bool use_exp_method_direct_solution;
 
-	/*
+	/*!
 	 * True, if EXP method is "ss_taylor"
 	 */
 	bool use_exp_method_strang_split_taylor;
 
-	/*
+	/*!
 	 * True, if a REXI method is used
 	 */
 	bool use_exp_method_rexi;

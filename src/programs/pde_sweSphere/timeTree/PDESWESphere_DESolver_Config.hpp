@@ -3,6 +3,7 @@
 
 #include <sweet/timeTree/DESolver_Config_Base.hpp>
 #include <sweet/core/sphere/SphereOperators.hpp>
+#include <sweet/core/sphere/SphereOperatorsComplex.hpp>
 #include "PDESWESphere_DataContainer.hpp"
 
 /*
@@ -22,6 +23,7 @@ public:
 	 */
 	const PDESWESphere_DataContainer *myDataContainer;
 	sweet::SphereOperators *ops;
+	sweet::SphereOperatorsComplex *opsComplex;
 
 	/*
 	 * Return a new instance of a data container.

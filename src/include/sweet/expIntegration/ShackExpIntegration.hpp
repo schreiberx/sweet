@@ -185,11 +185,8 @@ public:
 	}
 
 
-
-
 	void printProgramArguments(const std::string& i_prefix = "")
 	{
-
 		std::cout << "" << std::endl;
 		std::cout << "EXP Integration:" << std::endl;
 		std::cout << "	--exp-method [str]	Choose REXI method ('terry', 'file', 'direct'), default:0" << std::endl;

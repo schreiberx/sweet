@@ -18,15 +18,15 @@ class PDESWESphere_lg	:
 		public sweet::DESolver_TimeTreeNode_Base
 {
 private:
-	ShackPDESWESphere *shackPDESWESphere;
-	const sweet::SphereOperators *ops;
+	ShackPDESWESphere *_shackPDESWESphere;
+	const sweet::SphereOperators *_ops;
 
 	double _dt;
 
 public:
 	PDESWESphere_lg()	:
-		shackPDESWESphere(nullptr),
-		ops(nullptr),
+		_shackPDESWESphere(nullptr),
+		_ops(nullptr),
 		_dt(-1)
 	{
 	}
@@ -53,7 +53,7 @@ private:
 			sweet::ShackDictionary *io_shackDict
 	)
 	{
-		shackPDESWESphere = io_shackDict->getAutoRegistration<ShackPDESWESphere>();
+		_shackPDESWESphere = io_shackDict->getAutoRegistration<ShackPDESWESphere>();
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*io_shackDict);
 
 		return true;
@@ -87,7 +87,7 @@ private:
 	{
 		const PDESWESphere_DESolver_Config& myConfig = cast(i_deTermConfig);
 
- 		ops = myConfig.ops;
+ 		_ops = myConfig.ops;
 
 		return true;
 	}
@@ -111,16 +111,16 @@ private:
 			double i_timeStamp
 	)	override
 	{
-		assert(ops != nullptr);
+		assert(_ops != nullptr);
 
 		const PDESWESphere_DataContainer &i = cast(i_u);
 		PDESWESphere_DataContainer &o = cast(o_u);
 
-		double gh = shackPDESWESphere->gravitation * shackPDESWESphere->h0;
+		double gh = _shackPDESWESphere->gravitation * _shackPDESWESphere->h0;
 
 		// TODO: Write in a way which directly writes output to output array
 		o.phi_pert = -gh*i.div;
-		o.div = -ops->laplace(i.phi_pert);
+		o.div = -_ops->laplace(i.phi_pert);
 		o.vrt.spectral_set_zero();
 	}
 

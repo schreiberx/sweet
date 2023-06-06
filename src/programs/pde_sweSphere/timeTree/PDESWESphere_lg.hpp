@@ -15,6 +15,7 @@
 #include <sweet/timeTree/DESolver_TimeTreeNode_NodeLeafHelper.hpp>
 #include <sweet/timeTree/DESolver_TimeTreeNode_CastHelper.hpp>
 #include "PDESWESphere_DataContainer.hpp"
+#include "PDESWESphere_DataContainerComplex.hpp"
 #include "PDESWESphere_DESolver_Config.hpp"
 
 #include "../time/PDESWESphereTS_lg_exp_direct.hpp"
@@ -27,11 +28,26 @@ class PDESWESphere_lg	:
 		>
 {
 private:
-	ShackPDESWESphere *shackPDESWESphere;
-	sweet::ShackSphereDataOps *shackSphereDataOps;
-	const sweet::SphereOperators *ops;
+	ShackPDESWESphere *_shackPDESWESphere;
+	sweet::ShackSphereDataOps *_shackSphereDataOps;
+	const sweet::SphereOperators *_ops;
+	const sweet::SphereOperatorsComplex *_opsComplex;
 
-	sweet::ExpFunction<double> expFunction;
+	sweet::ExpFunction<double> _expFunction;
+
+	sweet::DESolver_TimeTreeNode_CastHelper<
+				PDESWESphere_DataContainerComplex,
+				PDESWESphere_DESolver_Config
+			> _castComplex;
+
+	/*!
+	 * Complex-valued time step size for complex-valued backward Euler
+	 *
+	 * This is used for REXI solvers of the form
+	 * 	U_1 = (I-dt*L)^{-1} U_0
+	 */
+	std::complex<double> _eulerBackwardComplexDt;
+
 
 public:
 	PDESWESphere_lg();
@@ -60,6 +76,12 @@ public:
 			const std::string &i_value
 	) override;
 
+	virtual
+	bool setupByKeyValue(
+			const std::string &i_key,
+			const std::complex<double> &i_value
+	) override;
+
 	void clear() override;
 
 
@@ -71,7 +93,7 @@ public:
 			const sweet::DESolver_DataContainer_Base &i_u,
 			sweet::DESolver_DataContainer_Base &o_u,
 			double i_timeStamp
-	)	override;
+	) override;
 
 	/*
 	 * Return the backward Euler time step
@@ -81,7 +103,16 @@ public:
 			const sweet::DESolver_DataContainer_Base &i_u,
 			sweet::DESolver_DataContainer_Base &o_u,
 			double i_timeStamp
-	)	override;
+	) override;
+
+	/*
+	 * Return evaluation of backward Euler time step with complex data
+	 */
+	bool _eval_eulerBackwardComplex(
+			const sweet::DESolver_DataContainer_Base &i_U_,
+			sweet::DESolver_DataContainer_Base &o_U_,
+			double i_timeStamp
+	) override;
 
 	/*
 	 * Compute an exponential integration for a given exp term
@@ -91,7 +122,7 @@ private:
 			const sweet::DESolver_DataContainer_Base &i_u,
 			sweet::DESolver_DataContainer_Base &o_u,
 			double i_timeStamp
-	)	override;
+	) override;
 };
 
 

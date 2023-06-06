@@ -1,53 +1,49 @@
-/*
- * PDESWESphere_DataContainer.hpp
- */
-
-#ifndef SRC_PROGRAMS_SIMDATA_MYDATACONTAINER_HPP_
-#define SRC_PROGRAMS_SIMDATA_MYDATACONTAINER_HPP_
+#ifndef SRC_PROGRAMS_SIMDATA_MYDATACONTAINER_COMPLEX_HPP_
+#define SRC_PROGRAMS_SIMDATA_MYDATACONTAINER_COMPLEX_HPP_
 
 #include <utility>
-#include <sweet/core/sphere/SphereData_Spectral.hpp>
+#include <sweet/core/sphere/SphereData_SpectralComplex.hpp>
 #include <sweet/timeTree/DESolver_DataContainer_Base.hpp>
 
 
 
-class PDESWESphere_DataContainer :
+class PDESWESphere_DataContainerComplex :
 	public sweet::DESolver_DataContainer_Base
 {
 public:
 	// How many number of DoF arrays
 	static constexpr int Ndofs = 3;
 
-	sweet::SphereData_Spectral data[Ndofs];
+	sweet::SphereData_SpectralComplex data[Ndofs];
 
 	// Note, that these references don't increase the size of the class
-	sweet::SphereData_Spectral& phi_pert = data[0];
-	sweet::SphereData_Spectral& div = data[2];
-	sweet::SphereData_Spectral& vrt = data[1];
+	sweet::SphereData_SpectralComplex& phi_pert = data[0];
+	sweet::SphereData_SpectralComplex& div = data[2];
+	sweet::SphereData_SpectralComplex& vrt = data[1];
 
 public:
-	PDESWESphere_DataContainer()
+	PDESWESphere_DataContainerComplex()
 	{
 	}
 
 public:
-	~PDESWESphere_DataContainer() override
+	~PDESWESphere_DataContainerComplex() override
 	{
 		clear();
 	}
 
 private:
 	static inline
-	PDESWESphere_DataContainer& cast(sweet::DESolver_DataContainer_Base &i_U)
+	PDESWESphere_DataContainerComplex& cast(sweet::DESolver_DataContainer_Base &i_U)
 	{
-		return static_cast<PDESWESphere_DataContainer&>(i_U);
+		return static_cast<PDESWESphere_DataContainerComplex&>(i_U);
 	}
 
 private:
 	static inline
-	const PDESWESphere_DataContainer& cast(const sweet::DESolver_DataContainer_Base &i_U)
+	const PDESWESphere_DataContainerComplex& cast(const sweet::DESolver_DataContainer_Base &i_U)
 	{
-		return static_cast<const PDESWESphere_DataContainer&>(i_U);
+		return static_cast<const PDESWESphere_DataContainerComplex&>(i_U);
 	}
 
 public:
@@ -64,7 +60,7 @@ public:
 		const sweet::DESolver_DataContainer_Base &i_a
 	) override
 	{
-		const PDESWESphere_DataContainer &i_d = static_cast<const PDESWESphere_DataContainer&>(i_a);
+		const PDESWESphere_DataContainerComplex &i_d = static_cast<const PDESWESphere_DataContainerComplex&>(i_a);
 
 		for (int i = 0; i < Ndofs; i++)
 			data[i].setup(i_d.data[i].sphereDataConfig);
@@ -72,7 +68,7 @@ public:
 
 	DESolver_DataContainer_Base* getInstanceNew() const override
 	{
-		PDESWESphere_DataContainer *retval = new PDESWESphere_DataContainer;
+		PDESWESphere_DataContainerComplex *retval = new PDESWESphere_DataContainerComplex;
 		retval->setup_like(*this);
 
 		return retval;
@@ -99,7 +95,7 @@ public:
 			const sweet::DESolver_DataContainer_Base &i_a
 	) override
 	{
-		const PDESWESphere_DataContainer &i_A = cast(i_a);
+		const PDESWESphere_DataContainerComplex &i_A = cast(i_a);
 		for (int i = 0; i < Ndofs; i++)
 			data[i] = i_A.data[i];
 	}
@@ -109,7 +105,7 @@ public:
 			const sweet::DESolver_DataContainer_Base &i_a
 	) override
 	{
-		const PDESWESphere_DataContainer &i_A = cast(i_a);
+		const PDESWESphere_DataContainerComplex &i_A = cast(i_a);
 		for (int i = 0; i < Ndofs; i++)
 			data[i] += i_A.data[i];
 	}
@@ -119,7 +115,7 @@ public:
 			const sweet::DESolver_DataContainer_Base &i_a
 	) override
 	{
-		const PDESWESphere_DataContainer &i_A = cast(i_a);
+		const PDESWESphere_DataContainerComplex &i_A = cast(i_a);
 		for (int i = 0; i < Ndofs; i++)
 			data[i] -= i_A.data[i];
 	}
@@ -137,8 +133,8 @@ public:
 			const sweet::DESolver_DataContainer_Base &i_b
 	) override
 	{
-		const PDESWESphere_DataContainer &i_A = cast(i_a);
-		const PDESWESphere_DataContainer &i_B = cast(i_b);
+		const PDESWESphere_DataContainerComplex &i_A = cast(i_a);
+		const PDESWESphere_DataContainerComplex &i_B = cast(i_b);
 		for (int i = 0; i < Ndofs; i++)
 			data[i] = i_A.data[i] + i_B.data[i];
 	}
@@ -150,8 +146,8 @@ public:
 			const sweet::DESolver_DataContainer_Base &i_b
 	) override
 	{
-		const PDESWESphere_DataContainer &i_A = cast(i_a);
-		const PDESWESphere_DataContainer &i_B = cast(i_b);
+		const PDESWESphere_DataContainerComplex &i_A = cast(i_a);
+		const PDESWESphere_DataContainerComplex &i_B = cast(i_b);
 		for (int i = 0; i < Ndofs; i++)
 			data[i] = i_A.data[i] + i_scalar*i_B.data[i];
 	}
@@ -162,7 +158,7 @@ public:
 			const sweet::DESolver_DataContainer_Base &i_a
 		) override
 	{
-		const PDESWESphere_DataContainer &i_A = cast(i_a);
+		const PDESWESphere_DataContainerComplex &i_A = cast(i_a);
 		for (int i = 0; i < Ndofs; i++)
 			data[i] += i_scalar*i_A.data[i];
 	}

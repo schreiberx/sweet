@@ -5,9 +5,9 @@
 #include <sweet/core/sphere/SphereOperators.hpp>
 
 PDESWESphere_lg::PDESWESphere_lg()	:
-	shackPDESWESphere(nullptr),
-	shackSphereDataOps(nullptr),
-	ops(nullptr)
+	_shackPDESWESphere(nullptr),
+	_shackSphereDataOps(nullptr),
+	_ops(nullptr)
 {
 	setEvalAvailable("tendencies");
 	setEvalAvailable("eulerBackward");
@@ -24,9 +24,9 @@ PDESWESphere_lg::PDESWESphere_lg(
 )	:
 	DESolver_TimeTreeNode_NodeLeafHelper(i_value)
 {
-	shackSphereDataOps = i_value.shackSphereDataOps;
-	shackPDESWESphere = i_value.shackPDESWESphere;
-	ops = i_value.ops;
+	_shackSphereDataOps = i_value._shackSphereDataOps;
+	_shackPDESWESphere = i_value._shackPDESWESphere;
+	_ops = i_value._ops;
 }
 
 
@@ -34,10 +34,10 @@ bool PDESWESphere_lg::shackRegistration(
 		sweet::ShackDictionary *io_shackDict
 )
 {
-	shackPDESWESphere = io_shackDict->getAutoRegistration<ShackPDESWESphere>();
+	_shackPDESWESphere = io_shackDict->getAutoRegistration<ShackPDESWESphere>();
 	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*io_shackDict);
 
-	shackSphereDataOps = io_shackDict->getAutoRegistration<sweet::ShackSphereDataOps>();
+	_shackSphereDataOps = io_shackDict->getAutoRegistration<sweet::ShackSphereDataOps>();
 	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*io_shackDict);
 
 	return true;
@@ -59,16 +59,52 @@ bool PDESWESphere_lg::setupByKeyValue(
 {
 	if (i_key == "expIntegrationFunction")
 	{
-		if (expFunction.functionName != "")
-			return error.set("Function name for expFunction is already set ('"+expFunction.functionName+"')");
+		if (_expFunction.functionName != "")
+			return error.set("Function name for expFunction is already set ('"+_expFunction.functionName+"')");
 
-		expFunction.setup(i_value);
-		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(expFunction);
+		_expFunction.setup(i_value);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(_expFunction);
 
 		return true;
 	}
 
-	return false;
+	if (i_key == "eulerBackwardPreallocation")
+	{
+		return true;
+#if 0
+		if (i_value == "true")
+		{
+			_eulerBackwardPreallocation = true;
+			return true;
+		}
+
+		if (i_value == "false")
+		{
+			_eulerBackwardPreallocation = false;
+			return true;
+		}
+#endif
+		return error.set("Invalid key-value combination of '"+i_key+"' => '"+i_value+"'");
+	}
+
+	return error.set("setupByKeyValue key '"+i_key+"' not supported");
+}
+
+
+/*!
+ * Setup a key which value is complex valued
+ */
+bool PDESWESphere_lg::setupByKeyValue(
+		const std::string &i_key,
+		const std::complex<double> &i_value
+)
+{
+	if (i_key == "eulerBackwardComplexDt")
+	{
+		_eulerBackwardComplexDt = i_value;
+	}
+
+	return error.set("setupByKeyValue key '"+i_key+"' not supported");
 }
 
 
@@ -80,7 +116,7 @@ bool PDESWESphere_lg::setupConfigAndGetTimeStepperEval(
 {
 	const PDESWESphere_DESolver_Config& myConfig = cast(i_deTermConfig);
 
-	ops = myConfig.ops;
+	_ops = myConfig.ops;
 
 	// default setup
 	DESolver_TimeTreeNode_Base::_helperGetTimeStepperEval(
@@ -92,10 +128,10 @@ bool PDESWESphere_lg::setupConfigAndGetTimeStepperEval(
 
 	if (i_timeStepperEvalName == "exponential")
 	{
-		if (expFunction.functionName == "")
+		if (_expFunction.functionName == "")
 		{
 			// set default to phi0
-			expFunction.setup("phi0");
+			_expFunction.setup("phi0");
 		}
 	}
 
@@ -118,17 +154,17 @@ bool PDESWESphere_lg::_eval_tendencies(
 		double i_timeStamp
 )
 {
-	assert(ops != nullptr);
-	assert(shackPDESWESphere != nullptr);
+	assert(_ops != nullptr);
+	assert(_shackPDESWESphere != nullptr);
 
 	const PDESWESphere_DataContainer &i_U = cast(i_U_);
 	PDESWESphere_DataContainer &o_U = cast(o_U_);
 
-	double gh = shackPDESWESphere->gravitation * shackPDESWESphere->h0;
+	double gh = _shackPDESWESphere->gravitation * _shackPDESWESphere->h0;
 
 	// TODO: Write in a way which directly writes output to output array
 	o_U.phi_pert = -gh*i_U.div;
-	o_U.div = -ops->laplace(i_U.phi_pert);
+	o_U.div = -_ops->laplace(i_U.phi_pert);
 	o_U.vrt.spectral_set_zero();
 
 	return true;
@@ -151,12 +187,42 @@ bool PDESWESphere_lg::_eval_eulerBackward(
 	/*
 	 * avg. geopotential
 	 */
-	double GH = shackPDESWESphere->h0*shackPDESWESphere->gravitation;
+	double GH = _shackPDESWESphere->h0*_shackPDESWESphere->gravitation;
 
 
-	sweet::SphereData_Spectral rhs = i_U.div + ops->implicit_L(i_U.phi_pert, _dt);
-	o_U.div = ops->implicit_helmholtz(rhs, -GH*_dt*_dt, shackSphereDataOps->sphere_radius);
+	sweet::SphereData_Spectral rhs = i_U.div + _ops->implicit_L(i_U.phi_pert, _dt);
+	o_U.div = _ops->implicit_helmholtz(rhs, -GH*_dt*_dt, _shackSphereDataOps->sphere_radius);
 	o_U.phi_pert = i_U.phi_pert - _dt*GH*o_U.div;
+	o_U.vrt = i_U.vrt;
+
+	return true;
+}
+
+
+
+/*
+ * Evaluate exponential of linear term
+ */
+bool PDESWESphere_lg::_eval_eulerBackwardComplex(
+		const sweet::DESolver_DataContainer_Base &i_U_,
+		sweet::DESolver_DataContainer_Base &o_U_,
+		double i_timeStamp
+)
+{
+	const PDESWESphere_DataContainerComplex &i_U = _castComplex.cast(i_U_);
+	PDESWESphere_DataContainerComplex &o_U = _castComplex.cast(o_U_);
+
+	std::complex<double> &dtComplex = _eulerBackwardComplexDt;
+
+	/*
+	 * avg. geopotential
+	 */
+	double GH = _shackPDESWESphere->h0*_shackPDESWESphere->gravitation;
+
+
+	sweet::SphereData_SpectralComplex rhs = i_U.div + _opsComplex->implicit_L(i_U.phi_pert, dtComplex);
+	o_U.div = _opsComplex->implicit_helmholtz(rhs, -GH*dtComplex*dtComplex, _shackSphereDataOps->sphere_radius);
+	o_U.phi_pert = i_U.phi_pert - dtComplex*GH*o_U.div;
 	o_U.vrt = i_U.vrt;
 
 	return true;
@@ -176,27 +242,27 @@ bool PDESWESphere_lg::_eval_exponential(
 	const PDESWESphere_DataContainer &i_U = cast(i_U_);
 	PDESWESphere_DataContainer &o_U = cast(o_U_);
 
-	assert(expFunction.isSetup());
+	assert(_expFunction.isSetup());
 
 	/*
 	 * Using exponential integrators, we must compute an
 	 */
-	double ir = 1.0/shackSphereDataOps->sphere_radius;
+	double ir = 1.0/_shackSphereDataOps->sphere_radius;
 
 	/*
 	 * Average geopotential
 	 */
-	double GH = shackPDESWESphere->gravitation*shackPDESWESphere->h0;
+	double GH = _shackPDESWESphere->gravitation*_shackPDESWESphere->h0;
 
 	/*
 	 * See doc/time_integration/exponential_integration/swe_sphere_direct_exp_int_for_L_nonrotating_sphere/
 	 */
 
 	SWEET_THREADING_SPACE_PARALLEL_FOR
-	for (int m = 0; m <= ops->sphereDataConfig->spectral_modes_m_max; m++)
+	for (int m = 0; m <= _ops->sphereDataConfig->spectral_modes_m_max; m++)
 	{
-		std::size_t idx = ops->sphereDataConfig->getArrayIndexByModes(m, m);
-		for (int n = m; n <= ops->sphereDataConfig->spectral_modes_n_max; n++)
+		std::size_t idx = _ops->sphereDataConfig->getArrayIndexByModes(m, m);
+		for (int n = m; n <= _ops->sphereDataConfig->spectral_modes_n_max; n++)
 		{
 			double D = (double)n*((double)n+1.0)*ir*ir;
 
@@ -226,10 +292,10 @@ bool PDESWESphere_lg::_eval_exponential(
 			std::complex<double> l1 = +sqrt_DG/(-2*GH) * i_phi + 0.5*i_div;
 
 			std::complex<double> tmp;
-			expFunction.eval(-_dt*sqrt_DG, tmp);
+			_expFunction.eval(-_dt*sqrt_DG, tmp);
 			l0 *= tmp;
 
-			expFunction.eval(_dt*sqrt_DG, tmp);
+			_expFunction.eval(_dt*sqrt_DG, tmp);
 			l1 *= tmp;
 
 			o_phi = -GH/sqrt_DG * (l1 - l0);
