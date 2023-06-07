@@ -44,33 +44,35 @@ private:
 	std::complex<double> _rexi_gamma;
 
 	/*!
-	 * Size of block to be processed locally by this MPI rank
+	 * Number of REXI terms processed by this MPI rank
 	 */
 	std::size_t _num_local_rexi_terms;
 
 	/*!
+	 * Size of block to be processed locally by one particular thread (e.g. OMP thread)
+	 */
+	//std::size_t _num_local_rexi_terms_per_thread;
+
+	/*!
 	 * Number of local OpenMP threads
 	 */
-	int num_local_rexi_par_threads;
+	int _num_local_rexi_parallel_threads;
 
 	/*!
 	 * Number of global OpenMP threads
 	 */
-	int num_global_threads;
+	int _num_global_threads;
 
-#if 0
-	class PerThreadVars
-	{
-	public:
-		std::vector< std::complex<double> > alpha;
-		std::vector< std::complex<double> > beta;
 
-		sweet::SphereData_Spectral accum_phi;
-		sweet::SphereData_Spectral accum_vrt;
-		sweet::SphereData_Spectral accum_div;
-	};
-	// per-thread allocated variables to avoid NUMA domain effects
-	std::vector<PerThreadVars*> perThreadVars;
+#if SWEET_MPI
+	// MPI communicator
+	MPI_Comm _mpi_comm;
+
+	// number of mpi ranks to be used
+	int _mpi_comm_rank;
+
+	// MPI ranks
+	int _mpi_comm_size;
 #endif
 
 public:
@@ -78,11 +80,12 @@ public:
 		_shackExpIntegration(nullptr),
 		_rexiPreallocation(true),
 		_num_local_rexi_terms(-1),
-		num_local_rexi_par_threads(-1),
-		num_global_threads(-1)
+		//_num_local_rexi_terms_per_thread(-1),
+		_num_local_rexi_parallel_threads(-1),
+		_num_global_threads(-1)
 	{
-		setEvalAvailable("exponential");
-		setEvalAvailable("integration");
+		setEvalAvailable(EVAL_EXPONENTIAL);
+		setEvalAvailable(EVAL_INTEGRATION);
 	}
 
 
@@ -106,9 +109,12 @@ public:
 		_rexiPreallocation = i_src._rexiPreallocation;
 		_shackExpIntegration = i_src._shackExpIntegration;
 
+		assert(_shackExpIntegration != nullptr);
+
 		_num_local_rexi_terms = i_src._num_local_rexi_terms;
-		num_local_rexi_par_threads = i_src.num_local_rexi_par_threads;
-		num_global_threads = i_src.num_global_threads;
+		//_num_local_rexi_terms_per_thread = i_src._num_local_rexi_terms_per_thread;
+		_num_local_rexi_parallel_threads = i_src._num_local_rexi_parallel_threads;
+		_num_global_threads = i_src._num_global_threads;
 	}
 
 
@@ -135,6 +141,9 @@ public:
 	{
 		if (_timeTreeNodes.size() != 1)
 			return error.set("One time node term needs to be given"+getNewLineDebugMessage());
+
+		if (_expFunctionString == "")
+			_expFunctionString = "phi0";
 
 		return true;
 	}
@@ -216,7 +225,7 @@ public:
 		return false;
 	}
 
-
+#if 0
 	void _getWorkloadStartEnd(
 			std::size_t &o_start,
 			std::size_t &o_end,
@@ -228,16 +237,17 @@ public:
 		#if SWEET_THREADING_TIME_REXI || SWEET_MPI
 
 			#if SWEET_MPI
-				int global_thread_id = i_local_thread_id + num_local_rexi_par_threads*mpi_rank;
+				int global_thread_id = i_local_thread_id + _num_local_rexi_parallel_threads*_mpi_comm_rank;
 			#else
 				int global_thread_id = i_local_thread_id;
 			#endif
 
-			assert(_num_local_rexi_terms >= 0);
+			assert(_num_local_rexi_terms >= 1);
+			//assert(_num_local_rexi_terms_per_thread >= 0);
 			assert(global_thread_id >= 0);
 
-			o_start = std::min(max_N, _num_local_rexi_terms*global_thread_id);
-			o_end = std::min(max_N, o_start+_num_local_rexi_terms);
+			o_start = std::min(max_N, _num_local_rexi_terms_per_thread*global_thread_id);
+			o_end = std::min(max_N, o_start+_num_local_rexi_terms_per_thread);
 
 		#else
 
@@ -245,12 +255,16 @@ public:
 			o_end = max_N;
 
 		#endif
-	}
 
+#pragma omp critical
+			std::cout << i_local_thread_id << ": " << o_start << " -> " << o_end << std::endl;
+
+	}
+#endif
 
 	bool setupConfigAndGetTimeStepperEval(
 		const sweet::DESolver_Config_Base &i_deTermConfig,
-		const std::string &i_timeStepperEvalName,
+		EVAL_TYPES i_evalType,
 		DESolver_TimeTreeNode_Base::EvalFun &o_timeStepper
 	) override
 	{
@@ -258,25 +272,24 @@ public:
 		assert(_timeTreeNodes.size() == 1);
 
 #if SWEET_THREADING_TIME_REXI
-		num_local_rexi_par_threads = omp_get_max_threads();
+		_num_local_rexi_parallel_threads = omp_get_max_threads();
 
-		if (num_local_rexi_par_threads == 0)
+		if (_num_local_rexi_parallel_threads == 0)
 			SWEETError("FATAL ERROR: omp_get_max_threads == 0");
 #else
-		num_local_rexi_par_threads = 1;
+		_num_local_rexi_parallel_threads = 1;
 #endif
 
 #if SWEET_MPI
-		mpi_comm = MPI_COMM_WORLD;	// TODO: Make me more flexible in future versions
-		MPI_Comm_rank(mpi_comm, &mpi_rank);
-		MPI_Comm_size(mpi_comm, &num_mpi_ranks);
+		_mpi_comm = MPI_COMM_WORLD;	// TODO: Make me more flexible in future versions
+		MPI_Comm_rank(_mpi_comm, &_mpi_comm_rank);
+		MPI_Comm_size(_mpi_comm, &_mpi_comm_size);
 
-		num_global_threads = num_local_rexi_par_threads * num_mpi_ranks;
+		_num_global_threads = _num_local_rexi_parallel_threads * _mpi_comm_size;
 #else
-		num_global_threads = num_local_rexi_par_threads;
+		_num_global_threads = _num_local_rexi_parallel_threads;
 #endif
 
-		std::cout << _shackExpIntegration->exp_method << std::endl;
 		/*
 		 * Load REXI coefficients
 		 */
@@ -284,9 +297,7 @@ public:
 		sweet::REXI<> rexi;
 
 		if (_shackExpIntegration->exp_method == "direct")
-		{
-			return error.set("Direct exponential method is only available with EXP() time tree function");
-		}
+			return error.set("Direct exponential method is available with EXP() time tree function");
 
 		rexi.load(
 				_shackExpIntegration,
@@ -295,8 +306,6 @@ public:
 				_shackExpIntegration->verbosity
 		);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(rexi);
-		std::cout << rexiCoefficients.alphas.size() << std::endl;
-		exit(0);
 
 		_rexi_alphas.resize(rexiCoefficients.alphas.size());
 		for (std::size_t n = 0; n < _rexi_alphas.size(); n++)
@@ -319,51 +328,99 @@ public:
 		 * Compute for which REXI coefficients we're responsible for
 		 */
 		std::size_t N = _rexi_alphas.size();
-		_num_local_rexi_terms = N/num_global_threads;
-		if (_num_local_rexi_terms*num_global_threads != N)
+#if SWEET_MPI
+		_num_local_rexi_terms = N/_mpi_comm_size;
+		if (_num_local_rexi_terms*_mpi_comm_size != N)
 			_num_local_rexi_terms++;
+#else
+		_num_local_rexi_terms = N;
+#endif
 
+#if 0
+		_num_local_rexi_terms_per_thread = N/_num_global_threads;
+		if (_num_local_rexi_terms_per_thread*_num_global_threads != N)
+			_num_local_rexi_terms_per_thread++;
+#endif
 		/*
 		 * Allocate data structures, time steppers, etc.
 		 */
-		_timeTreeNodes.resize(num_local_rexi_par_threads);
-		_evalFuns.resize(num_local_rexi_par_threads);
-		_tmpDataContainer.resize(num_local_rexi_par_threads);
+		_timeTreeNodes.resize(_num_local_rexi_terms);
+		_evalFuns.resize(_num_local_rexi_terms);
+		_tmpDataContainer.resize(_num_local_rexi_terms);
 
 		/*
 		 * Try to care about NUMA domains
 		 */
 #if SWEET_THREADING_TIME_REXI
 		#pragma omp parallel for schedule(static,1) \
-				num_threads(num_local_rexi_par_threads)	\
 				default(none)	\
-				shared(_timeTreeNodes,i_deTermConfig)
+				shared(_timeTreeNodes,i_deTermConfig,_tmpDataContainer)
 #endif
-		for (std::size_t local_thread_id = 0; local_thread_id < _timeTreeNodes.size(); local_thread_id++)
+		for (std::size_t i = 0; i < _timeTreeNodes.size(); i++)
 		{
+			/*
+			 * Initialize time tree node
+			 */
+
 			// skip 1st thread. We keep it in for equal split of for loop
-			if (local_thread_id == 0)
-				continue;
+			if (i != 0)
+			{
+				_timeTreeNodes[i] = _timeTreeNodes[0]->getInstanceCopy();
+			}
 
-			// initialize time tree node
-			_timeTreeNodes[local_thread_id] = _timeTreeNodes[0]->getInstanceCopy();
+			/*
+			 * Setup evaluation
+			 */
+			_timeTreeNodes[i]->setupConfigAndGetTimeStepperEval(i_deTermConfig, EVAL_REXI_TERM, _evalFuns[i]);
+#if SWEET_THREADING_TIME_REXI
+			error.forward(_timeTreeNodes[i]->error);
+#else
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*_timeTreeNodes[i]);
+#endif
 
-			// setup evaluation
-			_timeTreeNodes[local_thread_id]->setupConfigAndGetTimeStepperEval(i_deTermConfig, "eulerBackwardComplex", _evalFuns[local_thread_id]);
+			assert(_evalFuns[i] != nullptr);
 
-			// setup data container for output
-			_tmpDataContainer[local_thread_id] = i_deTermConfig.getNewDataContainerInstance();
+
+			/*
+			 * REXI alpha and beta coefficients
+			 */
+			_timeTreeNodes[i]->setupByKeyValue(
+					"rexiTermAlpha",
+					_rexi_alphas[i]
+				);
+
+			_timeTreeNodes[i]->setupByKeyValue(
+					"rexiTermBeta",
+					_rexi_betas[i]
+				);
+
+
+			/*
+			 * setup data container for output, use argument "1" to request complex data
+			 */
+			_tmpDataContainer[i] = i_deTermConfig.getNewDataContainerInstance();
 
 			if (_rexiPreallocation)
-				_timeTreeNodes[local_thread_id]->setupByKeyValue("eulerBackwardPreallocation", "true");
+				_timeTreeNodes[i]->setupByKeyValue("rexiTermPreallocation", "true");
+			else
+				_timeTreeNodes[i]->setupByKeyValue("rexiTermPreallocation", "false");
+
+#if SWEET_THREADING_TIME_REXI
+			error.forward(_timeTreeNodes[i]->error);
+#else
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*_timeTreeNodes[i]);
+#endif
 		}
 
-		if (num_local_rexi_par_threads == 0)
+		if (error.exists())
+			return false;
+
+		if (_num_local_rexi_parallel_threads == 0)
 			SWEETError("FATAL ERROR C: omp_get_max_threads == 0");
 
 		// default setup
 		DESolver_TimeTreeNode_Base::_helperGetTimeStepperEval(
-				i_timeStepperEvalName,
+				i_evalType,
 				o_timeStepper
 			);
 		ERROR_CHECK_COND_RETURN_BOOLEAN(*this);
@@ -372,10 +429,12 @@ public:
 	}
 
 
+#if 0
 	std::shared_ptr<DESolver_TimeTreeNode_Base> getInstanceNew()	override
 	{
 		return std::shared_ptr<DESolver_TimeTreeNode_Base>(new DESolver_TimeStepper_REXI);
 	}
+#endif
 
 	std::shared_ptr<DESolver_TimeTreeNode_Base> getInstanceCopy()	override
 	{
@@ -387,31 +446,16 @@ public:
 	{
 		_timestepSize = i_dt;
 
-		/*
-		 * REXI term is given by
-		 * 		b / (a - dt*L)
-		 *
-		 * We need to get it to the form
-		 * 		B / (I - DT*L)
-		 *
-		 * which is given by
-		 * 		DT = dt/a
-		 * 		B = B/a
-		 */
 		assert(_timeTreeNodes.size() == _num_local_rexi_terms);
 
 #if SWEET_THREADING_TIME_REXI
-		#pragma omp parallel for schedule(static,1) num_threads(num_local_rexi_par_threads) default(none) shared(_timeTreeNodes)
+		#pragma omp parallel for schedule(static,1) \
+			default(none)		\
+			shared(_timeTreeNodes, i_dt)
 #endif
 		for (std::size_t local_thread_id = 0; local_thread_id < _timeTreeNodes.size(); local_thread_id++)
 		{
-			std::size_t start, end;
-			_getWorkloadStartEnd(start, end, local_thread_id);
-
-			_timeTreeNodes[local_thread_id]->setupByKeyValue(
-					"eulerBackwardComplexDt",
-					dt/_rexi_alphas[local_thread_id]
-				);
+			_timeTreeNodes[local_thread_id]->setTimeStepSize(i_dt);
 		}
 	}
 
@@ -441,8 +485,65 @@ private:
 			double i_simulationTime
 	)	override
 	{
-		assert(_timeTreeNodes[0] != nullptr);
-		return evalTimeStepper(i_U, o_U, i_simulationTime);
+		const sweet::DESolver_DataContainer_Base *i_U_real;
+
+#if SWEET_MPI
+		o_U.op_setVector(i_U);
+		o_U.mpiBcast(_mpi_comm);
+		i_U_real = &o_U;
+#else
+		i_U_real = &i_U;
+#endif
+
+
+#if SWEET_THREADING_TIME_REXI
+		#pragma omp parallel for schedule(static,1) \
+		default(none)								\
+		shared(_timeTreeNodes,i_U_real,_tmpDataContainer,i_simulationTime)
+#endif
+		for (std::size_t i = 0; i < _timeTreeNodes.size(); i++)
+		{
+			evalTimeStepper(
+					i,
+					*i_U_real,
+					*_tmpDataContainer[i],
+					i_simulationTime
+				);
+		}
+
+		/*
+		 * REDUCE operation
+		 */
+#if SWEET_MPI
+		/*
+		 * Step 1) Reduce to first tmpDataContainer.
+		 * Step 2) Call MPIReduce
+		 */
+		for (std::size_t i = 1; i < _timeTreeNodes.size(); i++)
+		{
+			_tmpDataContainer[0]->op_addVector(*_tmpDataContainer[i]);
+		}
+
+		o_U.mpiReduce(
+				*_tmpDataContainer[0],
+				_mpi_comm
+			);
+
+#else
+		o_U.op_setZero();
+		for (std::size_t i = 0; i < _timeTreeNodes.size(); i++)
+		{
+			o_U.op_addVector(*_tmpDataContainer[i]);
+		}
+#endif
+
+		if (_rexi_gamma.real() != 0 || _rexi_gamma.imag() != 0)
+		{
+			SWEETError("TODO");
+//			o_U.op_addScalarMulVector(i_scalar, i_U);
+		}
+
+		return true;
 	}
 
 

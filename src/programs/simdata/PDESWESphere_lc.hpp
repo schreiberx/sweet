@@ -18,16 +18,16 @@ class PDESWESphere_lc	:
 		public sweet::DESolver_TimeTreeNode_Base
 {
 private:
-	ShackPDESWESphere *shackPDESWESphere;
-	const sweet::SphereOperators *ops;
+	ShackPDESWESphere *_shackPDESWESphere;
+	const sweet::SphereOperators *_ops;
 
 	double dt;
 	sweet::SphereData_Physical fg;
 
 public:
 	PDESWESphere_lc()	:
-		shackPDESWESphere(nullptr),
-		ops(nullptr),
+		_shackPDESWESphere(nullptr),
+		_ops(nullptr),
 		dt(-1)
 	{
 	}
@@ -55,7 +55,7 @@ public:
 			sweet::ShackDictionary *io_shackDict
 	)
 	{
-		shackPDESWESphere = io_shackDict->getAutoRegistration<ShackPDESWESphere>();
+		_shackPDESWESphere = io_shackDict->getAutoRegistration<ShackPDESWESphere>();
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*io_shackDict);
 
 		return true;
@@ -90,12 +90,12 @@ public:
 	{
 		const PDESWESphere_DESolver_Config& myConfig = cast(i_deTermConfig);
 
- 		ops = myConfig.ops;
+ 		_ops = myConfig.ops;
 
-		if (shackPDESWESphere->sphere_use_fsphere)
-			fg = ops->getFG_fSphere(shackPDESWESphere->sphere_fsphere_f0);
+		if (_shackPDESWESphere->sphere_use_fsphere)
+			fg = _ops->getFG_fSphere(_shackPDESWESphere->sphere_fsphere_f0);
 		else
-			fg = ops->getFG_rotatingSphere(shackPDESWESphere->sphere_rotating_coriolis_omega);
+			fg = _ops->getFG_rotatingSphere(_shackPDESWESphere->sphere_rotating_coriolis_omega);
 
 		return true;
 	}
@@ -127,7 +127,7 @@ public:
 		/*
 		 * step 1a
 		 */
-		ops->vrtdiv_to_uv(cast(i_U).vrt, cast(i_U).div, ug, vg);
+		_ops->vrtdiv_to_uv(cast(i_U).vrt, cast(i_U).div, ug, vg);
 
 		/*
 		 * step 1b
@@ -138,7 +138,7 @@ public:
 		/*
 		 * step 1c
 		 */
-		ops->uv_to_vrtdiv(tmp_u, tmp_v, cast(o_U).div, cast(o_U).vrt);
+		_ops->uv_to_vrtdiv(tmp_u, tmp_v, cast(o_U).div, cast(o_U).vrt);
 
 		/*
 		 * step 1d

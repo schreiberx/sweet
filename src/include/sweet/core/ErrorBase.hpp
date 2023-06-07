@@ -111,26 +111,31 @@ public:
 	 */
 	bool set(const std::string &i_errorMessage)
 	{
-		if (_hasError)
+#if SWEET_THREADING_TIME_REXI
+#pragma omp critical
+#endif
 		{
-			_errorMessage += " | " + i_errorMessage;
-		}
-		else
-		{
-			_hasError = true;
-			_errorMessage = i_errorMessage;
-		}
-
-
-		if (_withStacktrace())
-		{
-			std::string gdb = Backtrace::getGDBBacktrace();
-
-			if (gdb != "")
+			if (_hasError)
 			{
-				_errorMessage += "\n";
-				_errorMessage += "Stacktrace (from GDB):\n";
-				_errorMessage += Backtrace::getGDBBacktrace();
+				_errorMessage += " | " + i_errorMessage;
+			}
+			else
+			{
+				_hasError = true;
+				_errorMessage = i_errorMessage;
+			}
+
+
+			if (_withStacktrace())
+			{
+				std::string gdb = Backtrace::getGDBBacktrace();
+
+				if (gdb != "")
+				{
+					_errorMessage += "\n";
+					_errorMessage += "Stacktrace (from GDB):\n";
+					_errorMessage += Backtrace::getGDBBacktrace();
+				}
 			}
 		}
 		return false;
@@ -143,16 +148,32 @@ public:
 	 */
 	bool forward(ErrorBase &i_error)
 	{
-		if (!i_error._hasError)
-			return false;
+		bool retval;
 
-		if (this == &i_error)
-			return true;
+#if SWEET_THREADING_TIME_REXI
+#pragma omp critical
+#endif
+		{
+			if (!i_error._hasError)
+			{
+				retval = false;
+			}
+			else
+			{
+				if (this == &i_error)
+				{
+					retval = true;
+				}
+				else
+				{
+					_hasError = i_error._hasError;
+					_errorMessage = i_error._errorMessage;
+					retval = true;
+				}
+			}
+		}
 
-		_hasError = i_error._hasError;
-		_errorMessage = i_error._errorMessage;
-
-		return true;
+		return retval;
 	}
 
 	/*!
@@ -162,18 +183,34 @@ public:
 	 */
 	bool forwardWithPositiveReturn(ErrorBase &i_error)
 	{
-		if (!i_error._hasError)
-			return true;
+		bool retval;
+#if SWEET_THREADING_TIME_REXI
+#pragma omp critical
+#endif
+		{
+			if (!i_error._hasError)
+			{
+				retval = true;
+			}
+			else
+			{
 
-		if (this == &i_error)
-			return false;
+				if (this == &i_error)
+				{
+					retval = false;
+				}
+				else
+				{
+					_hasError = i_error._hasError;
+					_errorMessage = i_error._errorMessage;
 
-		_hasError = i_error._hasError;
-		_errorMessage = i_error._errorMessage;
+					i_error.reset();
+					retval = false;
+				}
+			}
+		}
 
-		i_error.reset();
-
-		return false;
+		return retval;
 	}
 
 	bool exists() const

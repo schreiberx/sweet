@@ -25,12 +25,15 @@ class PDESWESphere_na_uv	:
 		>
 {
 private:
-	ShackPDESWESphere *shackPDESWESphere;
-	const sweet::SphereOperators *ops;
+	ShackPDESWESphere *_shackPDESWESphere;
+	const sweet::SphereOperators *_ops;
 
 public:
 	PDESWESphere_na_uv();
 	~PDESWESphere_na_uv();
+	PDESWESphere_na_uv(
+			const PDESWESphere_na_uv &i_val
+	);
 
 public:
 	bool shackRegistration(
@@ -43,7 +46,7 @@ public:
 	virtual
 	bool setupConfigAndGetTimeStepperEval(
 		const sweet::DESolver_Config_Base &i_deTermConfig,
-		const std::string &i_timeStepperEvalName,
+		EVAL_TYPES i_evalType,
 		DESolver_TimeTreeNode_Base::EvalFun &o_timeStepper
 	) override;
 

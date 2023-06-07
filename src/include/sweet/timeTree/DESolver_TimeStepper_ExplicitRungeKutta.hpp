@@ -33,16 +33,24 @@ private:
 	ERKMethod _rkMethodID;
 
 
-	// Order of Runge-Kutta method
+	/*!
+	 * Order of Runge-Kutta method
+	 */
 	int _order;
 
-	// Particular RK method
+	/*!
+	 * Particular RK method
+	 */
 	std::string _method;
 
-	// Runge-Kutta stage storages
+	/*!
+	 * Runge-Kutta stage storages
+	 */
 	int _rkNumStages;
 
-	// Number of stages to allocate buffers
+	/*!
+	 * Number of stages to allocate buffers
+	 */
 	std::vector<sweet::DESolver_DataContainer_Base*> _rkStageDataContainer;
 
 public:
@@ -52,12 +60,27 @@ public:
 		_method("std"),
 		_rkNumStages(-1)
 	{
-		setEvalAvailable("integration");
+		setEvalAvailable(EVAL_INTEGRATION);
 	}
 
 	~DESolver_TimeStepper_ExplicitRungeKutta()
 	{
 		clear();
+	}
+
+	DESolver_TimeStepper_ExplicitRungeKutta(
+			const DESolver_TimeStepper_ExplicitRungeKutta &i_src
+	)	:
+		DESolver_TimeTreeNode_NodeInteriorHelper<DESolver_TimeStepper_ExplicitRungeKutta>(i_src)
+	{
+		_rkMethodID = i_src._rkMethodID;
+		_order = i_src._order;
+		_method = i_src._method;
+		_rkNumStages = i_src._rkNumStages;
+
+		_rkStageDataContainer.resize(i_src._rkStageDataContainer.size());
+		for (std::size_t i = 0; i < _rkStageDataContainer.size(); i++)
+			_rkStageDataContainer[i] = i_src._rkStageDataContainer[i]->getNewDataContainer();
 	}
 
 	const std::vector<std::string>
@@ -211,15 +234,15 @@ public:
 
 	bool setupConfigAndGetTimeStepperEval(
 		const sweet::DESolver_Config_Base &i_deTermConfig,
-		const std::string &i_timeStepperEvalName,
+		EVAL_TYPES i_evalType,
 		DESolver_TimeTreeNode_Base::EvalFun &o_timeStepper
 	) override
 	{
 		_helperSetupConfigAndGetTimeStepperEval(
 				i_deTermConfig,
-				i_timeStepperEvalName,
+				i_evalType,
 				o_timeStepper,
-				"tendencies"
+				EVAL_TENDENCIES
 			);
 
 
@@ -253,10 +276,12 @@ public:
 		DESolver_TimeTreeNode_NodeInteriorHelper::clear();
 	}
 
+#if 0
 	std::shared_ptr<DESolver_TimeTreeNode_Base> getInstanceNew()	override
 	{
 		return std::shared_ptr<DESolver_TimeTreeNode_Base>(new DESolver_TimeStepper_ExplicitRungeKutta);
 	}
+#endif
 
 	std::shared_ptr<DESolver_TimeTreeNode_Base> getInstanceCopy()	override
 	{

@@ -1,6 +1,5 @@
 #include "PDESWESphere_l.hpp"
 
-
 #include <vector>
 #include <sweet/core/sphere/SphereOperators.hpp>
 
@@ -9,8 +8,8 @@ PDESWESphere_l::PDESWESphere_l()	:
 	shackSphereDataOps(nullptr),
 	ops(nullptr)
 {
-	setEvalAvailable("tendencies");
-	setEvalAvailable("eulerBackward");
+	setEvalAvailable(EVAL_TENDENCIES);
+	setEvalAvailable(EVAL_EULER_BACKWARD);
 }
 
 PDESWESphere_l::~PDESWESphere_l()
@@ -27,8 +26,8 @@ PDESWESphere_l::PDESWESphere_l(
 	shackSphereDataOps = i_val.shackSphereDataOps;
 	ops = i_val.ops;
 
-	setEvalAvailable("tendencies");
-	setEvalAvailable("eulerBackward");
+	setEvalAvailable(EVAL_TENDENCIES);
+	setEvalAvailable(EVAL_EULER_BACKWARD);
 }
 
 
@@ -56,7 +55,7 @@ const std::vector<std::string> PDESWESphere_l::getNodeNames()
 
 bool PDESWESphere_l::setupConfigAndGetTimeStepperEval(
 	const sweet::DESolver_Config_Base &i_deTermConfig,
-	const std::string &i_timeStepperEvalName,
+	EVAL_TYPES i_evalType,
 	DESolver_TimeTreeNode_Base::EvalFun &o_timeStepper
 )
 {
@@ -72,14 +71,14 @@ bool PDESWESphere_l::setupConfigAndGetTimeStepperEval(
 	ug.setup(ops->sphereDataConfig);
 	vg.setup(ops->sphereDataConfig);
 
-	if (i_timeStepperEvalName == "eulerBackward")
+	if (i_evalType == EVAL_EULER_BACKWARD)
 		if (shackPDESWESphere->sphere_use_fsphere)
 			SWEETError("Not supported");
 
 
 	// default setup
 	DESolver_TimeTreeNode_Base::_helperGetTimeStepperEval(
-			i_timeStepperEvalName,
+			i_evalType,
 			o_timeStepper
 		);
 	ERROR_CHECK_COND_RETURN_BOOLEAN(*this);

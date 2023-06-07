@@ -14,7 +14,7 @@ namespace sweet
  */
 template <typename MainInteriorNodeClass>
 class DESolver_TimeTreeNode_NodeInteriorHelper	:
-		public DESolver_TimeTreeNode_Base
+	public DESolver_TimeTreeNode_Base
 {
 protected:
 	double _timestepSize;
@@ -48,20 +48,20 @@ public:
 	 */
 	DESolver_TimeTreeNode_NodeInteriorHelper(
 		const DESolver_TimeTreeNode_NodeInteriorHelper &i_src
-	)
+	):
+		DESolver_TimeTreeNode_Base(i_src)
 	{
 		_timestepSize = i_src._timestepSize;
 
 		// registered evaluation functions
-		_registeredEvalFunctions = i_src._registeredEvalFunctions;
+		_registeredEvalTypes = i_src._registeredEvalTypes;
 
 		// Data containers
 		_tmpDataContainer.resize(_tmpDataContainer.size());
 		for (std::size_t i = 0; i < i_src._tmpDataContainer.size(); i++)
-			_tmpDataContainer[i] = i_src._tmpDataContainer[i]->getInstanceNew();
+			_tmpDataContainer[i] = i_src._tmpDataContainer[i]->getNewDataContainer();
 
 		// Time tree nodes
-		assert(i_src._timeTreeNodes.size() != 0);
 		_timeTreeNodes.resize(i_src._timeTreeNodes.size());
 		for (std::size_t i = 0; i < _timeTreeNodes.size(); i++)
 			_timeTreeNodes[i] = i_src._timeTreeNodes[i]->getInstanceCopy();
@@ -70,23 +70,22 @@ public:
 	}
 
 	bool _helperSetupConfigAndGetTimeStepperEval(
-		const sweet::DESolver_Config_Base &i_deTermConfig,
-		const std::string &i_timeStepperEvalName,
+		const sweet::DESolver_Config_Base &i_deTermConfig,	//!< User-defined configuration
+		EVAL_TYPES i_thisTimeStepperEvalType,
 		DESolver_TimeTreeNode_Base::EvalFun &o_timeStepper,
-
-		const std::string &i_evalName = "integration"
+		EVAL_TYPES i_childEvalType
 	)
 	{
 		_evalFuns.resize(_timeTreeNodes.size());
 		for (std::size_t i = 0; i < _evalFuns.size(); i++)
 		{
-			_timeTreeNodes[i]->setupConfigAndGetTimeStepperEval(i_deTermConfig, i_evalName, _evalFuns[i]);
+			_timeTreeNodes[i]->setupConfigAndGetTimeStepperEval(i_deTermConfig, i_childEvalType, _evalFuns[i]);
 			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*_timeTreeNodes[i]);
 		}
 
 		// default setup
 		DESolver_TimeTreeNode_Base::_helperGetTimeStepperEval(
-				i_timeStepperEvalName,
+				i_thisTimeStepperEvalType,
 				o_timeStepper
 			);
 		ERROR_CHECK_COND_RETURN_BOOLEAN(*this);
@@ -164,6 +163,9 @@ public:
 		assert(_timeTreeNodes.size() > i_id);
 		assert(_evalFuns.size() > i_id);
 
+		assert(_timeTreeNodes[i_id] != nullptr);
+		assert(_evalFuns[i_id] != nullptr);
+
 		(_timeTreeNodes[i_id].get()->*_evalFuns[i_id])(i_U, o_U, i_simulationTime);
 #if SWEET_DEBUG
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*_timeTreeNodes[i_id]);
@@ -171,11 +173,12 @@ public:
 		return true;
 	}
 
-
+#if 0
 	std::shared_ptr<DESolver_TimeTreeNode_Base> getInstanceNew()	override
 	{
 		return std::shared_ptr<DESolver_TimeTreeNode_Base>(new MainInteriorNodeClass);
 	}
+#endif
 
 	std::shared_ptr<DESolver_TimeTreeNode_Base> getInstanceCopy()	override
 	{

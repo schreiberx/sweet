@@ -48,13 +48,30 @@ public:
 		_order(-1),
 		_method("std")
 	{
-		setEvalAvailable("integration");
+		setEvalAvailable(EVAL_INTEGRATION);
 	}
 
 	~DESolver_TimeStepper_ImplicitRungeKutta()
 	{
 		clear();
 	}
+
+
+	DESolver_TimeStepper_ImplicitRungeKutta(
+			const DESolver_TimeStepper_ImplicitRungeKutta &i_src
+	)	:
+		DESolver_TimeTreeNode_NodeInteriorHelper<DESolver_TimeStepper_ImplicitRungeKutta>(i_src)
+	{
+		_rkMethodID = i_src._rkMethodID;
+		_order = i_src._order;
+		_method = i_src._method;
+
+		_crank_nicolson_damping_factor = i_src._crank_nicolson_damping_factor;
+
+		_dt_explicit = i_src._dt_explicit;
+		_dt_implicit = i_src._dt_implicit;
+	}
+
 
 	const std::vector<std::string>
 	getNodeNames()	override
@@ -203,7 +220,7 @@ public:
 
 	bool setupConfigAndGetTimeStepperEval(
 		const sweet::DESolver_Config_Base &i_deTermConfig,
-		const std::string &i_timeStepperEvalName,
+		EVAL_TYPES i_evalType,
 		DESolver_TimeTreeNode_Base::EvalFun &o_timeStepper
 	) override
 	{
@@ -213,7 +230,7 @@ public:
 		_timeTreeNodes.resize(_order);
 		_evalFuns.resize(_order);
 
-		_timeTreeNodes[0]->setupConfigAndGetTimeStepperEval(i_deTermConfig, "eulerBackward", _evalFuns[0]);
+		_timeTreeNodes[0]->setupConfigAndGetTimeStepperEval(i_deTermConfig, EVAL_EULER_BACKWARD, _evalFuns[0]);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*_timeTreeNodes[0]);
 
 		/*
@@ -228,7 +245,7 @@ public:
 			_tmpDataContainer.resize(2);
 
 			// Create new instance
-			_timeTreeNodes[1]->setupConfigAndGetTimeStepperEval(i_deTermConfig, "tendencies", _evalFuns[1]);
+			_timeTreeNodes[1]->setupConfigAndGetTimeStepperEval(i_deTermConfig, EVAL_TENDENCIES, _evalFuns[1]);
 			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*_timeTreeNodes[1]);
 		}
 
@@ -237,7 +254,7 @@ public:
 
 		// Return time stepper for this routine
 		DESolver_TimeTreeNode_Base::_helperGetTimeStepperEval(
-				i_timeStepperEvalName,
+				i_evalType,
 				o_timeStepper
 			);
 
@@ -254,11 +271,12 @@ public:
 		_tmpDataContainer.clear();
 	}
 
+#if 0
 	std::shared_ptr<DESolver_TimeTreeNode_Base> getInstanceNew()	override
 	{
 		return std::shared_ptr<DESolver_TimeTreeNode_Base>(new DESolver_TimeStepper_ImplicitRungeKutta);
 	}
-
+#endif
 
 	std::shared_ptr<DESolver_TimeTreeNode_Base> getInstanceCopy()	override
 	{

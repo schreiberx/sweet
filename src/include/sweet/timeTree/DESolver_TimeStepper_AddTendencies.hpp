@@ -20,13 +20,21 @@ class DESolver_TimeStepper_AddTendencies	:
 public:
 	DESolver_TimeStepper_AddTendencies()
 	{
-		setEvalAvailable("tendencies");
+		setEvalAvailable(EVAL_TENDENCIES);
 	}
 
 	~DESolver_TimeStepper_AddTendencies()
 	{
 		clear();
 	}
+
+	DESolver_TimeStepper_AddTendencies(
+			const DESolver_TimeStepper_AddTendencies &i_src
+	)	:
+		DESolver_TimeTreeNode_NodeInteriorHelper<DESolver_TimeStepper_AddTendencies>(i_src)
+	{
+	}
+
 
 	const std::vector<std::string>
 	getNodeNames()	override
@@ -96,15 +104,15 @@ public:
 
 	bool setupConfigAndGetTimeStepperEval(
 		const sweet::DESolver_Config_Base &i_deTermConfig,
-		const std::string &i_timeStepperEvalName,
+		EVAL_TYPES i_evalType,
 		DESolver_TimeTreeNode_Base::EvalFun &o_timeStepper
 	) override
 	{
 		_helperSetupConfigAndGetTimeStepperEval(
 				i_deTermConfig,
-				i_timeStepperEvalName,
+				i_evalType,
 				o_timeStepper,
-				"tendencies"
+				EVAL_TENDENCIES
 			);
 		
 		_tmpDataContainer.resize(1);
@@ -116,12 +124,12 @@ public:
 		return true;
 	}
 
-
+#if 0
 	std::shared_ptr<DESolver_TimeTreeNode_Base> getInstanceNew()	override
 	{
 		return std::shared_ptr<DESolver_TimeTreeNode_Base>(new DESolver_TimeStepper_AddTendencies);
 	}
-
+#endif
 	std::shared_ptr<DESolver_TimeTreeNode_Base> getInstanceCopy()	override
 	{
 		return std::shared_ptr<DESolver_TimeTreeNode_Base>(new DESolver_TimeStepper_AddTendencies(*this));

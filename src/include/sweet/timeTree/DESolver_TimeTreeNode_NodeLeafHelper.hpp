@@ -7,7 +7,7 @@
 namespace sweet
 {
 
-/*
+/*!
  * Helper class for interior tree node
  *
  * It provides default member variables which are often used
@@ -31,22 +31,21 @@ public:
 	}
 
 
-	/*
+	/*!
 	 * Copy constructor
 	 *
 	 * Simply copy the raw data over here
 	 */
 	DESolver_TimeTreeNode_NodeLeafHelper(
-		const DESolver_TimeTreeNode_NodeLeafHelper &i_src
-	)
+		const DESolver_TimeTreeNode_NodeLeafHelper &i_src	///<! Source node to copy from
+	)	:
+		DESolver_TimeTreeNode_Base(i_src)
 	{
 		_timestepSize = i_src._timestepSize;
 
 		_tmpDataContainer.resize(_tmpDataContainer.size());
 		for (std::size_t i = 0; i < i_src._tmpDataContainer.size(); i++)
-			_tmpDataContainer[i] = i_src._tmpDataContainer[i]->getInstanceNew();
-
-		_registeredEvalFunctions = i_src._registeredEvalFunctions;
+			_tmpDataContainer[i] = i_src._tmpDataContainer[i]->getNewDataContainer();
 	}
 
 	virtual
@@ -70,10 +69,17 @@ public:
 		_tmpDataContainer.clear();
 	}
 
+#if 0
 	std::shared_ptr<DESolver_TimeTreeNode_Base> getInstanceNew()	override
 	{
+#if 1
+		MainInteriorNodeClass *m = new MainInteriorNodeClass(static_cast<MainInteriorNodeClass&>(*this));
+		return std::shared_ptr<DESolver_TimeTreeNode_Base>(m);
+#else
 		return std::shared_ptr<DESolver_TimeTreeNode_Base>(new MainInteriorNodeClass);
+#endif
 	}
+#endif
 
 	std::shared_ptr<DESolver_TimeTreeNode_Base> getInstanceCopy()	override
 	{

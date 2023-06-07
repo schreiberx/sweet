@@ -26,12 +26,21 @@ public:
 		_order(-1),
 		_numPhiVariants(-1)
 	{
-		setEvalAvailable("integration");
+		setEvalAvailable(EVAL_INTEGRATION);
 	}
 
 	~DESolver_TimeStepper_ETDRK()
 	{
 		clear();
+	}
+
+	DESolver_TimeStepper_ETDRK(
+			const DESolver_TimeStepper_ETDRK &i_src
+	)	:
+		DESolver_TimeTreeNode_NodeInteriorHelper<DESolver_TimeStepper_ETDRK>(i_src)
+	{
+		_order = i_src._order;
+		_numPhiVariants = i_src._numPhiVariants;
 	}
 
 	const std::vector<std::string>
@@ -222,24 +231,24 @@ public:
 
 	bool setupConfigAndGetTimeStepperEval(
 		const sweet::DESolver_Config_Base &i_deTermConfig,
-		const std::string &i_timeStepperEvalName,
+		EVAL_TYPES i_evalType,
 		DESolver_TimeTreeNode_Base::EvalFun &o_timeStepper
 	) override
 	{
 		_evalFuns.resize(_timeTreeNodes.size());
 
-		_timeTreeNodes[0]->setupConfigAndGetTimeStepperEval(i_deTermConfig, "tendencies", _evalFuns[0]);
+		_timeTreeNodes[0]->setupConfigAndGetTimeStepperEval(i_deTermConfig, EVAL_TENDENCIES, _evalFuns[0]);
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*_timeTreeNodes[0]);
 
 		for (std::size_t i = 1; i < _timeTreeNodes.size(); i++)
 		{
-			_timeTreeNodes[i]->setupConfigAndGetTimeStepperEval(i_deTermConfig, "exponential", _evalFuns[i]);
+			_timeTreeNodes[i]->setupConfigAndGetTimeStepperEval(i_deTermConfig, EVAL_EXPONENTIAL, _evalFuns[i]);
 			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*_timeTreeNodes[i]);
 		}
 
 		// default setup
 		DESolver_TimeTreeNode_Base::_helperGetTimeStepperEval(
-				i_timeStepperEvalName,
+				i_evalType,
 				o_timeStepper
 			);
 		ERROR_CHECK_COND_RETURN_BOOLEAN(*this);
@@ -266,10 +275,12 @@ public:
 		DESolver_TimeTreeNode_NodeInteriorHelper::clear();
 	}
 
+#if 0
 	std::shared_ptr<DESolver_TimeTreeNode_Base> getInstanceNew()	override
 	{
 		return std::shared_ptr<DESolver_TimeTreeNode_Base>(new DESolver_TimeStepper_ETDRK);
 	}
+#endif
 
 	std::shared_ptr<DESolver_TimeTreeNode_Base> getInstanceCopy()	override
 	{

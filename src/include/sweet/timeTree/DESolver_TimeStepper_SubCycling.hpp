@@ -22,7 +22,7 @@ private:
 public:
 	DESolver_TimeStepper_SubCycling()
 	{
-		setEvalAvailable("integration");
+		setEvalAvailable(EVAL_INTEGRATION);
 	}
 
 	~DESolver_TimeStepper_SubCycling()
@@ -119,15 +119,15 @@ public:
 
 	bool setupConfigAndGetTimeStepperEval(
 		const sweet::DESolver_Config_Base &i_deTermConfig,
-		const std::string &i_timeStepperEvalName,
+		EVAL_TYPES i_evalType,
 		DESolver_TimeTreeNode_Base::EvalFun &o_timeStepper
 	) override
 	{
 		_helperSetupConfigAndGetTimeStepperEval(
 				i_deTermConfig,
-				i_timeStepperEvalName,
+				i_evalType,
 				o_timeStepper,
-				"integration"
+				EVAL_INTEGRATION
 			);
 		
 		_tmpDataContainer.resize(1);

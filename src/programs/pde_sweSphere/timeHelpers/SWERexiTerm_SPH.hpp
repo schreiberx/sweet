@@ -105,7 +105,7 @@ public:
 
 		if (no_coriolis)
 		{
-#if 0
+#if 1
 
 			sweet::SphereData_SpectralComplex rhs = div0 + opsComplex.implicit_L(phi0, dt_implicit);
 			div1 = opsComplex.implicit_helmholtz(rhs, gh0*dt_implicit*dt_implicit, sphere_radius);

@@ -45,6 +45,9 @@ public:
 	/// Time in simulation
 	double current_simulation_time = 0;
 
+	/// Scalar for simulation time output
+	double output_simulation_time_scalar = 1;
+
 	/// Maximum number of time steps to simulate
 	int max_timesteps_nr = -1;
 

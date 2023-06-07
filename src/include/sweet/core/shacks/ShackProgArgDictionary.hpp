@@ -51,10 +51,12 @@ public:
 	}
 
 public:
-	void setup()
+	bool setup()
 	{
 		_programArguments.setup(_argc, _argv);
-		ERROR_FORWARD(_programArguments);
+
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(_programArguments);
+		return true;
 	}
 
 public:
@@ -77,10 +79,15 @@ public:
 		ShackDictionary::clear();
 	}
 
+	/*!
+	 * Process all program arguments using all registered shacks
+	 */
 public:
-	bool processProgramArguments()
+	bool processProgramArguments(
+			bool i_skipProcessedShacks = true 	///!< Skip already processed shacks
+	)
 	{
-		return ShackDictionary::processProgramArguments(_programArguments);
+		return ShackDictionary::processProgramArguments(_programArguments, i_skipProcessedShacks);
 	}
 
 	/*

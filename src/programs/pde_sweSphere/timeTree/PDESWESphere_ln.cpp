@@ -5,10 +5,10 @@
 #include <sweet/core/sphere/SphereOperators.hpp>
 
 PDESWESphere_ln::PDESWESphere_ln()	:
-	shackPDESWESphere(nullptr),
-	ops(nullptr)
+	_shackPDESWESphere(nullptr),
+	_ops(nullptr)
 {
-	setEvalAvailable("tendencies");
+	setEvalAvailable(EVAL_TENDENCIES);
 }
 
 PDESWESphere_ln::~PDESWESphere_ln()
@@ -16,11 +16,21 @@ PDESWESphere_ln::~PDESWESphere_ln()
 }
 
 
+PDESWESphere_ln::PDESWESphere_ln(
+		const PDESWESphere_ln &i_value
+)	:
+	DESolver_TimeTreeNode_NodeLeafHelper(i_value)
+{
+	_shackPDESWESphere = i_value._shackPDESWESphere;
+	_ops = i_value._ops;
+}
+
+
 bool PDESWESphere_ln::shackRegistration(
 		sweet::ShackDictionary *io_shackDict
 )
 {
-	shackPDESWESphere = io_shackDict->getAutoRegistration<ShackPDESWESphere>();
+	_shackPDESWESphere = io_shackDict->getAutoRegistration<ShackPDESWESphere>();
 	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*io_shackDict);
 
 	return true;
@@ -37,22 +47,22 @@ const std::vector<std::string> PDESWESphere_ln::getNodeNames()
 
 bool PDESWESphere_ln::setupConfigAndGetTimeStepperEval(
 	const sweet::DESolver_Config_Base &i_deTermConfig,
-	const std::string &i_timeStepperEvalName,
+	EVAL_TYPES i_evalType,
 	DESolver_TimeTreeNode_Base::EvalFun &o_timeStepper
 )
 {
 	const PDESWESphere_DESolver_Config& myConfig = cast(i_deTermConfig);
 
-	ops = myConfig.ops;
+	_ops = myConfig.ops;
 
-	if (shackPDESWESphere->sphere_use_fsphere)
-		fg = ops->getFG_fSphere(shackPDESWESphere->sphere_fsphere_f0);
+	if (_shackPDESWESphere->sphere_use_fsphere)
+		_fg = _ops->getFG_fSphere(_shackPDESWESphere->sphere_fsphere_f0);
 	else
-		fg = ops->getFG_rotatingSphere(shackPDESWESphere->sphere_rotating_coriolis_omega);
+		_fg = _ops->getFG_rotatingSphere(_shackPDESWESphere->sphere_rotating_coriolis_omega);
 
 	// default setup
 	DESolver_TimeTreeNode_Base::_helperGetTimeStepperEval(
-			i_timeStepperEvalName,
+			i_evalType,
 			o_timeStepper
 		);
 	ERROR_CHECK_COND_RETURN_BOOLEAN(*this);
@@ -78,11 +88,11 @@ bool PDESWESphere_ln::_eval_tendencies(
 	const PDESWESphere_DataContainer &i_U = cast(i_U_);
 	PDESWESphere_DataContainer &o_U = cast(o_U_);
 
-	assert(ops != nullptr);
-	assert(shackPDESWESphere != nullptr);
+	assert(_ops != nullptr);
+	assert(_shackPDESWESphere != nullptr);
 
 
-	double gh0 = shackPDESWESphere->gravitation * shackPDESWESphere->h0;
+	double gh0 = _shackPDESWESphere->gravitation * _shackPDESWESphere->h0;
 
 	/*
 	 * NON-LINEAR SWE
@@ -104,7 +114,7 @@ bool PDESWESphere_ln::_eval_tendencies(
 	 * Step 1a
 	 */
 	sweet::SphereData_Physical ug, vg;
-	ops->vrtdiv_to_uv(i_U.vrt, i_U.div, ug, vg);
+	_ops->vrtdiv_to_uv(i_U.vrt, i_U.div, ug, vg);
 
 	/*
 	 * Step 1b
@@ -118,16 +128,16 @@ bool PDESWESphere_ln::_eval_tendencies(
 	using namespace sweet;
 
 	// left part of eq. (19)
-	sweet::SphereData_Physical u_nl = ug*(vrtg+fg);
+	sweet::SphereData_Physical u_nl = ug*(vrtg+_fg);
 
 	// left part of eq. (20)
-	sweet::SphereData_Physical v_nl = vg*(vrtg+fg);
+	sweet::SphereData_Physical v_nl = vg*(vrtg+_fg);
 
 	/*
 	 * Step 1d
 	 */
 	// Eq. (21) & left part of Eq. (22)
-	ops->uv_to_vrtdiv(u_nl, v_nl, o_U.div, o_U.vrt);
+	_ops->uv_to_vrtdiv(u_nl, v_nl, o_U.div, o_U.vrt);
 
 
 	/*
@@ -146,7 +156,7 @@ bool PDESWESphere_ln::_eval_tendencies(
 	/*
 	 * Step 1g
 	 */
-	o_U.div -= ops->laplace(e);
+	o_U.div -= _ops->laplace(e);
 
 	/*
 	 * Compute Phi geopotential tendencies
@@ -158,7 +168,7 @@ bool PDESWESphere_ln::_eval_tendencies(
 	u_nl = ug*(phi_pert_phys + gh0);
 	v_nl = vg*(phi_pert_phys + gh0);
 
-	ops->uv_to_vrtdiv(u_nl,v_nl, e, o_U.phi_pert);
+	_ops->uv_to_vrtdiv(u_nl,v_nl, e, o_U.phi_pert);
 
 	o_U.phi_pert *= -1.0;
 

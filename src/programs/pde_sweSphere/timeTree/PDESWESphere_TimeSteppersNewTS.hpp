@@ -50,9 +50,13 @@ public:
 public:
 	PDESWESphere_TimeSteppersNewTS();
 
-	bool setup_2_timestepper(
+	bool setup_2_shackRegistration(
+			sweet::ShackDictionary *i_shackDict
+	);
+
+	bool setup_3_timestepper(
 			const std::string &i_timestepping_method,
-			sweet::ShackDictionary *i_shackDict,
+			sweet::ShackProgArgDictionary *i_progArgShackDict,
 			sweet::SphereOperators *io_ops,
 			sweet::SphereOperatorsComplex *io_opsComplex,
 			const PDESWESphere_DataContainer &i_U

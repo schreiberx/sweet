@@ -20,8 +20,8 @@ private:
 public:
 	DESolver_TimeStepper_Exponential()
 	{
-		setEvalAvailable("exponential");
-		setEvalAvailable("integration");
+		setEvalAvailable(EVAL_EXPONENTIAL);
+		setEvalAvailable(EVAL_INTEGRATION);
 	}
 
 
@@ -30,12 +30,12 @@ public:
 		clear();
 	}
 
-
 	DESolver_TimeStepper_Exponential(
-			const DESolver_TimeStepper_Exponential &i_value
+			const DESolver_TimeStepper_Exponential &i_src
 	)	:
-		DESolver_TimeTreeNode_NodeInteriorHelper(i_value)
+		DESolver_TimeTreeNode_NodeInteriorHelper<DESolver_TimeStepper_Exponential>(i_src)
 	{
+		_expFunctionString = i_src._expFunctionString;
 	}
 
 
@@ -133,15 +133,15 @@ public:
 
 	bool setupConfigAndGetTimeStepperEval(
 		const sweet::DESolver_Config_Base &i_deTermConfig,
-		const std::string &i_timeStepperEvalName,
+		EVAL_TYPES i_evalType,
 		DESolver_TimeTreeNode_Base::EvalFun &o_timeStepper
 	) override
 	{
 		_helperSetupConfigAndGetTimeStepperEval(
 				i_deTermConfig,
-				i_timeStepperEvalName,
+				i_evalType,
 				o_timeStepper,
-				"exponential"
+				EVAL_EXPONENTIAL
 			);
 
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*this);
@@ -150,10 +150,12 @@ public:
 	}
 
 
+#if 0
 	std::shared_ptr<DESolver_TimeTreeNode_Base> getInstanceNew()	override
 	{
 		return std::shared_ptr<DESolver_TimeTreeNode_Base>(new DESolver_TimeStepper_Exponential);
 	}
+#endif
 
 	std::shared_ptr<DESolver_TimeTreeNode_Base> getInstanceCopy()	override
 	{

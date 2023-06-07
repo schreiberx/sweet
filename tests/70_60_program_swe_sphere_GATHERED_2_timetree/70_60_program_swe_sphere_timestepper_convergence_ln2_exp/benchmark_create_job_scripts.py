@@ -101,19 +101,22 @@ ts_methods = [
             f"ERK(ln,{o})",
 
             #"l_exp_n_erk_ver0",
-            f"SS(EXP(l,{o}),ERK(n,{o}),{o})",
+            f"SS(REXI(l,{o}),ERK(n,{o}),{o})",
             #"l_exp_n_erk_ver1",
-            f"SS(ERK(n,{o}),EXP(l,{o}),{o})",
+            f"SS(ERK(n,{o}),REXI(l,{o}),{o})",
 
             #"lg_exp_lc_n_erk_ver0",
             f"SS(EXP(lg,{o}),ERK(ADD(lc,n),{o}),{o})",
+            f"SS(REXI(lg,{o}),ERK(ADD(lc,n),{o}),{o})",
             #"lg_exp_lc_n_erk_ver1",
             f"SS(ERK(ADD(lc,n),{o}),EXP(lg,{o}),{o})",
+            f"SS(ERK(ADD(lc,n),{o}),REXI(lg,{o}),{o})",
 
             #"l_exp_n_etdrk",
-            f"ETDRK(REXI(l),n,{o})",
+            #f"ETDRK(REXI(l),n,{o})",
 
             f"ETDRK(REXI(lg),ADD(lc,n),{o})",
+            f"ETDRK(EXP(lg),ADD(lc,n),{o})",
     ]
 
 

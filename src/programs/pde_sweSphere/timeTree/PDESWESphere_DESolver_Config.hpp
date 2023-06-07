@@ -5,6 +5,7 @@
 #include <sweet/core/sphere/SphereOperators.hpp>
 #include <sweet/core/sphere/SphereOperatorsComplex.hpp>
 #include "PDESWESphere_DataContainer.hpp"
+//#include "PDESWESphere_DataContainerComplex.hpp"
 
 /*
  * A special class which is forwarded to all
@@ -22,8 +23,20 @@ public:
 	 * Just a pointer to an existing data container
 	 */
 	const PDESWESphere_DataContainer *myDataContainer;
+	//const PDESWESphere_DataContainerComplex *myDataContainerComplex;
+
 	sweet::SphereOperators *ops;
 	sweet::SphereOperatorsComplex *opsComplex;
+
+
+	PDESWESphere_DESolver_Config()
+	{
+		myDataContainer = nullptr;
+		//myDataContainerComplex = nullptr;
+		ops = nullptr;
+		opsComplex = nullptr;
+	}
+
 
 	/*
 	 * Return a new instance of a data container.
@@ -34,10 +47,28 @@ public:
 			int i_id = -1
 	) const override
 	{
-		PDESWESphere_DataContainer *retval = new PDESWESphere_DataContainer;
-		retval->setup_like(*myDataContainer);
-
-		return retval;
+		if (i_id == -1)
+		{
+			/*
+			 * Real valued
+			 */
+			PDESWESphere_DataContainer *retval = new PDESWESphere_DataContainer;
+			retval->setup(ops->sphereDataConfig);
+			return retval;
+		}
+#if 0
+		if (i_id == 1)
+		{
+			/*
+			 * Complex valued
+			 */
+			PDESWESphere_DataContainerComplex *retval = new PDESWESphere_DataContainerComplex;
+			retval->setup(opsComplex->sphereDataConfig);
+			return retval;
+		}
+#endif
+		SWEETError("Invalid data type id");
+		return 0;
 	}
 };
 

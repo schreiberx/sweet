@@ -176,12 +176,16 @@ public:
 	}
 
 public:
-	bool processProgramArguments(ProgramArguments &i_pa)
+	bool processProgramArguments(
+			ProgramArguments &i_pa,
+			bool i_skipProcessedShacks
+	)
 	{
 		for (auto i = _list.begin(); i != _list.end(); i++)
 		{
-			if ((*i)->argumentsProcessed)
-				continue;
+			if (i_skipProcessedShacks)
+				if ((*i)->argumentsProcessed)
+					continue;
 
 			if (!((*i)->processProgramArguments(i_pa)))
 			{

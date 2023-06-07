@@ -161,7 +161,7 @@ private:
 	class PerThreadVars
 	{
 	public:
-		std::vector<SWERexiTerm_SPH> rexiTermSolvers;
+		std::vector<SWERexiTerm_SPH> eulerBackwardSolvers;
 
 		std::vector< std::complex<double> > alpha;
 		std::vector< std::complex<double> > beta;

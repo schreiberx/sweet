@@ -163,8 +163,7 @@ public:
 				{
 					std::stringstream ss;
 					ss << "Error parsing argument " << i << ": '" << arg << "' (too short)" << std::endl;
-					error.set(ss.str());
-					return false;
+					return error.set(ss.str());
 				}
 
 				/*
@@ -188,8 +187,7 @@ public:
 				{
 					std::stringstream ss;
 					ss << "Error parsing argument " << i << ": '" << arg << "' (missing dashes)" << std::endl;
-					error.set(ss.str());
-					return false;
+					return error.set(ss.str());
 				}
 
 				if (!_stripKeyDashes)
@@ -240,10 +238,7 @@ public:
 		}
 
 		if (state == 1)
-		{
-			error.set("Invalid format of program arguments (last one could not be parsed)");
-			return false;
-		}
+			return error.set("Invalid format of program arguments (last one could not be parsed)");
 
 		_setupFinished = true;
 

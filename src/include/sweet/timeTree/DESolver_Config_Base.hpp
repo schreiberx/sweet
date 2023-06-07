@@ -28,4 +28,4 @@ public:
 
 }
 
-#endif /* SRC_INCLUDE_SWEET_TIMENEW_DESOLVER_DETERMCONFIG_BASE_HPP_ */
+#endif

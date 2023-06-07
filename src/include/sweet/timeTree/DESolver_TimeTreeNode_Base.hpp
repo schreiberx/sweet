@@ -8,8 +8,8 @@
  */
 #include "DESolver_TimeStepping_Assemblation.hpp"
 
-#ifndef SRC_PROGRAMS_SIMDATA_TIMESTEPPER_BASE_HPP_
-#define SRC_PROGRAMS_SIMDATA_TIMESTEPPER_BASE_HPP_
+#ifndef SRC_SWEET_TIMESTEPPER_BASE_HPP_
+#define SRC_SWEET_TIMESTEPPER_BASE_HPP_
 
 #include <vector>
 #include <string>
@@ -29,7 +29,6 @@ namespace sweet {
 	class DESolver_TimeStepping_Assemblation;
 }
 
-
 namespace sweet
 {
 
@@ -38,7 +37,22 @@ class DESolver_TimeTreeNode_Base
 public:
 	sweet::ErrorBase error;
 
-	/*
+
+	/*!
+	 * Different evaluations for time integration
+	 */
+	enum EVAL_TYPES
+	{
+		EVAL_INTEGRATION,
+		EVAL_TENDENCIES,
+		EVAL_EULER_BACKWARD,
+		EVAL_REXI_TERM,
+		EVAL_EULER_FORWARD,
+		EVAL_EXPONENTIAL
+	};
+
+
+	/*!
 	 * Type define 'EvalFun' which is required to time step
 	 */
 	typedef bool (DESolver_TimeTreeNode_Base::*EvalFun)(
@@ -47,11 +61,11 @@ public:
 					double i_simulationTime
 			);
 
-	/*
+	/*!
 	 * Keep track of a list of implemented evaluation functions
 	 */
 protected:
-	std::vector<std::string> _registeredEvalFunctions;
+	std::vector<EVAL_TYPES> _registeredEvalTypes;
 
 public:
 	DESolver_TimeTreeNode_Base()
@@ -61,6 +75,17 @@ public:
 	virtual
 	~DESolver_TimeTreeNode_Base()
 	{
+	}
+
+	/*!
+	 * Copy constructor
+	 */
+public:
+	DESolver_TimeTreeNode_Base(
+			const DESolver_TimeTreeNode_Base &i_src
+	)
+	{
+		_registeredEvalTypes = i_src._registeredEvalTypes;
 	}
 
 	/**
@@ -75,13 +100,13 @@ public:
 	const std::vector<std::string>
 	getNodeNames() = 0;
 
-
+#if 0
 	/**
 	 * Return a new instance of this class
 	 */
 	virtual
 	std::shared_ptr<DESolver_TimeTreeNode_Base> getInstanceNew() = 0;
-
+#endif
 
 	/**
 	 * Return a copy of this class
@@ -120,7 +145,7 @@ public:
 	virtual
 	bool setupConfigAndGetTimeStepperEval(
 			const sweet::DESolver_Config_Base &i_deTermConfig,
-			const std::string &i_timeStepperEvalName,
+			EVAL_TYPES i_evalType,
 			EvalFun &o_timeStepper
 		) = 0;
 
@@ -154,50 +179,56 @@ public:
 
 public:
 	bool _helperGetTimeStepperEval(
-			const std::string &i_timeStepperEvalName,
+			EVAL_TYPES i_evalType,
 			EvalFun &o_timeStepper
 	)
 	{
-		if (!isEvalAvailable(i_timeStepperEvalName))
-			return error.set("Time stepper evaluation '"+i_timeStepperEvalName+"' not available or not registered");
+		if (!isEvalAvailable(i_evalType))
+		{
+			std::ostringstream oss;
+			oss << "Time stepper evaluation '" << i_evalType << "' not available or not registered";
+			return error.set(oss.str());
+		}
 
-		if (i_timeStepperEvalName == "integration")
+		if (i_evalType == EVAL_INTEGRATION)
 		{
 			o_timeStepper = &DESolver_TimeTreeNode_Base::_eval_integration;
 			return true;
 		}
 
-		if (i_timeStepperEvalName == "tendencies")
+		if (i_evalType == EVAL_TENDENCIES)
 		{
 			o_timeStepper = &DESolver_TimeTreeNode_Base::_eval_tendencies;
 			return true;
 		}
 
-		if (i_timeStepperEvalName == "eulerBackward")
+		if (i_evalType == EVAL_EULER_BACKWARD)
 		{
 			o_timeStepper = &DESolver_TimeTreeNode_Base::_eval_eulerBackward;
 			return true;
 		}
 
-		if (i_timeStepperEvalName == "eulerBackwardComplex")
+		if (i_evalType == EVAL_REXI_TERM)
 		{
-			o_timeStepper = &DESolver_TimeTreeNode_Base::_eval_eulerBackwardComplex;
+			o_timeStepper = &DESolver_TimeTreeNode_Base::_eval_rexiTerm;
 			return true;
 		}
 
-		if (i_timeStepperEvalName == "eulerForward")
+		if (i_evalType == EVAL_EULER_FORWARD)
 		{
 			o_timeStepper = &DESolver_TimeTreeNode_Base::_eval_eulerForward;
 			return true;
 		}
 
-		if (i_timeStepperEvalName == "exponential")
+		if (i_evalType == EVAL_EXPONENTIAL)
 		{
 			o_timeStepper = &DESolver_TimeTreeNode_Base::_eval_exponential;
 			return true;
 		}
 
-		return error.set("Time stepper '"+i_timeStepperEvalName+"' not found");
+		std::ostringstream oss;
+		oss << "Invalid Time stepper evaluation '" << i_evalType << "'";
+		return error.set(oss.str());
 	}
 
 
@@ -221,11 +252,11 @@ public:
 	 * Return true if an evaluation function exists.
 	 */
 private:
-	bool isEvalAvailable(const std::string &i_evalFunction)
+	bool isEvalAvailable(EVAL_TYPES &i_evalType)
 	{
-		for (auto &e: _registeredEvalFunctions)
+		for (auto &e: _registeredEvalTypes)
 		{
-			if (e == i_evalFunction)
+			if (e == i_evalType)
 				return true;
 		}
 
@@ -237,18 +268,9 @@ private:
 	 * Set an evaluation function to be available
 	 */
 public:
-	void setEvalAvailable(const std::string &i_evalFunction)
+	void setEvalAvailable(EVAL_TYPES i_evalType)
 	{
-		if (
-			i_evalFunction != "integration" &&
-			i_evalFunction != "tendencies" &&
-			i_evalFunction != "eulerForward" &&
-			i_evalFunction != "eulerBackward" &&
-			i_evalFunction != "exponential"
-		)
-			SWEETError("Evaluation function '"+i_evalFunction+"' doesn't exist");
-
-		_registeredEvalFunctions.push_back(i_evalFunction);
+		_registeredEvalTypes.push_back(i_evalType);
 	}
 
 
@@ -317,12 +339,12 @@ public:
 	 * Optional: Return the backward Euler evaluation with complex fields
 	 */
 	virtual
-	bool _eval_eulerBackwardComplex(
+	bool _eval_rexiTerm(
 			const DESolver_DataContainer_Base &i_U,
 			DESolver_DataContainer_Base &o_U,
 			double i_time_stamp
 	){
-		return error.set("_eval_eulerBackwardComplex() not available");
+		return error.set("_eval_rexiTerm() not available");
 	};
 
 	/*

@@ -141,7 +141,7 @@ bool PDESWESphereTS_l_exp::setup_variant_50(
 bool PDESWESphereTS_l_exp::setup_variant_100(
 		const sweet::SphereOperators *io_ops,
 		sweet::ShackExpIntegration *i_shackExpIntegration,
-		const std::string &i_function_name,
+		const std::string &i_functionName,
 		const std::string &i_exp_method,
 		double i_timestepSize,
 		bool i_use_f_sphere,
@@ -152,7 +152,7 @@ bool PDESWESphereTS_l_exp::setup_variant_100(
 {
 	ops = io_ops;
 
-	function_name = i_function_name;
+	function_name = i_functionName;
 	exp_method = i_exp_method;
 	timestep_size = i_timestepSize;
 
@@ -215,7 +215,7 @@ bool PDESWESphereTS_l_exp::setup_variant_100(
 	/*
 	 * Setup REXI function evaluations
 	 */
-	_expFunction.setup(i_function_name);
+	_expFunction.setup(i_functionName);
 
 
 	use_exp_method_direct_solution = false;
@@ -573,13 +573,13 @@ void PDESWESphereTS_l_exp::p_update_coefficients()
 
 		if (use_rexi_sphere_solver_preallocation)
 		{
-			perThreadVars[local_thread_id]->rexiTermSolvers.resize(local_size);
+			perThreadVars[local_thread_id]->eulerBackwardSolvers.resize(local_size);
 
 			for (std::size_t n = start; n < end; n++)
 			{
 				int thread_local_idx = n-start;
 
-				perThreadVars[local_thread_id]->rexiTermSolvers[thread_local_idx].setup_vectorinvariant_progphivortdiv(
+				perThreadVars[local_thread_id]->eulerBackwardSolvers[thread_local_idx].setup_vectorinvariant_progphivortdiv(
 						ops->sphereDataConfig,
 						shackSphereDataOps,
 
@@ -889,7 +889,7 @@ void PDESWESphereTS_l_exp::runTimestep(
 
 					if (use_rexi_sphere_solver_preallocation)
 					{
-						perThreadVars[0]->rexiTermSolvers[local_idx].solve_vectorinvariant_progphivortdiv(
+						perThreadVars[0]->eulerBackwardSolvers[local_idx].solve_vectorinvariant_progphivortdiv(
 								io_prog_phi, io_prog_vrt, io_prog_div,
 								tmp_prog_phi, tmp_prog_vort, tmp_prog_div
 							);
@@ -986,7 +986,7 @@ void PDESWESphereTS_l_exp::runTimestep(
 
 						if (use_rexi_sphere_solver_preallocation)
 						{
-							perThreadVars[local_thread_id]->rexiTermSolvers[local_idx].solve_vectorinvariant_progphivortdiv(
+							perThreadVars[local_thread_id]->eulerBackwardSolvers[local_idx].solve_vectorinvariant_progphivortdiv(
 									thread_io_prog_phi0, thread_io_prog_vrt0, thread_io_prog_div0,
 									tmp_prog_phi, tmp_prog_vort, tmp_prog_div
 								);
@@ -1082,7 +1082,6 @@ void PDESWESphereTS_l_exp::runTimestep(
 			#if SWEET_BENCHMARK_TIMINGS
 				StopwatchBox::getInstance().rexi_timestepping_reduce.stop();
 			#endif
-			
 		}
 
 	#endif	// END SWEET_THREADING_TIME_REXI

@@ -2,10 +2,10 @@
 #include <sweet/core/sphere/SphereOperators.hpp>
 
 PDESWESphere_lc::PDESWESphere_lc()	:
-	shackPDESWESphere(nullptr),
-	ops(nullptr)
+	_shackPDESWESphere(nullptr),
+	_ops(nullptr)
 {
-	setEvalAvailable("tendencies");
+	setEvalAvailable(EVAL_TENDENCIES);
 }
 
 PDESWESphere_lc::~PDESWESphere_lc()
@@ -13,11 +13,21 @@ PDESWESphere_lc::~PDESWESphere_lc()
 }
 
 
+PDESWESphere_lc::PDESWESphere_lc(
+		const PDESWESphere_lc &i_value
+)	:
+	DESolver_TimeTreeNode_NodeLeafHelper(i_value)
+{
+	_shackPDESWESphere = i_value._shackPDESWESphere;
+	_ops = i_value._ops;
+}
+
+
 bool PDESWESphere_lc::shackRegistration(
 		sweet::ShackDictionary *io_shackDict
 )
 {
-	shackPDESWESphere = io_shackDict->getAutoRegistration<ShackPDESWESphere>();
+	_shackPDESWESphere = io_shackDict->getAutoRegistration<ShackPDESWESphere>();
 	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*io_shackDict);
 
 	return true;
@@ -34,25 +44,25 @@ const std::vector<std::string> PDESWESphere_lc::getNodeNames()
 
 bool PDESWESphere_lc::setupConfigAndGetTimeStepperEval(
 	const sweet::DESolver_Config_Base &i_deTermConfig,
-	const std::string &i_timeStepperEvalName,
+	EVAL_TYPES i_evalType,
 	DESolver_TimeTreeNode_Base::EvalFun &o_timeStepper
 )
 {
 	const PDESWESphere_DESolver_Config& myConfig = cast(i_deTermConfig);
 
-	ops = myConfig.ops;
+	_ops = myConfig.ops;
 
-	if (shackPDESWESphere->sphere_use_fsphere)
-		fg = ops->getFG_fSphere(shackPDESWESphere->sphere_fsphere_f0);
+	if (_shackPDESWESphere->sphere_use_fsphere)
+		fg = _ops->getFG_fSphere(_shackPDESWESphere->sphere_fsphere_f0);
 	else
-		fg = ops->getFG_rotatingSphere(shackPDESWESphere->sphere_rotating_coriolis_omega);
+		fg = _ops->getFG_rotatingSphere(_shackPDESWESphere->sphere_rotating_coriolis_omega);
 
-	ug.setup(ops->sphereDataConfig);
-	vg.setup(ops->sphereDataConfig);
+	ug.setup(_ops->sphereDataConfig);
+	vg.setup(_ops->sphereDataConfig);
 
 	// default setup
 	DESolver_TimeTreeNode_Base::_helperGetTimeStepperEval(
-			i_timeStepperEvalName,
+			i_evalType,
 			o_timeStepper
 		);
 	ERROR_CHECK_COND_RETURN_BOOLEAN(*this);
@@ -82,7 +92,7 @@ bool PDESWESphere_lc::_eval_tendencies(
 	/*
 	 * step 1a
 	 */
-	ops->vrtdiv_to_uv(i_U.vrt, i_U.div, ug, vg);
+	_ops->vrtdiv_to_uv(i_U.vrt, i_U.div, ug, vg);
 
 	/*
 	 * step 1b
@@ -93,7 +103,7 @@ bool PDESWESphere_lc::_eval_tendencies(
 	/*
 	 * step 1c
 	 */
-	ops->uv_to_vrtdiv(tmp_u, tmp_v, o_U.div, o_U.vrt);
+	_ops->uv_to_vrtdiv(tmp_u, tmp_v, o_U.div, o_U.vrt);
 
 	/*
 	 * step 1d

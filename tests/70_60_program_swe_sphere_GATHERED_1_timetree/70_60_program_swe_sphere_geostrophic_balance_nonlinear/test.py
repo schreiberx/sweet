@@ -8,7 +8,9 @@ from mule.JobMule import *
 from mule.utils import exec_program
 from mule.InfoError import *
 
-exec_program('./benchmark_create_job_scripts.py', catch_output=False)
+exitcode = exec_program('./benchmark_create_job_scripts.py', catch_output=False)
+if exitcode != 0:
+    sys.exit(exitcode)
 
 exitcode = exec_program('mule.benchmark.jobs_run_directly', catch_output=False)
 if exitcode != 0:

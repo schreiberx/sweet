@@ -5,14 +5,23 @@
 #include <sweet/core/sphere/SphereOperators.hpp>
 
 PDESWESphere_n::PDESWESphere_n()	:
-	shackPDESWESphere(nullptr),
-	ops(nullptr)
+	_shackPDESWESphere(nullptr),
+	_ops(nullptr)
 {
-	setEvalAvailable("tendencies");
+	setEvalAvailable(EVAL_TENDENCIES);
 }
 
 PDESWESphere_n::~PDESWESphere_n()
 {
+}
+
+PDESWESphere_n::PDESWESphere_n(
+		const PDESWESphere_n &i_value
+)	:
+	DESolver_TimeTreeNode_NodeLeafHelper(i_value)
+{
+	_shackPDESWESphere = i_value._shackPDESWESphere;
+	_ops = i_value._ops;
 }
 
 
@@ -20,7 +29,7 @@ bool PDESWESphere_n::shackRegistration(
 		sweet::ShackDictionary *io_shackDict
 )
 {
-	shackPDESWESphere = io_shackDict->getAutoRegistration<ShackPDESWESphere>();
+	_shackPDESWESphere = io_shackDict->getAutoRegistration<ShackPDESWESphere>();
 	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*io_shackDict);
 
 	return true;
@@ -37,17 +46,17 @@ const std::vector<std::string> PDESWESphere_n::getNodeNames()
 
 bool PDESWESphere_n::setupConfigAndGetTimeStepperEval(
 	const sweet::DESolver_Config_Base &i_deTermConfig,
-	const std::string &i_timeStepperEvalName,
+	EVAL_TYPES i_evalType,
 	DESolver_TimeTreeNode_Base::EvalFun &o_timeStepper
 )
 {
 	const PDESWESphere_DESolver_Config& myConfig = cast(i_deTermConfig);
 
-	ops = myConfig.ops;
+	_ops = myConfig.ops;
 
 	// default setup
 	DESolver_TimeTreeNode_Base::_helperGetTimeStepperEval(
-			i_timeStepperEvalName,
+			i_evalType,
 			o_timeStepper
 		);
 	ERROR_CHECK_COND_RETURN_BOOLEAN(*this);
@@ -72,8 +81,8 @@ bool PDESWESphere_n::_eval_tendencies(
 	const PDESWESphere_DataContainer &i_U = cast(i_U_);
 	PDESWESphere_DataContainer &o_U = cast(o_U_);
 
-	assert(ops != nullptr);
-	assert(shackPDESWESphere != nullptr);
+	assert(_ops != nullptr);
+	assert(_shackPDESWESphere != nullptr);
 
 
 	/*
@@ -87,14 +96,14 @@ bool PDESWESphere_n::_eval_tendencies(
 
 	sweet::SphereData_Physical vrtg = i_U.vrt.toPhys();
 	sweet::SphereData_Physical divg = i_U.div.toPhys();
-	ops->vrtdiv_to_uv(i_U.vrt, i_U.div, ug, vg);
+	_ops->vrtdiv_to_uv(i_U.vrt, i_U.div, ug, vg);
 
 	sweet::SphereData_Physical phig = i_U.phi_pert.toPhys();
 
 	sweet::SphereData_Physical tmpg1 = ug*(vrtg/*+fg*/);
 	sweet::SphereData_Physical tmpg2 = vg*(vrtg/*+fg*/);
 
-	ops->uv_to_vrtdiv(tmpg1, tmpg2, o_U.div, o_U.vrt);
+	_ops->uv_to_vrtdiv(tmpg1, tmpg2, o_U.div, o_U.vrt);
 
 	o_U.vrt *= -1.0;
 
@@ -102,7 +111,7 @@ bool PDESWESphere_n::_eval_tendencies(
 	tmpg2 = vg*phig;
 
 	sweet::SphereData_Spectral tmpspec(i_U.phi_pert.sphereDataConfig);
-	ops->uv_to_vrtdiv(tmpg1,tmpg2, tmpspec, o_U.phi_pert);
+	_ops->uv_to_vrtdiv(tmpg1,tmpg2, tmpspec, o_U.phi_pert);
 
 	o_U.phi_pert *= -1.0;
 
@@ -110,7 +119,7 @@ bool PDESWESphere_n::_eval_tendencies(
 
 	tmpspec = /*phig+*/tmpg;
 
-	o_U.div += -ops->laplace(tmpspec);
+	o_U.div += -_ops->laplace(tmpspec);
 
 	return true;
 }

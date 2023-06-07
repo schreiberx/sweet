@@ -4,10 +4,10 @@
 
 
 PDESWESphere_na_uv::PDESWESphere_na_uv()	:
-	shackPDESWESphere(nullptr),
-	ops(nullptr)
+	_shackPDESWESphere(nullptr),
+	_ops(nullptr)
 {
-	setEvalAvailable("tendencies");
+	setEvalAvailable(EVAL_TENDENCIES);
 }
 
 PDESWESphere_na_uv::~PDESWESphere_na_uv()
@@ -15,11 +15,20 @@ PDESWESphere_na_uv::~PDESWESphere_na_uv()
 }
 
 
+PDESWESphere_na_uv::PDESWESphere_na_uv(
+		const PDESWESphere_na_uv &i_value
+)	:
+	DESolver_TimeTreeNode_NodeLeafHelper(i_value)
+{
+	_shackPDESWESphere = i_value._shackPDESWESphere;
+	_ops = i_value._ops;
+}
+
 bool PDESWESphere_na_uv::shackRegistration(
 		sweet::ShackDictionary *io_shackDict
 )
 {
-	shackPDESWESphere = io_shackDict->getAutoRegistration<ShackPDESWESphere>();
+	_shackPDESWESphere = io_shackDict->getAutoRegistration<ShackPDESWESphere>();
 	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*io_shackDict);
 
 	return true;
@@ -37,17 +46,17 @@ const std::vector<std::string> PDESWESphere_na_uv::getNodeNames()
 
 bool PDESWESphere_na_uv::setupConfigAndGetTimeStepperEval(
 	const sweet::DESolver_Config_Base &i_deTermConfig,
-	const std::string &i_timeStepperEvalName,
+	EVAL_TYPES i_evalType,
 	DESolver_TimeTreeNode_Base::EvalFun &o_timeStepper
 )
 {
 	const PDESWESphere_DESolver_Config& myConfig = cast(i_deTermConfig);
 
-	ops = myConfig.ops;
+	_ops = myConfig.ops;
 
 	// default setup
 	DESolver_TimeTreeNode_Base::_helperGetTimeStepperEval(
-			i_timeStepperEvalName,
+			i_evalType,
 			o_timeStepper
 		);
 	ERROR_CHECK_COND_RETURN_BOOLEAN(*this);
@@ -73,11 +82,11 @@ bool PDESWESphere_na_uv::_eval_tendencies(
 	PDESWESphere_DataContainer &o_U = cast(o_U_);
 
 	sweet::SphereData_Physical U_u_phys, U_v_phys;
-	ops->vrtdiv_to_uv(i_U.vrt, i_U.div, U_u_phys, U_v_phys);
+	_ops->vrtdiv_to_uv(i_U.vrt, i_U.div, U_u_phys, U_v_phys);
 
 
 	sweet::SphereData_Physical U_div_phys = i_U.div.toPhys();
-	o_U.phi_pert = -ops->V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, i_U.phi_pert.toPhys());
+	o_U.phi_pert = -_ops->V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, i_U.phi_pert.toPhys());
 
 	/*
 	 * Velocity
@@ -88,11 +97,11 @@ bool PDESWESphere_na_uv::_eval_tendencies(
 	sweet::SphereData_Physical v_nl = U_v_phys*vrtg;
 
 	sweet::SphereData_Spectral vrt, div;
-	ops->uv_to_vrtdiv(u_nl, v_nl, vrt, div);
+	_ops->uv_to_vrtdiv(u_nl, v_nl, vrt, div);
 	o_U.vrt = -div;
 
 	o_U.div = vrt;
-	o_U.div -= ops->laplace(0.5*(U_u_phys*U_u_phys+U_v_phys*U_v_phys));
+	o_U.div -= _ops->laplace(0.5*(U_u_phys*U_u_phys+U_v_phys*U_v_phys));
 
 	return true;
 }

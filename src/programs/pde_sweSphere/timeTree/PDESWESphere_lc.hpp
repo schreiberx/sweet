@@ -25,8 +25,8 @@ class PDESWESphere_lc :
 		>
 {
 private:
-	ShackPDESWESphere *shackPDESWESphere;
-	const sweet::SphereOperators *ops;
+	ShackPDESWESphere *_shackPDESWESphere;
+	const sweet::SphereOperators *_ops;
 
 	/*
 	 * Coriolis effect
@@ -44,6 +44,10 @@ public:
 
 	~PDESWESphere_lc() override;
 
+	PDESWESphere_lc(
+			const PDESWESphere_lc &i_val
+	);
+
 public:
 	bool shackRegistration(
 			sweet::ShackDictionary *io_shackDict
@@ -55,7 +59,7 @@ public:
 	virtual
 	bool setupConfigAndGetTimeStepperEval(
 		const sweet::DESolver_Config_Base &i_deTermConfig,
-		const std::string &i_timeStepperEvalName,
+		EVAL_TYPES i_evalType,
 		DESolver_TimeTreeNode_Base::EvalFun &o_timeStepper
 	) override;
 

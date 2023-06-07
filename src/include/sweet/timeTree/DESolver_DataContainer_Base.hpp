@@ -5,6 +5,9 @@
 #ifndef SRC_PROGRAMS_SIMDATA_DATACONTAINERBASE_HPP_
 #define SRC_PROGRAMS_SIMDATA_DATACONTAINERBASE_HPP_
 
+#if SWEET_MPI
+#include <mpi.h>
+#endif
 
 namespace sweet
 {
@@ -76,13 +79,31 @@ public:
 	) = 0;
 
 	virtual
-	DESolver_DataContainer_Base* getInstanceNew() const = 0;
+	DESolver_DataContainer_Base* getNewDataContainer() const = 0;
 
 	virtual
 	void clear() = 0;
 
 	virtual
 	~DESolver_DataContainer_Base() {}
+
+#if SWEET_MPI
+	virtual
+	void mpiBcast(MPI_Comm &i_mpi_comm) {}
+
+	virtual
+	void mpiReduce(
+			const sweet::DESolver_DataContainer_Base &i_a,
+			MPI_Comm &i_mpi_comm
+	) {}
+
+	virtual
+	void mpiReduceAll(
+			const sweet::DESolver_DataContainer_Base &i_a,
+			MPI_Comm &i_mpi_comm
+	) {}
+#endif
+
 };
 
 }

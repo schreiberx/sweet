@@ -33,6 +33,21 @@ public:
 	}
 
 public:
+	bool shackRegistration(
+			sweet::ShackDictionary *io_shackDict
+	)
+	{
+		// insert as keys to registry
+		for (auto iter : registry)
+		{
+			iter.second->shackRegistration(io_shackDict);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*(iter.second));
+		}
+
+		return true;
+	}
+
+public:
 	template <typename T>
 	bool registerTimeTreeNode()
 	{
@@ -70,7 +85,7 @@ public:
 		if (iter == registry.end())
 			return error.set("Timestepper with string "+i_ts_string+" not found");
 
-		o_timestepper_instance = iter->second->getInstanceNew();
+		o_timestepper_instance = iter->second->getInstanceCopy();
 		return true;
 	}
 

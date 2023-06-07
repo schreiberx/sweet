@@ -21,13 +21,14 @@
 
 
 #if SWEET_MPI
-int mpi_rank;
+int mpi_comm_rank;
+int mpi_comm_size;
 #endif
 
 bool isMPIRoot()
 {
 #if SWEET_MPI
-	return mpi_rank == 0;
+	return mpi_comm_rank == 0;
 #else
 	return true;
 #endif
@@ -37,9 +38,18 @@ bool isMPIRoot()
 int main_mpi(int i_argc, char *i_argv[])
 {
 #if SWEET_MPI
-	MPI_Init(&i_argc, &i_argv);
+	#if SWEET_THREADING_SPACE
+		int provided;
+		MPI_Init_thread(&i_argc, &i_argv, MPI_THREAD_MULTIPLE, &provided);
 
-	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+		if (provided != MPI_THREAD_MULTIPLE)
+			SWEETError("MPI_THREAD_MULTIPLE not available! Try to get an MPI version with multi-threading support or compile without OMP/TBB support. Good bye...");
+	#else
+		MPI_Init(&i_argc, &i_argv);
+	#endif
+
+	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_comm_rank);
+	MPI_Comm_size(MPI_COMM_WORLD, &mpi_comm_size);
 #endif
 
 	ProgramPDESWESphere simulation(i_argc, i_argv);

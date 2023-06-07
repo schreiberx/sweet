@@ -50,9 +50,22 @@ PDESWESphere_TimeSteppersNewTS::PDESWESphere_TimeSteppersNewTS()
 {
 }
 
-bool PDESWESphere_TimeSteppersNewTS::setup_2_timestepper(
+bool PDESWESphere_TimeSteppersNewTS::setup_2_shackRegistration(
+		sweet::ShackDictionary *i_shackDict
+)
+{
+	pdeTerm_registry.shackRegistration(i_shackDict);
+	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(pdeTerm_registry);
+
+	timeStepper_registry.shackRegistration(i_shackDict);
+	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(timeStepper_registry);
+
+	return true;
+}
+
+bool PDESWESphere_TimeSteppersNewTS::setup_3_timestepper(
 		const std::string &i_timestepping_method,	///< String with time stepping method such as SS(ERK(lg,order=4),ERK(lc,order=2),order=2)
-		sweet::ShackDictionary *i_shackDict,
+		sweet::ShackProgArgDictionary *i_progArgShackDict,
 		sweet::SphereOperators *io_ops,
 		sweet::SphereOperatorsComplex *io_opsComplex,
 		const PDESWESphere_DataContainer &i_U
@@ -80,13 +93,21 @@ bool PDESWESphere_TimeSteppersNewTS::setup_2_timestepper(
 	);
 	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(tssa);
 
-	timeIntegrator->shackRegistration(i_shackDict);
+#if 0
+	timeIntegrator->shackRegistration(i_progArgShackDict);
 	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*timeIntegrator);
+
+	i_progArgShackDict->processProgramArguments();
+#endif
 
 	deSolver_Config.myDataContainer = &i_U;
 	deSolver_Config.ops = io_ops;
 	deSolver_Config.opsComplex = io_opsComplex;
-	timeIntegrator->setupConfigAndGetTimeStepperEval(deSolver_Config, "integration", evalFun);
+	timeIntegrator->setupConfigAndGetTimeStepperEval(
+			deSolver_Config,
+			timeIntegrator->EVAL_INTEGRATION,
+			evalFun
+		);
 	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*timeIntegrator);
 
 	return true;

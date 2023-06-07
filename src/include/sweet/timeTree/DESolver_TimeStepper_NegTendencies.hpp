@@ -20,13 +20,21 @@ class DESolver_TimeStepper_NegTendencies	:
 public:
 	DESolver_TimeStepper_NegTendencies()
 	{
-		setEvalAvailable("tendencies");
+		setEvalAvailable(EVAL_TENDENCIES);
 	}
 
 	~DESolver_TimeStepper_NegTendencies()
 	{
 		clear();
 	}
+
+	DESolver_TimeStepper_NegTendencies(
+			const DESolver_TimeStepper_NegTendencies &i_src
+	)	:
+		DESolver_TimeTreeNode_NodeInteriorHelper<DESolver_TimeStepper_NegTendencies>(i_src)
+	{
+	}
+
 
 	const std::vector<std::string>
 	getNodeNames()	override
@@ -96,15 +104,15 @@ public:
 
 	bool setupConfigAndGetTimeStepperEval(
 		const sweet::DESolver_Config_Base &i_deTermConfig,
-		const std::string &i_timeStepperEvalName,
+		EVAL_TYPES i_evalType,
 		DESolver_TimeTreeNode_Base::EvalFun &o_timeStepper
 	) override
 	{
 		_helperSetupConfigAndGetTimeStepperEval(
 				i_deTermConfig,
-				i_timeStepperEvalName,
+				i_evalType,
 				o_timeStepper,
-				"tendencies"
+				EVAL_TENDENCIES
 			);
 
 		_tmpDataContainer.resize(1);
@@ -116,10 +124,12 @@ public:
 		return true;
 	}
 
+#if 0
 	std::shared_ptr<DESolver_TimeTreeNode_Base> getInstanceNew()	override
 	{
 		return std::shared_ptr<DESolver_TimeTreeNode_Base>(new DESolver_TimeStepper_NegTendencies);
 	}
+#endif
 
 private:
 	bool _eval_tendencies(

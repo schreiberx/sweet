@@ -1,11 +1,19 @@
 #ifndef SRC_PROGRAMS_SIMDATA_MYTIMESTEPPER_STRANG_SPLITTING_HPP_
 #define SRC_PROGRAMS_SIMDATA_MYTIMESTEPPER_STRANG_SPLITTING_HPP_
 
-#include <vector>
-#include <string>
-#include <sweet/timeTree/DESolver_DataContainer_Base.hpp>
+#include <sweet/core/ErrorBase.hpp>
+#include <sweet/core/SWEETError.hpp>
+#include <sweet/timeTree/DESolver_Config_Base.hpp>
+#include <sweet/timeTree/DESolver_TimeStepping_Assemblation.hpp>
+#include <sweet/timeTree/DESolver_TimeStepping_Tree.hpp>
+#include <sweet/timeTree/DESolver_TimeTreeNode_Base.hpp>
 #include <sweet/timeTree/DESolver_TimeTreeNode_NodeInteriorHelper.hpp>
-#include <sweet/core/shacks/ShackDictionary.hpp>
+#include <cstddef>
+#include <iostream>
+#include <iterator>
+#include <memory>
+#include <string>
+#include <vector>
 
 
 namespace sweet
@@ -21,13 +29,22 @@ private:
 public:
 	DESolver_TimeStepper_StrangSplitting()
 	{
-		setEvalAvailable("integration");
+		setEvalAvailable(EVAL_INTEGRATION);
 	}
 
 	~DESolver_TimeStepper_StrangSplitting()
 	{
 		clear();
 	}
+
+	DESolver_TimeStepper_StrangSplitting(
+			const DESolver_TimeStepper_StrangSplitting &i_src
+	)	:
+		DESolver_TimeTreeNode_NodeInteriorHelper<DESolver_TimeStepper_StrangSplitting>(i_src)
+	{
+		_order = i_src._order;
+	}
+
 
 	const std::vector<std::string>
 	getNodeNames()	override
@@ -126,15 +143,15 @@ public:
 
 	bool setupConfigAndGetTimeStepperEval(
 		const sweet::DESolver_Config_Base &i_deTermConfig,
-		const std::string &i_timeStepperEvalName,
+		EVAL_TYPES i_evalType,
 		DESolver_TimeTreeNode_Base::EvalFun &o_timeStepper
 	) override
 	{
 		_helperSetupConfigAndGetTimeStepperEval(
 				i_deTermConfig,
-				i_timeStepperEvalName,
+				i_evalType,
 				o_timeStepper,
-				"integration"
+				EVAL_INTEGRATION
 			);
 
 		if (_order == 1)

@@ -6,7 +6,7 @@
 #include <sweet/timeTree/DESolver_DataContainer_Base.hpp>
 
 
-
+#if 0
 class PDESWESphere_DataContainerComplex :
 	public sweet::DESolver_DataContainer_Base
 {
@@ -66,7 +66,7 @@ public:
 			data[i].setup(i_d.data[i].sphereDataConfig);
 	}
 
-	DESolver_DataContainer_Base* getInstanceNew() const override
+	DESolver_DataContainer_Base* getNewDataContainer() const override
 	{
 		PDESWESphere_DataContainerComplex *retval = new PDESWESphere_DataContainerComplex;
 		retval->setup_like(*this);
@@ -172,6 +172,6 @@ public:
 			data[i] *= i_scalar;
 	}
 };
-
+#endif
 
 #endif /* SRC_PROGRAMS_SIMDATA_MYDATACONTAINER_HPP_ */

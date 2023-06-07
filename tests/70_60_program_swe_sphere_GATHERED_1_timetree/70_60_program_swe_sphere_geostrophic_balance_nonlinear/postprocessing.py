@@ -42,6 +42,10 @@ for key, jobs_data in job_groups.items():
                 error_line_keys.append(i)
 
         # Sort and get last one
+        if len(error_line_keys) == 0:
+            print(job_data['jobgeneration.job_dirpath'])
+            raise Exception("no error_line_keys found")
+
         error_line_keys.sort()
         last_error_line_key = error_line_keys[-1]
 

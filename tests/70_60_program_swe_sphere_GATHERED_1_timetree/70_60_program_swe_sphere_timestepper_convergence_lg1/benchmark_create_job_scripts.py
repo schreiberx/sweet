@@ -1,9 +1,7 @@
 #! /usr/bin/env python3
 
-import os
 import sys
-import stat
-import math
+from mule.parHelper import *
 
 from mule.JobMule import *
 jg = JobGeneration()
@@ -15,9 +13,6 @@ from mule.rexi.brexi.BREXI import *
 
 
 
-#
-# Run simulation on plane or sphere
-#
 jg.compile.program = 'programs/pde_sweSphere'
 
 jg.compile.plane_spectral_space = 'disable'
@@ -28,6 +23,7 @@ jg.compile.sphere_spectral_dealiasing = 'enable'
 
 # Enable quad math per default for CI REXI method
 #jg.compile.quadmath = 'enable'
+jg.unique_id_filter = ['runtime.simparams', 'parallelization', 'runtime.benchmark', 'runtime.rexi_params']
 
 
 # Verbosity mode
@@ -55,7 +51,7 @@ jg.runtime.rexi_sphere_preallocation = 1
 #
 # Threading accross all REXI terms
 #
-rexi_thread_par = True
+jg.compile.rexi_thread_parallel_sum = 'enable'
 
 
 
@@ -68,13 +64,6 @@ jg.runtime.f_sphere = 0
 
 jg.runtime.viscosity = 0.0
 
-
-jg.unique_id_filter = ['compile', 'parallelization']
-
-
-#####################################################
-#####################################################
-#####################################################
 
 
 
@@ -95,7 +84,7 @@ ts_methods = [
                 f"EXP(lg)",
                 #'lg_exp',
 
-                #f"REXI(lg)",
+                f"REXI(lg)",
                 #'lg_exp',
         ]
 
@@ -147,16 +136,11 @@ for tsm in ts_methods:
             print("timestep_size: "+str(jg.runtime.timestep_size))
             raise Exception("Invalid time step size (not remainder-less dividable)")
 
-        if 'exp' in jg.runtime.timestepping_method or 'REXI' in jg.runtime.timestepping_method:
+        if '_exp' in jg.runtime.timestepping_method or 'REXI' in jg.runtime.timestepping_method:
 
-            if rexi_thread_par:
-                # OMP parallel for over REXI terms
-                jg.compile.threading = 'off'
-                jg.compile.rexi_thread_parallel_sum = 'enable'
-            else:
-                jg.compile.threading = 'omp'
-                jg.compile.rexi_thread_parallel_sum = 'disable'
-
+            if jg.compile.rexi_thread_parallel_sum == "enable":
+                if jg.compile.threading == "off":
+                    continue
 
             if 0:
                 # CI REXI method in SWEET
@@ -197,4 +181,5 @@ for tsm in ts_methods:
         else:
                 jg.runtime.rexi_method = None
 
+        setupParallelization(jg)
         jg.gen_jobscript_directory()

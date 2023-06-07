@@ -6,6 +6,7 @@ from itertools import product
 from mule.JobMule import *
 from mule.utils import exec_program
 from mule.InfoError import *
+from mule.parHelper import *
 
 jg = JobGeneration()
 
@@ -61,34 +62,8 @@ jg.runtime.verbosity = 10
 jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
 jg.runtime.output_filename = "-"
 
-
-
-
-"""
-Parallelization parameters
-"""
-
-# Update TIME parallelization
-ptime = JobParallelizationDimOptions('time')
-ptime.num_cores_per_rank = 1
-ptime.num_threads_per_rank = 1
-
-if jg.platform_resources.num_cores_per_node <= 1:
-    ptime.num_ranks = 1
-else:
-    ptime.num_ranks = 2
-
-
-pspace = JobParallelizationDimOptions('space')
-pspace.num_cores_per_rank = 1
-pspace.num_threads_per_rank = jg.platform_resources.num_cores_per_socket//ptime.num_threads_per_rank
-pspace.num_ranks = 1
-
-if pspace.num_threads_per_rank == 0:
-    pspace.num_threads_per_rank = 1
-
-# Setup parallelization
-jg.setup_parallelization([pspace, ptime])
+# Set the number of SH transformation threads
+jg.runtime.sh_setup_num_threads = None
 
 
 
@@ -120,9 +95,9 @@ ts_methods = [
     #[f"SS(IRK(n,{o}),REXI(l),{o})",        2,    2,    0],
     #['l_exp_n_erk_ver1',    2,    2,    0],
 
-    #[f"SS(REXI(lg),ERK(ADD(lc,n),{o}),{o})",        2,    2,    0],
-    #['lg_exp_lc_n_erk_ver0',    2,    2,    0],
-    #[f"SS(ERK(ADD(lc,n),{o}),REXI(lg),{o})",        2,    2,    0],
+    [f"SS(REXI(lg),ERK(ADD(lc,n),{o}),{o})",        2,    2,    0],
+    ['lg_exp_lc_n_erk_ver0',    2,    2,    0],
+    [f"SS(ERK(ADD(lc,n),{o}),REXI(lg),{o})",        2,    2,    0],
     #['lg_exp_lc_n_erk_ver1',    2,    2,    0],
 
     # Extra tests for timeTree
@@ -137,7 +112,6 @@ ts_methods = [
     # Same as before, but with explicit EXP around it
     [f"ETDRK(EXP(lg),ADD(lc,n),{o})",        2,    2,    0],
 ]
-
 
 
 
@@ -170,19 +144,27 @@ if __name__ == "__main__":
                 params_compile_thread_parallel_sum,
                 params_compile_sweet_mpi
             ):
-                if 'exp_' in jg.runtime.timestepping_method:
+                if 'exp_' in jg.runtime.timestepping_method or 'REXI(' in jg.runtime.timestepping_method:
+
+                    if jg.compile.rexi_thread_parallel_sum == "enable":
+                        if jg.compile.threading == "off":
+                            continue
+
+                    setupParallelization(jg)
 
                     jg.runtime.rexi_method = 'ci'
                     jg.gen_jobscript_directory()
                     jg.runtime.rexi_method = ''
 
                 else:
+
                     if jg.compile.sweet_mpi == 'enable':
-                            continue
+                        continue
 
                     if jg.compile.rexi_thread_parallel_sum == 'enable':
-                            continue
+                        continue
+
+                    setupParallelization(jg)
 
                     jg.gen_jobscript_directory()
-
 

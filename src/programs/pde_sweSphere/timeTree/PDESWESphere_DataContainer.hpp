@@ -10,7 +10,6 @@
 #include <sweet/timeTree/DESolver_DataContainer_Base.hpp>
 
 
-
 class PDESWESphere_DataContainer :
 	public sweet::DESolver_DataContainer_Base
 {
@@ -70,7 +69,7 @@ public:
 			data[i].setup(i_d.data[i].sphereDataConfig);
 	}
 
-	DESolver_DataContainer_Base* getInstanceNew() const override
+	DESolver_DataContainer_Base* getNewDataContainer() const override
 	{
 		PDESWESphere_DataContainer *retval = new PDESWESphere_DataContainer;
 		retval->setup_like(*this);
@@ -175,6 +174,63 @@ public:
 		for (int i = 0; i < Ndofs; i++)
 			data[i] *= i_scalar;
 	}
+
+
+#if SWEET_MPI
+	void mpiBcast(MPI_Comm &i_mpi_comm)
+	{
+		for (int i = 0; i < Ndofs; i++)
+		{
+			MPI_Bcast(
+					data[i].spectral_space_data,
+					data[i].sphereDataConfig->spectral_array_data_number_of_elements,
+					MPI_DOUBLE,
+					0,
+					i_mpi_comm
+				);
+		}
+	}
+
+	void mpiReduce(
+			const sweet::DESolver_DataContainer_Base &i_a,
+			MPI_Comm &i_mpi_comm
+	)
+	{
+		const PDESWESphere_DataContainer &i_A = cast(i_a);
+
+		for (int i = 0; i < Ndofs; i++)
+		{
+			MPI_Reduce(
+					i_A.data[i].spectral_space_data,
+					data[i].spectral_space_data,
+					data[i].sphereDataConfig->spectral_array_data_number_of_elements,
+					MPI_DOUBLE,
+					MPI_SUM,
+					0,
+					i_mpi_comm
+				);
+		}
+	}
+
+	void mpiAllreduce(
+		const sweet::DESolver_DataContainer_Base &i_a,
+		MPI_Comm &i_mpi_comm)
+	{
+		const PDESWESphere_DataContainer &i_A = cast(i_a);
+
+		for (int i = 0; i < Ndofs; i++)
+		{
+			MPI_Allreduce(
+					i_A.data[i].spectral_space_data,
+					data[i].spectral_space_data,
+					data[i].sphereDataConfig->spectral_array_data_number_of_elements,
+					MPI_DOUBLE,
+					MPI_SUM,
+					i_mpi_comm
+				);
+		}
+	}
+#endif
 };
 
 

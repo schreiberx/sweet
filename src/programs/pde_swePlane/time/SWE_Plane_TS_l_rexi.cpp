@@ -84,7 +84,9 @@ bool SWE_Plane_TS_l_rexi::setup(
 	}
 	sweet::REXICoefficients<double> rexiCoefficients;
 
-	bool retval = sweet::REXI<>::load(
+
+	sweet::REXI<> rexi;
+	bool retval = rexi.load(
 			shackExpIntegration,
 			i_function_name,
 			rexiCoefficients,

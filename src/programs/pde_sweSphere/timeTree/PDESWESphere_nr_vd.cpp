@@ -5,14 +5,23 @@
 #include <sweet/core/sphere/SphereOperators.hpp>
 
 PDESWESphere_nr_vd::PDESWESphere_nr_vd()	:
-	shackPDESWESphere(nullptr),
-	ops(nullptr)
+	_shackPDESWESphere(nullptr),
+	_ops(nullptr)
 {
-	setEvalAvailable("tendencies");
+	setEvalAvailable(EVAL_TENDENCIES);
 }
 
 PDESWESphere_nr_vd::~PDESWESphere_nr_vd()
 {
+}
+
+PDESWESphere_nr_vd::PDESWESphere_nr_vd(
+		const PDESWESphere_nr_vd &i_value
+)	:
+	DESolver_TimeTreeNode_NodeLeafHelper(i_value)
+{
+	_shackPDESWESphere = i_value._shackPDESWESphere;
+	_ops = i_value._ops;
 }
 
 
@@ -20,7 +29,7 @@ bool PDESWESphere_nr_vd::shackRegistration(
 		sweet::ShackDictionary *io_shackDict
 )
 {
-	shackPDESWESphere = io_shackDict->getAutoRegistration<ShackPDESWESphere>();
+	_shackPDESWESphere = io_shackDict->getAutoRegistration<ShackPDESWESphere>();
 	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*io_shackDict);
 
 	return true;
@@ -37,17 +46,17 @@ const std::vector<std::string> PDESWESphere_nr_vd::getNodeNames()
 
 bool PDESWESphere_nr_vd::setupConfigAndGetTimeStepperEval(
 		const sweet::DESolver_Config_Base &i_deTermConfig,
-		const std::string &i_timeStepperEvalName,
+		EVAL_TYPES i_evalType,
 		DESolver_TimeTreeNode_Base::EvalFun &o_timeStepper
 )
 {
 	const PDESWESphere_DESolver_Config& myConfig = cast(i_deTermConfig);
 
-	ops = myConfig.ops;
+	_ops = myConfig.ops;
 
 	// default setup
 	DESolver_TimeTreeNode_Base::_helperGetTimeStepperEval(
-			i_timeStepperEvalName,
+			i_evalType,
 			o_timeStepper
 		);
 	ERROR_CHECK_COND_RETURN_BOOLEAN(*this);
@@ -74,12 +83,12 @@ void PDESWESphere_nr_vd::euler_timestep_update_na(
 )
 {
 	sweet::SphereData_Physical U_u_phys, U_v_phys;
-	ops->vrtdiv_to_uv(i_U_vrt, i_U_div, U_u_phys, U_v_phys);
+	_ops->vrtdiv_to_uv(i_U_vrt, i_U_div, U_u_phys, U_v_phys);
 
 	sweet::SphereData_Physical U_div_phys = i_U_div.toPhys();
-	o_phi_t -= ops->V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, i_U_phi.toPhys());
-	o_vrt_t -= ops->V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, i_U_vrt.toPhys());
-	o_div_t -= ops->V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, i_U_div.toPhys());
+	o_phi_t -= _ops->V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, i_U_phi.toPhys());
+	o_vrt_t -= _ops->V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, i_U_vrt.toPhys());
+	o_div_t -= _ops->V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, i_U_div.toPhys());
 }
 
 
@@ -95,8 +104,8 @@ bool PDESWESphere_nr_vd::_eval_tendencies(
 	const PDESWESphere_DataContainer &i_U = cast(i_U_);
 	PDESWESphere_DataContainer &o_U = cast(o_U_);
 
-	assert(ops != nullptr);
-	assert(shackPDESWESphere != nullptr);
+	assert(_ops != nullptr);
+	assert(_shackPDESWESphere != nullptr);
 
 
 	o_U.phi_pert.spectral_set_zero();
@@ -105,7 +114,7 @@ bool PDESWESphere_nr_vd::_eval_tendencies(
 
 
 	sweet::SphereData_Physical U_u_phys, U_v_phys;
-	ops->vrtdiv_to_uv(i_U.vrt, i_U.div, U_u_phys, U_v_phys);
+	_ops->vrtdiv_to_uv(i_U.vrt, i_U.div, U_u_phys, U_v_phys);
 
 	// dt calculation starts here
 
@@ -131,7 +140,7 @@ bool PDESWESphere_nr_vd::_eval_tendencies(
 
 
 		sweet::SphereData_Physical U_u_phys, U_v_phys;
-		ops->vrtdiv_to_uv(i_U.vrt, i_U.div, U_u_phys, U_v_phys);
+		_ops->vrtdiv_to_uv(i_U.vrt, i_U.div, U_u_phys, U_v_phys);
 
 		sweet::SphereData_Physical U_div_phys = U_div.toPhys();
 
@@ -144,7 +153,7 @@ bool PDESWESphere_nr_vd::_eval_tendencies(
 		sweet::SphereData_Physical v_nl = U_v_phys*vrtg;
 
 		sweet::SphereData_Spectral vrt, div;
-		ops->uv_to_vrtdiv(u_nl, v_nl, vrt, div);
+		_ops->uv_to_vrtdiv(u_nl, v_nl, vrt, div);
 		//o_U.vrt -= div;
 
 
@@ -171,9 +180,9 @@ bool PDESWESphere_nr_vd::_eval_tendencies(
 	}
 
 	const sweet::SphereData_Physical U_vrt_phys = i_U.vrt.toPhys();
-	o_U.div += ops->uv_to_vort(U_vrt_phys*U_u_phys, U_vrt_phys*U_v_phys);
-	o_U.div += ops->uv_to_div(U_div_phys*U_u_phys, U_div_phys*U_v_phys);
-	o_U.div -= 0.5*ops->laplace(U_u_phys*U_u_phys + U_v_phys*U_v_phys);
+	o_U.div += _ops->uv_to_vort(U_vrt_phys*U_u_phys, U_vrt_phys*U_v_phys);
+	o_U.div += _ops->uv_to_div(U_div_phys*U_u_phys, U_div_phys*U_v_phys);
+	o_U.div -= 0.5*_ops->laplace(U_u_phys*U_u_phys + U_v_phys*U_v_phys);
 	o_U.div -= U_div_phys*U_div_phys;
 
 	return true;

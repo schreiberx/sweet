@@ -146,28 +146,6 @@ public:
 
 		return true;
 	}
-
-#if 0
-	bool assembleDETermByString(
-			const std::string i_pde_string,
-			std::shared_ptr<DESolver_TimeTreeNode_Base> &o_pdeTerm
-	)
-	{
-		deTermsRegistry->getTimeTreeNodeNewInstance(i_pde_string, o_pdeTerm);
-		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*deTermsRegistry);
-
-		return true;
-	}
-#endif
-
-#if 0
-	friend
-	std::ostream&
-	operator<<(std::ostream &io_os, const DESolver_TimeSteppingStringParser &i_pa)
-	{
-		return io_os;
-	}
-#endif
 };
 
 }
