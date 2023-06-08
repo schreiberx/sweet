@@ -43,8 +43,13 @@ class JobParallelizationDimOptions(InfoError):
         self.num_cores_per_rank = None
 
         # Number of threads per MPI rank.
-                # The threads are used for the computations.
+        # The threads are used for the computations.
         self.num_threads_per_rank = None
+
+        # Whether threading is used for this
+        # This is relevant for nested parallel regions
+        # If this is false, it's not included in nested parallel regions
+        self.threading = False
 
         # Number of ranks
         self.num_ranks = None
@@ -69,6 +74,7 @@ class JobParallelizationDimOptions(InfoError):
         self.info("num_cores_per_rank: "+str(self.num_cores_per_rank))
         self.info("num_threads_per_rank: "+str(self.num_threads_per_rank))
         self.info("num_ranks: "+str(self.num_ranks))
+        self.info("threading: "+str(self.threading))
 
 
 

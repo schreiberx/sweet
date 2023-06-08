@@ -50,6 +50,8 @@ private:
 	 */
 	std::complex<double> _rexiTermAlpha;
 	std::complex<double> _rexiTermBeta;
+	std::complex<double> _rexiTermGamma;
+	bool _rexiTermGammaActive;
 
 
 public:

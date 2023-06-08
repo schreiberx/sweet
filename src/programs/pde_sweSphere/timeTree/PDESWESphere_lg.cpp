@@ -8,7 +8,11 @@ PDESWESphere_lg::PDESWESphere_lg()	:
 	_shackPDESWESphere(nullptr),
 	_shackSphereDataOps(nullptr),
 	_ops(nullptr),
-	_opsComplex(nullptr)
+	_opsComplex(nullptr),
+	_rexiTermAlpha(666,-666),
+	_rexiTermBeta(666,-666),
+	_rexiTermGamma(666,-666),
+	_rexiTermGammaActive(false)
 {
 	setEvalAvailable(EVAL_TENDENCIES);
 	setEvalAvailable(EVAL_EULER_BACKWARD);
@@ -16,22 +20,26 @@ PDESWESphere_lg::PDESWESphere_lg()	:
 	setEvalAvailable(EVAL_REXI_TERM);
 }
 
+
 PDESWESphere_lg::~PDESWESphere_lg()
 {
 }
 
 
 PDESWESphere_lg::PDESWESphere_lg(
-		const PDESWESphere_lg &i_value
+		const PDESWESphere_lg &i_src
 )	:
-	DESolver_TimeTreeNode_NodeLeafHelper(i_value),
-	_rexiTermAlpha(-999999),
-	_rexiTermBeta(-666666)
+	DESolver_TimeTreeNode_NodeLeafHelper(i_src)
 {
-	_shackSphereDataOps = i_value._shackSphereDataOps;
-	_shackPDESWESphere = i_value._shackPDESWESphere;
-	_ops = i_value._ops;
-	_opsComplex = i_value._opsComplex;
+	_shackSphereDataOps = i_src._shackSphereDataOps;
+	_shackPDESWESphere = i_src._shackPDESWESphere;
+	_ops = i_src._ops;
+	_opsComplex = i_src._opsComplex;
+
+	_rexiTermAlpha = i_src._rexiTermAlpha;
+	_rexiTermBeta = i_src._rexiTermBeta;
+	_rexiTermGamma = i_src._rexiTermGamma;
+	_rexiTermGammaActive = i_src._rexiTermGammaActive;
 }
 
 
@@ -116,6 +124,13 @@ bool PDESWESphere_lg::setupByKeyValue(
 	if (i_key == "rexiTermBeta")
 	{
 		_rexiTermBeta = i_value;
+		return true;
+	}
+
+	if (i_key == "rexiTermGamma")
+	{
+		_rexiTermGamma = i_value;
+		_rexiTermGammaActive = true;
 		return true;
 	}
 
@@ -351,18 +366,18 @@ bool PDESWESphere_lg::_eval_rexiTerm(
 	sweet::SphereData_SpectralComplex vrt1(i_U.phi_pert.sphereDataConfig);
 	sweet::SphereData_SpectralComplex div1(i_U.phi_pert.sphereDataConfig);
 
-	sweet::SphereData_SpectralComplex phi0 = sweet::Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(i_U.phi_pert);
-	sweet::SphereData_SpectralComplex vrt0 = sweet::Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(i_U.vrt);
-	sweet::SphereData_SpectralComplex div0 = sweet::Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(i_U.div);
+	sweet::SphereData_SpectralComplex i_phi = sweet::Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(i_U.phi_pert);
+	sweet::SphereData_SpectralComplex i_vrt = sweet::Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(i_U.vrt);
+	sweet::SphereData_SpectralComplex i_div = sweet::Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(i_U.div);
 
 	/*
 	 * Preprocessing:
 	 * U0* = U0 * beta/alpha
 	 * dt_implicit = -timestep_size/alpha
 	 */
-	phi0 *= _rexiTermBeta/_rexiTermAlpha;
-	div0 *= _rexiTermBeta/_rexiTermAlpha;
-	vrt0 *= _rexiTermBeta/_rexiTermAlpha;
+	sweet::SphereData_SpectralComplex phi0 = i_phi*(_rexiTermBeta/_rexiTermAlpha);
+	sweet::SphereData_SpectralComplex div0 = i_div*(_rexiTermBeta/_rexiTermAlpha);
+	sweet::SphereData_SpectralComplex vrt0 = i_vrt*(_rexiTermBeta/_rexiTermAlpha);
 
 	double gh0 = _shackPDESWESphere->h0*_shackPDESWESphere->gravitation;
 
@@ -385,6 +400,13 @@ bool PDESWESphere_lg::_eval_rexiTerm(
 	vrt1 = opsComplex.implicit_Jinv(vrt0 - opsComplex.implicit_F(div1, dt_two_omega), dt_two_omega);
 
 #endif
+
+	if (_rexiTermGammaActive)
+	{
+		phi1 += _rexiTermGamma*i_phi;
+		vrt1 += _rexiTermGamma*i_vrt;
+		div1 += _rexiTermGamma*i_div;
+	}
 
 	o_U.phi_pert = sweet::Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(phi1);
 	o_U.vrt = sweet::Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(vrt1);

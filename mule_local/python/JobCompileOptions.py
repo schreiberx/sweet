@@ -130,7 +130,7 @@ class JobCompileOptions(InfoError):
             retval += ' --program='+self.program
 
         retval += ' --mode='+self.mode
-        retval += ' --debug-symbols='+("enable" if self.debug_symbols else "disable")
+        retval += ' --debug-symbols='+("enable" if self.debug_symbols == "enable" else "disable")
         retval += ' --simd='+self.simd
 
         retval += ' --fortran-source='+self.fortran_source

@@ -169,9 +169,9 @@ echo
 
 """
 
-    if jg.compile.threading != 'off':
-    	content += """
-export OMP_NUM_THREADS="""+str(p.num_threads_per_rank)+"""
+    if p.omp_num_threads != None:
+        content += """
+export OMP_NUM_THREADS="""+str(p.omp_num_threads)+"""
 export OMP_DISPLAY_ENV=VERBOSE
 """
 

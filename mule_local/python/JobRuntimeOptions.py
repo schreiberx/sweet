@@ -199,7 +199,11 @@ class JobRuntimeOptions(InfoError):
         if not 'runtime.timestepping' in filter_list:
             if self.timestepping_method != None:
                 if not 'runtime.timestepping_method' in filter_list:
-                    uniqueIDStr += '_tsm_'+self.timestepping_method
+                    tsm = self.timestepping_method
+                    tsm = tsm.replace(",", "_")
+                    tsm = tsm.replace("(", "_")
+                    tsm = tsm.replace(")", "_")
+                    uniqueIDStr += '_tsm_'+tsm
 
                 if not 'runtime.timestepping_order' in filter_list:
                     uniqueIDStr += '_tso'+str(self.timestepping_order)

@@ -42,36 +42,27 @@ private:
 	std::vector<std::complex<double>> _rexi_alphas;
 	std::vector<std::complex<double>> _rexi_betas;
 	std::complex<double> _rexi_gamma;
+	bool _rexi_gamma_active;
 
 	/*!
 	 * Number of REXI terms processed by this MPI rank
 	 */
 	std::size_t _num_local_rexi_terms;
 
-	/*!
-	 * Size of block to be processed locally by one particular thread (e.g. OMP thread)
-	 */
-	//std::size_t _num_local_rexi_terms_per_thread;
-
-	/*!
-	 * Number of local OpenMP threads
-	 */
-	int _num_local_rexi_parallel_threads;
-
-	/*!
-	 * Number of global OpenMP threads
-	 */
-	int _num_global_threads;
-
-
 #if SWEET_MPI
-	// MPI communicator
+	/*!
+	 * MPI communicator
+	 */
 	MPI_Comm _mpi_comm;
 
-	// number of mpi ranks to be used
+	/*!
+	 * Number of mpi ranks to be used
+	 */
 	int _mpi_comm_rank;
 
-	// MPI ranks
+	/*!
+	 * MPI ranks
+	 */
 	int _mpi_comm_size;
 #endif
 
@@ -79,10 +70,8 @@ public:
 	DESolver_TimeStepper_REXI()	:
 		_shackExpIntegration(nullptr),
 		_rexiPreallocation(true),
-		_num_local_rexi_terms(-1),
-		//_num_local_rexi_terms_per_thread(-1),
-		_num_local_rexi_parallel_threads(-1),
-		_num_global_threads(-1)
+		_rexi_gamma_active(false),
+		_num_local_rexi_terms(-1)
 	{
 		setEvalAvailable(EVAL_EXPONENTIAL);
 		setEvalAvailable(EVAL_INTEGRATION);
@@ -98,8 +87,14 @@ public:
 	/*!
 	 * This constructor is used for creating copies of this time stepper.
 	 *
-	 * This is required, e.g., for different phi functions where
-	 * this class is duplicated for each phi function.
+	 * This is used in two different ways:
+	 *
+	 * 1) Creating new instances from the registry
+	 *
+	 * 2) Duplicate existing tree nodes with its parameters:
+	 *    - to evaluate different phi functions
+	 *    - to evaluate different REXI terms
+	 *    - to support different time step sizes
 	 */
 	DESolver_TimeStepper_REXI(
 			const DESolver_TimeStepper_REXI &i_src
@@ -112,9 +107,6 @@ public:
 		assert(_shackExpIntegration != nullptr);
 
 		_num_local_rexi_terms = i_src._num_local_rexi_terms;
-		//_num_local_rexi_terms_per_thread = i_src._num_local_rexi_terms_per_thread;
-		_num_local_rexi_parallel_threads = i_src._num_local_rexi_parallel_threads;
-		_num_global_threads = i_src._num_global_threads;
 	}
 
 
@@ -126,6 +118,7 @@ public:
 		retval.push_back("REXI");
 		return retval;
 	}
+
 
 	bool shackRegistration(
 			sweet::ShackDictionary *io_shackDict
@@ -211,6 +204,10 @@ public:
 		return _setupArgumentInternals();
 	}
 
+
+	/*!
+	 * Special key/value setup
+	 */
 	bool setupByKeyValue(
 			const std::string &i_key,
 			const std::string &i_value
@@ -225,42 +222,6 @@ public:
 		return false;
 	}
 
-#if 0
-	void _getWorkloadStartEnd(
-			std::size_t &o_start,
-			std::size_t &o_end,
-			int i_local_thread_id
-	)
-	{
-		std::size_t max_N = _rexi_alphas.size();
-
-		#if SWEET_THREADING_TIME_REXI || SWEET_MPI
-
-			#if SWEET_MPI
-				int global_thread_id = i_local_thread_id + _num_local_rexi_parallel_threads*_mpi_comm_rank;
-			#else
-				int global_thread_id = i_local_thread_id;
-			#endif
-
-			assert(_num_local_rexi_terms >= 1);
-			//assert(_num_local_rexi_terms_per_thread >= 0);
-			assert(global_thread_id >= 0);
-
-			o_start = std::min(max_N, _num_local_rexi_terms_per_thread*global_thread_id);
-			o_end = std::min(max_N, o_start+_num_local_rexi_terms_per_thread);
-
-		#else
-
-			o_start = 0;
-			o_end = max_N;
-
-		#endif
-
-#pragma omp critical
-			std::cout << i_local_thread_id << ": " << o_start << " -> " << o_end << std::endl;
-
-	}
-#endif
 
 	bool setupConfigAndGetTimeStepperEval(
 		const sweet::DESolver_Config_Base &i_deTermConfig,
@@ -271,23 +232,10 @@ public:
 		//rexiPreallocation
 		assert(_timeTreeNodes.size() == 1);
 
-#if SWEET_THREADING_TIME_REXI
-		_num_local_rexi_parallel_threads = omp_get_max_threads();
-
-		if (_num_local_rexi_parallel_threads == 0)
-			SWEETError("FATAL ERROR: omp_get_max_threads == 0");
-#else
-		_num_local_rexi_parallel_threads = 1;
-#endif
-
 #if SWEET_MPI
 		_mpi_comm = MPI_COMM_WORLD;	// TODO: Make me more flexible in future versions
 		MPI_Comm_rank(_mpi_comm, &_mpi_comm_rank);
 		MPI_Comm_size(_mpi_comm, &_mpi_comm_size);
-
-		_num_global_threads = _num_local_rexi_parallel_threads * _mpi_comm_size;
-#else
-		_num_global_threads = _num_local_rexi_parallel_threads;
 #endif
 
 		/*
@@ -311,7 +259,6 @@ public:
 		for (std::size_t n = 0; n < _rexi_alphas.size(); n++)
 		{
 			_rexi_alphas[n] = -rexiCoefficients.alphas[n];
-			//_rexi_alphas[n] = rexiCoefficients.alphas[n];
 		}
 
 		_rexi_betas.resize(rexiCoefficients.betas.size());
@@ -321,6 +268,8 @@ public:
 		}
 
 		_rexi_gamma = rexiCoefficients.gamma;
+		if (_rexi_gamma.real() != 0 || _rexi_gamma.imag() != 0)
+			_rexi_gamma_active = true;
 
 		assert(_rexi_alphas.size() > 0);
 
@@ -328,6 +277,7 @@ public:
 		 * Compute for which REXI coefficients we're responsible for
 		 */
 		std::size_t N = _rexi_alphas.size();
+
 #if SWEET_MPI
 		_num_local_rexi_terms = N/_mpi_comm_size;
 		if (_num_local_rexi_terms*_mpi_comm_size != N)
@@ -336,11 +286,6 @@ public:
 		_num_local_rexi_terms = N;
 #endif
 
-#if 0
-		_num_local_rexi_terms_per_thread = N/_num_global_threads;
-		if (_num_local_rexi_terms_per_thread*_num_global_threads != N)
-			_num_local_rexi_terms_per_thread++;
-#endif
 		/*
 		 * Allocate data structures, time steppers, etc.
 		 */
@@ -394,6 +339,16 @@ public:
 					_rexi_betas[i]
 				);
 
+			if (i == 0)
+			{
+				if (_rexi_gamma_active)
+				{
+					_timeTreeNodes[i]->setupByKeyValue(
+							"rexiTermGamma",
+							_rexi_gamma
+						);
+				}
+			}
 
 			/*
 			 * setup data container for output, use argument "1" to request complex data
@@ -414,9 +369,6 @@ public:
 
 		if (error.exists())
 			return false;
-
-		if (_num_local_rexi_parallel_threads == 0)
-			SWEETError("FATAL ERROR C: omp_get_max_threads == 0");
 
 		// default setup
 		DESolver_TimeTreeNode_Base::_helperGetTimeStepperEval(
@@ -536,12 +488,6 @@ private:
 			o_U.op_addVector(*_tmpDataContainer[i]);
 		}
 #endif
-
-		if (_rexi_gamma.real() != 0 || _rexi_gamma.imag() != 0)
-		{
-			SWEETError("TODO");
-//			o_U.op_addScalarMulVector(i_scalar, i_U);
-		}
 
 		return true;
 	}

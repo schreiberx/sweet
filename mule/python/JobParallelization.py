@@ -108,6 +108,10 @@ class JobParallelization(InfoError):
         self.num_cores : int = None
 
 
+        # String for OMP_NUM_THREADS
+        self.omp_num_threads : str = None
+
+
         # List with parallelization information in each dimension
         # Note, that space dimension can and should be treated as a single dimension
         self.pardims = None
@@ -302,21 +306,16 @@ class JobParallelization(InfoError):
         #
         # Finally, setup variables without any restrictions
         #
+        self.num_threads_per_rank = _prod(i.num_threads_per_rank for i in self.pardims)
 
-        # Number of total (e.g. OpenMP) threads per rank (There are no restrictions for logical threading)
-        # self.num_threads_per_rank = _prod(i.num_threads_per_rank for i in self.pardims)
-        # -- change for nested OpenMP parallelism
-        lThreads = [i.num_threads_per_rank for i in self.pardims]
-        if len(lThreads) == 1:
-            self.num_threads_per_rank = lThreads[0]
-        elif len(lThreads) == 2:
-            if lThreads[0] == 1:
-                self.num_threads_per_rank = lThreads[1]
-            else:
-                self.num_threads_per_rank = ','.join([str(n) for n in lThreads])
-        else:
-            raise NotImplementedError('more than 2 level of openmp parallelism') 
-            
+        # Prepare OpenMP nested OMP_NUM_THREADS environment variable
+        lThreads = []
+        for p in self.pardims:
+            if p.threading:
+                lThreads.append(p.num_threads_per_rank)
+
+        if len(lThreads) > 0:
+            self.omp_num_threads = ','.join([str(n) for n in lThreads])
 
 
 
