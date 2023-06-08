@@ -1,3 +1,21 @@
+The SWEET repository is now hosted at <a href="https://gitlab.inria.fr/sweet/sweet">https://gitlab.inria.fr/sweet/sweet</a>.
+
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+
+
 Before trying out anything, please have a detailed look into the INSTALL.md instructions about how to cope with the required libraries!
 
 # SWEET
