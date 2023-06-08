@@ -1,1 +1,0 @@
-../../../../mule_local/python/shacksRuntime/_Template.py

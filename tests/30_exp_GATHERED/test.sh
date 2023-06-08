@@ -1,1 +1,0 @@
-../test_GATHERED.sh

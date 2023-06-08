@@ -1,5 +1,0 @@
-core/				core opengl files for abstraction of opengl functions
-draw/				classes to draw simple objects (planes, quads, volume boxes, etc.)
-engine/				additional classes to support an engine (camera, timer, etc.)
-hud/				useful things for HUDs. e.g. windows, font rendering, configuration dialog
-shaders/			shaders for visualization

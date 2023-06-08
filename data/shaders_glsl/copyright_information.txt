@@ -1,1 +1,0 @@
-The shaders are taken from the source code of at http://www.martin-schreiber.info/diplomathesis.html and underly their own restrictions if not specified otherwise.

@@ -1,5 +1,0 @@
-#!/bin/bash
-
-ref_dir="fine_sim"
-
-./benchmarks_create.py

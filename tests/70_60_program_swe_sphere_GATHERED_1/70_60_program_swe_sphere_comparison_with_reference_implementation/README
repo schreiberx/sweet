@@ -1,8 +1,0 @@
-
-Compare SWE on the sphere results from SWEET with a Python implementation.
-
-The reference solution is based entirely on a Python code (from Jeffrey Whitaker).
-This creates a 1 day time integration based on the Galewsky benchmark using a 1st order time integrator and 10 second time step sizes. Outputs are generated every 1 hour.
-
-This is compared to a Robert and non-Robert simulations in SWEET using 1st order forward Euler ln_erk time integrator.
-

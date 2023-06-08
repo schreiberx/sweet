@@ -1,4 +1,0 @@
-#! /bin/bash
-
-${MULE_LOCAL_ROOT}/python/mule_local/postprocessing/plot_SphereDataSpectral.py $@
-

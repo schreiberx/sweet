@@ -1,9 +1,0 @@
-#! /bin/bash
-
-IDS=$@
-
-if [[ -z "$IDS" ]]; then
-	echo "No jobs specified"
-else
-	scancel  $IDS
-fi

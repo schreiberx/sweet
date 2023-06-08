@@ -1,6 +1,0 @@
-#!/bin/bash
-
-if [ $MULE_PLATFORM_ID == "dahu_llvm" ]; then
-	mule.benchmark.jobs_submit
-else
-	mule.benchmark.jobs_run_directly
